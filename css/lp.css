@@ -359,8 +359,7 @@
 }
 
 .lp-hero-section-title {
-  color: var(--lp-tiffany) !important;
-  font-size: 1.25rem !important;
+  color: var(--color-primary) !important;
   font-weight: 700 !important;
   margin: 0 !important;
   line-height: 1.5 !important;
@@ -417,7 +416,7 @@
 
 .lp-hero h1 .accent {
   background: none;
-  color: var(--lp-tiffany-dark);
+  color: var(--lp-primary);
   display: inline;
   border-bottom: none;
   padding-bottom: 0;
@@ -543,9 +542,8 @@
 }
 
 .lp-section-title h2 {
-  font-size: 1.25rem !important;
   font-weight: 700 !important;
-  color: var(--lp-tiffany) !important;
+  color: var(--lp-primary) !important;
   line-height: 1.5 !important;
   margin-bottom: 16px;
   letter-spacing: -0.01em;
@@ -599,9 +597,8 @@
 
 .lp-problems h2 {
   text-align: center;
-  font-size: 1.25rem;
   font-weight: 700;
-  color: var(--lp-tiffany);
+  color: var(--lp-primary);
   margin-bottom: 40px;
   line-height: 1.6;
   letter-spacing: -0.01em;
@@ -694,19 +691,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
   font-family: "Inter", sans-serif;
-  letter-spacing: 0.05em;
   flex-shrink: 0;
-}
-
-.lp-solution-num::before {
-  content: 'NO.';
-  font-size: 9px;
-  margin-right: 2px;
-  opacity: 0.7;
-  font-weight: 600;
 }
 
 .lp-solution-content h3 {
