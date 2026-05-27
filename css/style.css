@@ -97,6 +97,8 @@ h4 { font-size: 1.15rem; }
 
 p {
   margin-bottom: 1rem;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .text-accent { color: var(--color-accent); }
@@ -202,7 +204,7 @@ p {
 /* Hero content 2-column grid with mobile support */
 .hero-content-grid {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: 0.8fr 1.2fr;
   gap: 2.5rem;
   align-items: center;
   margin: 0 auto;
@@ -224,7 +226,6 @@ p {
   grid-template-columns: repeat(2, 1fr);
   gap: 2.5rem;
   align-items: stretch;
-  max-width: 1100px;
   margin: 0 auto;
 }
 
@@ -858,7 +859,7 @@ a.btn-primary:hover {
 }
 
 .service-card-body > p:first-child {
-  min-height: 0;
+  min-height: 7.5rem;
   margin-bottom: 1rem;
 }
 

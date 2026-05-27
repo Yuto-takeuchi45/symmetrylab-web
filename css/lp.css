@@ -153,7 +153,7 @@
   padding: 24px 24px;
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr 1fr;
   gap: 32px;
   align-items: start;
   background: #FFFFFF;
@@ -354,7 +354,7 @@
   color: var(--lp-tiffany);
   font-weight: 600;
   letter-spacing: 0.1em;
-  font-size: 14px;
+  font-size: 0.75rem;
   margin-bottom: 0.5rem;
 }
 
@@ -388,7 +388,7 @@
 }
 
 .lp-hero h1 {
-  font-size: 24px;
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
   font-weight: 800;
   line-height: 1.4;
   margin-bottom: 16px;
@@ -400,7 +400,7 @@
 
 @media (max-width: 1200px) {
   .lp-hero h1 {
-    font-size: 24px;
+    font-size: clamp(1.4rem, 2.5vw, 2rem);
   }
 }
 
@@ -423,7 +423,7 @@
 }
 
 .lp-hero-sub {
-  font-size: 13px;
+  font-size: 1rem;
   margin-bottom: 16px;
   line-height: 1.7;
   color: var(--lp-gray-700);
@@ -510,7 +510,7 @@
 .lp-section > .lp-container {
   background: #FFFFFF;
   border-radius: 8px;
-  padding: 48px 200px;
+  padding: 48px 60px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 10px 40px rgba(17, 24, 39, 0.05);
   max-width: 1800px;
 }
@@ -580,13 +580,13 @@
 .lp-problems .lp-container {
   background: #FFFFFF;
   border-radius: 8px;
-  padding: 88px 200px;
+  padding: 88px 60px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 10px 40px rgba(17, 24, 39, 0.05);
   max-width: 1800px;
 }
 
 .lp-problems-list {
-  max-width: 820px;
+  max-width: 100%;
   margin: 0 auto;
   background: transparent;
   border: none;
@@ -709,6 +709,8 @@
   font-size: 15px;
   color: var(--lp-gray-700);
   line-height: 2;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 /* ===== 数字で見るセクション ===== */
@@ -911,6 +913,7 @@
   font-size: 14px;
   color: var(--lp-gray-700);
   line-height: 2;
+  overflow-wrap: break-word;
   margin: 0;
   padding: 8px 20px 16px;
   word-break: keep-all;
@@ -2046,7 +2049,7 @@
   }
 
   .lp-hero-sub {
-    font-size: 15px;
+    font-size: 1rem;
   }
 
   .lp-hero-features {
