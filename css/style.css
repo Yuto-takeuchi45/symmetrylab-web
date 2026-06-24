@@ -838,6 +838,7 @@ a.btn-primary:hover {
   padding: 1.5rem 1.75rem;
   display: flex;
   flex-direction: column;
+  gap: 1.25rem;
   flex-grow: 1;
 }
 
@@ -850,23 +851,23 @@ a.btn-primary:hover {
 
 .service-card-body .btn-primary,
 .service-card-body .btn-outline {
-  margin-top: auto;
+  margin-top: 0.75rem;
   align-self: center;
 }
 
 .service-card-body ul {
-  margin-bottom: 0.75rem;
+  margin: 0;
 }
 
 .service-card-body > p:first-child {
-  min-height: 7.5rem;
-  margin-bottom: 1rem;
+  min-height: 0;
+  margin-bottom: 0;
 }
 
 .service-card-body ul {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 0.25rem;
 }
 
 .service-card-body li {
@@ -885,6 +886,42 @@ a.btn-primary:hover {
   font-weight: 700;
   position: absolute;
   left: 0;
+}
+
+#practical-skills .service-card {
+  justify-content: flex-start;
+}
+
+#practical-skills .day-card-image {
+  width: min(100%, 360px);
+  max-width: calc(100% - 32px);
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+  display: block;
+  margin: 1rem auto 0;
+}
+
+#practical-skills .service-card-body {
+  padding: 1rem 1.75rem 1.5rem;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+#practical-skills .service-card-body > p:first-child {
+  min-height: 0;
+  margin: 0;
+  line-height: 1.8;
+}
+
+#practical-skills .service-card-body ul {
+  margin: 0;
+  padding-left: 0;
+  gap: 0.35rem;
+}
+
+#practical-skills .service-card-body li {
+  margin: 0;
 }
 
 /* --- Testimonials --- */
@@ -1424,15 +1461,20 @@ a.btn-primary:hover {
 }
 
 @media (max-width: 768px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
   h1 { font-size: 1.75rem; }
   h2 { font-size: 1.4rem; }
 
   .section {
-    padding: 48px 0;
+    padding: 12px;
   }
 
   .hero {
-    padding: 60px 0 72px;
+    padding: 12px;
   }
 
   .hero h1 {
@@ -1524,5 +1566,153 @@ a.btn-primary:hover {
 
   .info-table th {
     width: 35%;
+  }
+
+  .navbar {
+    padding: 0 28px;
+  }
+
+  .navbar .container {
+    height: 88px;
+  }
+
+  .container,
+  .section > .container,
+  .hero > .container,
+  .cta-banner > .container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  [style*="white-space:nowrap"] {
+    white-space: normal !important;
+  }
+
+  .section-header p,
+  .section-header h1,
+  .section-header h2,
+  .section-header h3,
+  .hero h1,
+  .hero p {
+    overflow-wrap: anywhere;
+  }
+
+  .hero-grid,
+  .hero-content,
+  .hero-image,
+  .hero-image img,
+  .section-why *,
+  .section-mission *,
+  .service-card,
+  .service-card * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .hero-image img {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .hero-grid,
+  .hero-content,
+  .hero-image {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .hero-image {
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .hero h1 {
+    word-break: break-all !important;
+    overflow-wrap: anywhere !important;
+    white-space: normal !important;
+  }
+
+  .hero > .container {
+    overflow: hidden !important;
+  }
+
+  [style*="word-break:keep-all"],
+  [style*="word-break: keep-all"] {
+    word-break: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .section-why .container > div[style*="display:flex"] > div[style*="display:flex"],
+  .section-mission .container > div[style*="display:flex"] > div[style*="display:flex"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+
+  .section-why h3,
+  .section-mission h3 {
+    font-size: 1.05rem !important;
+  }
+
+  .company-mission-title {
+    font-size: clamp(1.45rem, 7vw, 1.9rem) !important;
+    line-height: 1.45 !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  .company-mission-title span {
+    display: block;
+  }
+
+  .company-mission-copy {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto 1rem !important;
+    text-align: left !important;
+    line-height: 1.9 !important;
+    word-break: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .company-mission-copy br {
+    display: none;
+  }
+
+  .company-table,
+  .company-table tbody,
+  .company-table tr,
+  .company-table th,
+  .company-table td {
+    display: block;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .company-table {
+    border-radius: 8px;
+  }
+
+  .company-table tr {
+    border-bottom: 1px solid var(--color-border) !important;
+  }
+
+  .company-table tr:last-child {
+    border-bottom: none !important;
+  }
+
+  .company-table th {
+    padding: 1rem 1.25rem 0.35rem !important;
+    background: #f8f9fa !important;
+    color: var(--color-primary);
+    font-size: 0.9rem;
+    white-space: normal !important;
+  }
+
+  .company-table td {
+    padding: 0.35rem 1.25rem 1rem !important;
+    word-break: normal;
+    overflow-wrap: anywhere;
   }
 }

@@ -532,6 +532,12 @@
   background: var(--lp-gray-900);
 }
 
+.lp-why-container .lp-solution-card {
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .lp-section-title {
   text-align: center;
   margin-bottom: 32px;
@@ -1417,7 +1423,7 @@
 }
 
 .lp-form-label .required::before {
-  content: '● ';
+  content: '*';
   color: var(--lp-tiffany);
   font-size: 8px;
 }
@@ -1758,7 +1764,7 @@
 }
 
 .lp-modal-required::before {
-  content: '● ';
+  content: '*';
   color: var(--lp-tiffany);
   font-size: 8px;
 }
@@ -2127,5 +2133,103 @@
 
   .lp-form-card {
     padding: 40px 24px;
+  }
+}
+
+.lp-form-label .required::before,
+.lp-modal-required::before {
+  content: '*';
+  color: var(--lp-tiffany);
+  font-size: 10px;
+}
+
+@media (max-width: 768px) {
+  .lp-page {
+    overflow-x: hidden;
+  }
+
+  .lp-hero,
+  .lp-section,
+  .lp-problems,
+  .lp-form-section {
+    padding: 12px;
+  }
+
+  .lp-hero-inner,
+  .lp-section > .lp-container,
+  .lp-problems .lp-container,
+  .lp-form-section > .lp-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 48px 28px;
+    box-sizing: border-box;
+  }
+
+  .lp-hero-inner {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  [style*="white-space:nowrap"] {
+    white-space: normal !important;
+  }
+
+  .lp-hero h1,
+  .lp-section-title h2,
+  .lp-problems h2,
+  .lp-hero-form-header h2 {
+    overflow-wrap: anywhere;
+  }
+
+  .lp-hero-proofs {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-hero-proof {
+    align-items: flex-start;
+  }
+
+  .lp-solution-card {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .lp-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-solution-content,
+  .lp-solution-content h3,
+  .lp-solution-content p,
+  .lp-flow-item p {
+    min-width: 0;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .lp-flow-header,
+  .lp-flow-item:first-child .lp-flow-header {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    clip-path: none;
+    border-radius: 8px;
+  }
+
+  .lp-flow,
+  .lp-flow-item {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .lp-flow-header {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .lp-page,
+  .lp-page * {
+    max-width: 100%;
   }
 }
