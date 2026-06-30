@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /admin.html
+Disallow: /manage-7f3a9c2d4e8b.html
+Disallow: /line-booking.html
 
 Sitemap: https://symmetrylab.jp/sitemap.xml
