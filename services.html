@@ -385,6 +385,10 @@
               <option value="その他">その他</option>
             </select>
           </div>
+          <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--color-text-light);margin-bottom:6px;letter-spacing:0.08em;">クーポンコード <span style="font-weight:400;">（お持ちの場合）</span></label>
+            <input type="text" id="tCoupon" placeholder="例：FRIEND-XXXX" style="width:100%;padding:10px 14px;border:1px solid var(--color-border);border-radius:2px;font-size:14px;font-family:inherit;">
+          </div>
 
           <button type="button" id="tSubmitBtn" disabled onclick="submitTrainingBooking()" style="width:100%;background:var(--color-border);color:var(--color-text-light);border:none;padding:18px;border-radius:4px;font-size:14px;font-weight:600;letter-spacing:0.08em;cursor:not-allowed;transition:all 0.3s;">
             日程を選択してください
@@ -590,7 +594,8 @@
           training_type:T_TYPE,training_date:`${tPicks[0].date} ${tPicks[0].time} (${dateStr})`,
           customer_name:name,customer_email:email,customer_phone:document.getElementById('tPhone').value,
           sessions:checkedDays.length,
-          booking_notes:bookingNotes
+          booking_notes:bookingNotes,
+          referral_code:document.getElementById('tCoupon').value.trim()
         })});
         if(!r.ok){const e=await r.json();throw new Error(e.detail||'失敗');}
         const data=await r.json(); window.location.href=data.checkout_url;

@@ -743,9 +743,11 @@ async def create_checkout_session(req: CheckoutRequest):
             discount_amount = original_total - discounted_total
             total_price = discounted_total
         else:
-            # 無効コードは入力ミスの可能性がある。エラーで止めずログだけ残して通常価格で進める
             print(f"[checkout] 紹介コード無効: {req.referral_code} → {referral_validation.get('reason')}")
-            total_price = original_total
+            raise HTTPException(
+                status_code=400,
+                detail=f"クーポンコードを適用できません: {referral_validation.get('reason', '無効なコードです')}"
+            )
     else:
         total_price = original_total
 

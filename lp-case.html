@@ -285,7 +285,7 @@
             </div>
 
             <div class="lp-form-group">
-              <label class="lp-form-label">クーポンコード <span style="color:var(--lp-gray-500);font-size:11px;font-weight:400;">（友達紹介で1回無料）</span></label>
+              <label class="lp-form-label">クーポンコード <span style="color:var(--lp-gray-500);font-size:11px;font-weight:400;">（お持ちの場合）</span></label>
               <input type="text" class="lp-form-input lp-form-input--boxed" name="coupon" placeholder="例：FRIEND-XXXX">
             </div>
 
@@ -543,6 +543,7 @@
       const email = fd.get('email');
       const phone = fd.get('phone') || '';
       const sessions = parseInt(fd.get('sessions'), 10);
+      const referralCode = (fd.get('coupon') || '').trim();
 
       if (!name || !email || !sessions || isNaN(sessions)) {
         alert('お名前・メールアドレス・希望セッション数は必須項目です。');
@@ -554,6 +555,7 @@
         customer_email: email,
         customer_phone: phone,
         sessions: sessions,
+        referral_code: referralCode,
       };
 
       openBookingModal(sessions);
