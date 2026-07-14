@@ -1208,8 +1208,17 @@ def article_timestamp() -> str:
     return datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
 
+def normalize_article_content(content: str) -> str:
+    content = html.unescape(content or "")
+    content = re.sub(r"<br\s*/?>", "\n", content, flags=re.IGNORECASE)
+    content = re.sub(r"(https?://)\s+([A-Za-z0-9])", r"\1\2", content)
+    content = re.sub(r"(?m)^\s*[•・]\s+", "- ", content)
+    content = re.sub(r"(?m)^\s*(\d+)[、]\s+", r"\1. ", content)
+    return content
+
+
 def article_summary(content: str, limit: int = 160) -> str:
-    plain = re.sub(r"[#>*_`\[\]()]", "", content or "")
+    plain = re.sub(r"[#>*_`\[\]()]", "", normalize_article_content(content))
     plain = re.sub(r"\s+", " ", plain).strip()
     return plain[:limit]
 
@@ -1220,14 +1229,15 @@ def inline_markdown(text: str) -> str:
     link_placeholders = []
 
     def link_replacer(match):
-        label, url = match.group(1), html.unescape(match.group(2))
+        label = match.group(1)
+        url = re.sub(r"\s+", "", html.unescape(match.group(2)))
         if not re.match(r"^(https?://|mailto:)", url, re.IGNORECASE):
             return label
         token = f"\u0000LINK{len(link_placeholders)}\u0000"
         link_placeholders.append((token, f'<a href="{html.escape(url, quote=True)}" rel="noopener noreferrer">{label}</a>'))
         return token
 
-    escaped = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", link_replacer, escaped)
+    escaped = re.sub(r"\[([^\]]+)\]\(\s*([^)]+?)\s*\)", link_replacer, escaped, flags=re.DOTALL)
 
     def bare_url_replacer(match):
         url = match.group(0)
@@ -1248,7 +1258,7 @@ def inline_markdown(text: str) -> str:
 def markdown_to_html(content: str) -> str:
     """Render the limited article format accepted by the admin editor."""
     blocks, list_type, paragraph = [], None, []
-    content = re.sub(r"<br\s*/?>", "\n", content or "", flags=re.IGNORECASE)
+    content = normalize_article_content(content)
 
     def flush_paragraph():
         nonlocal paragraph
