@@ -1289,7 +1289,7 @@ def get_article_by_slug(slug: str):
     return article
 
 
-def public_layout(title: str, description: str, canonical: str, body: str, article=None) -> str:
+def public_layout(title: str, description: str, canonical: str, body: str, article=None, preview: bool = False) -> str:
     image = article["cover_image_url"] if article and article["cover_image_url"] else "https://symmetrylab.jp/images/hero-consulting.jpg"
     article_json = ""
     if article:
@@ -1310,7 +1310,7 @@ def public_layout(title: str, description: str, canonical: str, body: str, artic
 <html lang="ja"><head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{html.escape(title)}</title><meta name="description" content="{html.escape(description, quote=True)}">
-  <meta name="robots" content="index, follow, max-image-preview:large"><link rel="canonical" href="{html.escape(canonical, quote=True)}">
+  <meta name="robots" content="{'noindex, nofollow' if preview else 'index, follow, max-image-preview:large'}">{' ' if preview else f'<link rel="canonical" href="{html.escape(canonical, quote=True)}">'}
   <meta property="og:type" content="article"><meta property="og:title" content="{html.escape(title, quote=True)}"><meta property="og:description" content="{html.escape(description, quote=True)}"><meta property="og:url" content="{html.escape(canonical, quote=True)}"><meta property="og:image" content="{html.escape(image, quote=True)}">
   <meta name="twitter:card" content="summary_large_image"><link rel="stylesheet" href="/css/style.css?v=20260714">
   <style>.column-wrap{{max-width:820px;margin:0 auto}}.column-meta{{color:#6b7280;font-size:.9rem;margin-bottom:1rem}}.column-content{{font-size:1rem;line-height:2;color:#273142}}.column-content h2{{font-size:1.65rem;margin:2.5rem 0 1rem;color:#1a2332}}.column-content h3{{font-size:1.3rem;margin:2rem 0 .75rem;color:#1a2332}}.column-content p,.column-content ul,.column-content ol{{margin:0 0 1.25rem}}.column-content ul,.column-content ol{{padding-left:1.5rem}}.column-content blockquote{{margin:1.5rem 0;padding:.75rem 1rem;border-left:3px solid #00b4d8;background:#f4f6f9}}.column-content a{{color:#007f9d;text-decoration:underline}}.column-cover{{width:100%;max-height:420px;object-fit:cover;margin:1.5rem 0 2rem;border-radius:8px}}</style>
@@ -1331,6 +1331,27 @@ async def admin_list_articles(key: str = ""):
     rows = conn.execute("SELECT * FROM articles ORDER BY COALESCE(published_at, updated_at) DESC").fetchall()
     conn.close()
     return [dict(row) for row in rows]
+
+
+@app.post("/api/admin/articles/preview", response_class=HTMLResponse)
+async def admin_preview_article(request: Request, key: str = ""):
+    if key != ADMIN_KEY:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    data = await request.json()
+    now = article_timestamp()
+    article = {
+        "title": (data.get("title") or "無題のコラム").strip(),
+        "category": (data.get("category") or "コラム").strip(),
+        "content": (data.get("content") or "").strip(),
+        "cover_image_url": (data.get("cover_image_url") or "").strip(),
+        "meta_title": (data.get("meta_title") or data.get("title") or "プレビュー").strip(),
+        "meta_description": (data.get("meta_description") or article_summary(data.get("content") or "")).strip(),
+        "published_at": now,
+        "updated_at": now,
+    }
+    image = f'<img class="column-cover" src="{html.escape(article["cover_image_url"], quote=True)}" alt="{html.escape(article["title"], quote=True)}">' if article["cover_image_url"] else ""
+    body = f'<div style="background:#1a2332;color:#fff;padding:.6rem 1rem;text-align:center;font-size:.85rem">プレビュー</div><section class="section"><div class="container column-wrap"><p class="column-meta"><a href="/blog/">コラム</a> / {html.escape(article["category"])} / {now[:10].replace("-", ".")}</p><h1 style="font-size:2rem;line-height:1.5">{html.escape(article["title"])}</h1>{image}<div class="column-content">{markdown_to_html(article["content"])}</div></div></section>'
+    return HTMLResponse(public_layout(article["meta_title"], article["meta_description"], f"{BASE_URL}/blog/preview/", body, article, preview=True))
 
 
 def validate_article_payload(body: dict) -> dict:

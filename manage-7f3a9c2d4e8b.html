@@ -367,7 +367,7 @@
 
   <!-- コラム管理 -->
   <div class="tab-content" id="tab-articles">
-    <form class="column-editor" id="article-form" onsubmit="saveArticle(event)">
+    <form class="column-editor" id="article-form" onsubmit="saveArticle(event, articleSaveStatus)">
       <input type="hidden" id="article-id">
       <div class="column-grid">
         <div class="column-field full"><label for="article-title">タイトル</label><input id="article-title" maxlength="120" required></div>
@@ -379,7 +379,7 @@
         <div class="column-field"><label for="article-meta-title">SEOタイトル</label><input id="article-meta-title" maxlength="120"></div>
         <div class="column-field"><label for="article-meta-description">SEO説明文</label><textarea id="article-meta-description" maxlength="200"></textarea></div>
       </div>
-      <div class="article-form-actions"><button class="btn-save-block" type="submit" onclick="setArticleStatus('draft')">下書き保存</button><button class="btn-save-block" type="submit" style="background:var(--success)" onclick="setArticleStatus('published')">公開</button><button class="btn-save-block secondary" type="button" onclick="resetArticleForm()">新規作成</button><span class="save-msg" id="article-save-msg">保存しました</span></div>
+      <div class="article-form-actions"><button class="btn-save-block" type="button" onclick="saveArticle(event, 'draft')">下書き保存</button><button class="btn-save-block secondary" type="button" onclick="previewArticle()">プレビュー</button><button class="btn-save-block" id="article-publish-button" type="button" style="background:var(--success)" onclick="saveArticle(event, 'published')">公開</button><button class="btn-save-block secondary" type="button" onclick="resetArticleForm()">新規作成</button><span class="save-msg" id="article-save-msg">保存しました</span></div>
     </form>
     <div class="table-container"><table><thead><tr><th>状態</th><th>公開日</th><th>タイトル</th><th>カテゴリ</th><th>操作</th></tr></thead><tbody id="articles-tbody"></tbody></table></div>
   </div>
@@ -899,6 +899,7 @@
     document.getElementById('article-meta-title').value = article.meta_title || '';
     document.getElementById('article-meta-description').value = article.meta_description || '';
     articleSaveStatus = article.status || 'draft';
+    updateArticlePublishButton();
     document.getElementById('article-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
     document.getElementById('article-title').focus();
   }
@@ -907,11 +908,15 @@
     document.getElementById('article-form').reset();
     document.getElementById('article-id').value = '';
     articleSaveStatus = 'draft';
+    updateArticlePublishButton();
   }
 
-  function setArticleStatus(status) { articleSaveStatus = status; }
+  function updateArticlePublishButton() {
+    const isPublished = document.getElementById('article-id').value && articleSaveStatus === 'published';
+    document.getElementById('article-publish-button').textContent = isPublished ? '公開内容を更新' : '公開';
+  }
 
-  function articlePayload() {
+  function articlePayload(status) {
     return {
       title: document.getElementById('article-title').value,
       slug: document.getElementById('article-slug').value,
@@ -921,28 +926,53 @@
       content: document.getElementById('article-content').value,
       meta_title: document.getElementById('article-meta-title').value,
       meta_description: document.getElementById('article-meta-description').value,
-      status: articleSaveStatus
+      status
     };
   }
 
-  async function saveArticle(event) {
+  async function saveArticle(event, status) {
     event.preventDefault();
+    const form = document.getElementById('article-form');
+    if (!form.reportValidity()) return;
+    articleSaveStatus = status;
     const id = document.getElementById('article-id').value;
     const url = id ? `${API_BASE}/api/admin/articles/${id}?key=${encodeURIComponent(adminKey)}` : `${API_BASE}/api/admin/articles?key=${encodeURIComponent(adminKey)}`;
     try {
-      const res = await fetch(url, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(articlePayload()) });
+      const res = await fetch(url, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(articlePayload(status)) });
       if (!res.ok) {
         const error = await res.json().catch(() => ({}));
         throw new Error(error.detail || '保存に失敗しました');
       }
       const msg = document.getElementById('article-save-msg');
-      msg.textContent = articleSaveStatus === 'published' ? '公開しました' : '下書きを保存しました';
+      msg.textContent = status === 'published' ? (id ? '公開内容を更新しました' : '公開しました') : '下書きを保存しました';
       msg.classList.add('show');
       setTimeout(() => msg.classList.remove('show'), 2500);
       resetArticleForm();
       loadArticles();
     } catch (err) {
       alert(err.message);
+    }
+  }
+
+  async function previewArticle() {
+    const preview = window.open('', '_blank');
+    if (!preview) {
+      alert('プレビューを開けませんでした。ブラウザのポップアップ設定を確認してください。');
+      return;
+    }
+    preview.document.write('<title>プレビューを読み込み中</title>');
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/articles/preview?key=${encodeURIComponent(adminKey)}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(articlePayload(articleSaveStatus))
+      });
+      if (!res.ok) throw new Error();
+      const page = await res.text();
+      preview.document.open();
+      preview.document.write(page.replace('<head>', `<head><base href="${API_BASE}/">`));
+      preview.document.close();
+    } catch (err) {
+      preview.close();
+      alert('プレビューの生成に失敗しました');
     }
   }
 
