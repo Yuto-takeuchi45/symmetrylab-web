@@ -177,6 +177,23 @@
     .block-legend .leg-available::before { background: #e8e8e8; }
     .save-msg { display: inline-block; margin-left: 1rem; color: var(--success); font-size: 0.9rem; opacity: 0; transition: opacity 0.3s; }
     .save-msg.show { opacity: 1; }
+    .column-editor { background:var(--card); padding:1.5rem; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,.06); margin-bottom:1.5rem; }
+    .column-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:1rem; }
+    .column-field { display:flex; flex-direction:column; gap:.4rem; }
+    .column-field.full { grid-column:1 / -1; }
+    .column-field label { font-size:.85rem; font-weight:700; }
+    .column-field input, .column-field textarea, .column-field select { width:100%; border:1px solid var(--border); border-radius:6px; padding:.65rem .75rem; font:inherit; }
+    .column-field textarea { min-height:100px; resize:vertical; line-height:1.7; }
+    #article-content { min-height:360px; font-family:inherit; }
+    .format-toolbar { display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:.5rem; }
+    .format-toolbar button, .article-action { border:1px solid var(--border); background:#fff; padding:.4rem .65rem; border-radius:4px; cursor:pointer; font:inherit; font-size:.82rem; }
+    .format-toolbar button:hover, .article-action:hover { border-color:var(--accent); color:#007f9d; }
+    .article-action.delete { color:var(--danger); }
+    .article-form-actions { display:flex; flex-wrap:wrap; gap:.6rem; align-items:center; margin-top:1rem; }
+    .article-form-actions .secondary { background:#fff; color:var(--primary); border:1px solid var(--border); }
+    .article-status { font-size:.8rem; font-weight:700; }
+    .article-status.published { color:var(--success); }.article-status.draft { color:var(--warning); }
+    @media (max-width:700px) { .column-grid { grid-template-columns:1fr; }.column-field.full { grid-column:auto; }.tabs { overflow-x:auto; }.tab { white-space:nowrap; padding:.75rem 1rem; } }
   </style>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KR9VEKC8JZ"></script>
@@ -223,6 +240,7 @@
     <button class="tab" onclick="switchTab('bookings')">予約一覧</button>
     <button class="tab" onclick="switchTab('blocked')">予約対応可能日設定</button>
     <button class="tab" onclick="switchTab('referrals')">紹介コード管理</button>
+    <button class="tab" onclick="switchTab('articles')">コラム</button>
   </div>
 
   <!-- ダッシュボード -->
@@ -327,9 +345,6 @@
       <button class="btn-save-block" style="background:var(--text-light);" onclick="downloadReferralJson()">JSONダウンロード</button>
       <span class="save-msg" id="referral-save-msg">保存しました</span>
     </div>
-    <div style="background:#fff8d6;border:1px solid #f0c000;border-radius:6px;padding:0.75rem 1rem;font-size:0.82rem;color:#7a5c00;margin-bottom:1rem;">
-      <strong>注意:</strong> Renderの永続ディスクが無い環境では、デプロイ毎にここでの保存内容がリセットされます。永続化したい場合は<strong>「JSONダウンロード」</strong>でファイルを取得し、<code>server/referral_codes.json</code> を上書きしてgit pushしてください。
-    </div>
     <div class="table-container">
       <table>
         <thead>
@@ -349,6 +364,25 @@
       </table>
     </div>
   </div>
+
+  <!-- コラム管理 -->
+  <div class="tab-content" id="tab-articles">
+    <form class="column-editor" id="article-form" onsubmit="saveArticle(event)">
+      <input type="hidden" id="article-id">
+      <div class="column-grid">
+        <div class="column-field full"><label for="article-title">タイトル</label><input id="article-title" maxlength="120" required></div>
+        <div class="column-field"><label for="article-slug">URL</label><input id="article-slug" placeholder="strategy-consulting-skills" pattern="[a-z0-9]+(-[a-z0-9]+)*" required></div>
+        <div class="column-field"><label for="article-category">カテゴリ</label><input id="article-category" maxlength="50" placeholder="ケース面接"></div>
+        <div class="column-field full"><label for="article-excerpt">一覧用の要約</label><textarea id="article-excerpt" maxlength="300"></textarea></div>
+        <div class="column-field full"><label for="article-cover-image">アイキャッチ画像URL</label><input id="article-cover-image" type="url" placeholder="https://..."></div>
+        <div class="column-field full"><label for="article-content">本文</label><div class="format-toolbar"><button type="button" onclick="insertArticleFormat('h2')">見出し</button><button type="button" onclick="insertArticleFormat('h3')">小見出し</button><button type="button" onclick="insertArticleFormat('bold')">太字</button><button type="button" onclick="insertArticleFormat('bullet')">箇条書き</button><button type="button" onclick="insertArticleFormat('number')">番号</button><button type="button" onclick="insertArticleFormat('link')">リンク</button></div><textarea id="article-content" required></textarea></div>
+        <div class="column-field"><label for="article-meta-title">SEOタイトル</label><input id="article-meta-title" maxlength="120"></div>
+        <div class="column-field"><label for="article-meta-description">SEO説明文</label><textarea id="article-meta-description" maxlength="200"></textarea></div>
+      </div>
+      <div class="article-form-actions"><button class="btn-save-block" type="submit" onclick="setArticleStatus('draft')">下書き保存</button><button class="btn-save-block" type="submit" style="background:var(--success)" onclick="setArticleStatus('published')">公開</button><button class="btn-save-block secondary" type="button" onclick="resetArticleForm()">新規作成</button><span class="save-msg" id="article-save-msg">保存しました</span></div>
+    </form>
+    <div class="table-container"><table><thead><tr><th>状態</th><th>公開日</th><th>タイトル</th><th>カテゴリ</th><th>操作</th></tr></thead><tbody id="articles-tbody"></tbody></table></div>
+  </div>
 </div>
 
 <script>
@@ -359,6 +393,8 @@
   let allTimeSlotsMap = {}; // {type: [all possible times]}
   let editingDate = null;
   let blockYear, blockMonth;
+  let articles = [];
+  let articleSaveStatus = 'draft';
   const DAY_NAMES = ['日', '月', '火', '水', '木', '金', '土'];
 
   // --- ログイン ---
@@ -419,6 +455,7 @@
       loadBlockedDates();
     }
     if (name === 'referrals') loadReferralCodes();
+    if (name === 'articles') loadArticles();
   }
 
   // --- ダッシュボード ---
@@ -805,6 +842,131 @@
     a.download = 'referral_codes.json';
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  // --- コラム管理 ---
+  async function loadArticles() {
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/articles?key=${encodeURIComponent(adminKey)}`);
+      if (!res.ok) throw new Error();
+      articles = await res.json();
+      renderArticles();
+    } catch (err) {
+      alert('コラム一覧の取得に失敗しました');
+    }
+  }
+
+  function renderArticles() {
+    const tbody = document.getElementById('articles-tbody');
+    tbody.innerHTML = '';
+    if (!articles.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="no-data">登録されているコラムはありません</td></tr>';
+      return;
+    }
+    articles.forEach(article => {
+      const tr = document.createElement('tr');
+      const date = article.published_at ? article.published_at.substring(0, 10) : '-';
+      tr.innerHTML = `<td><span class="article-status ${article.status}">${article.status === 'published' ? '公開中' : '下書き'}</span></td><td>${escapeHtml(date)}</td><td>${escapeHtml(article.title)}</td><td>${escapeHtml(article.category || '-')}</td><td></td>`;
+      const actions = tr.lastElementChild;
+      const edit = document.createElement('button');
+      edit.type = 'button'; edit.className = 'article-action'; edit.textContent = '編集';
+      edit.onclick = () => editArticle(article.id);
+      actions.appendChild(edit);
+      if (article.status === 'published') {
+        const view = document.createElement('button');
+        view.type = 'button'; view.className = 'article-action'; view.textContent = '表示';
+        view.onclick = () => window.open(`/blog/${article.slug}/`, '_blank', 'noopener');
+        actions.appendChild(view);
+      }
+      const remove = document.createElement('button');
+      remove.type = 'button'; remove.className = 'article-action delete'; remove.textContent = '削除';
+      remove.onclick = () => deleteArticle(article.id);
+      actions.appendChild(remove);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function editArticle(id) {
+    const article = articles.find(a => a.id === id);
+    if (!article) return;
+    document.getElementById('article-id').value = article.id;
+    document.getElementById('article-title').value = article.title || '';
+    document.getElementById('article-slug').value = article.slug || '';
+    document.getElementById('article-category').value = article.category || '';
+    document.getElementById('article-excerpt').value = article.excerpt || '';
+    document.getElementById('article-cover-image').value = article.cover_image_url || '';
+    document.getElementById('article-content').value = article.content || '';
+    document.getElementById('article-meta-title').value = article.meta_title || '';
+    document.getElementById('article-meta-description').value = article.meta_description || '';
+    articleSaveStatus = article.status || 'draft';
+    document.getElementById('article-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('article-title').focus();
+  }
+
+  function resetArticleForm() {
+    document.getElementById('article-form').reset();
+    document.getElementById('article-id').value = '';
+    articleSaveStatus = 'draft';
+  }
+
+  function setArticleStatus(status) { articleSaveStatus = status; }
+
+  function articlePayload() {
+    return {
+      title: document.getElementById('article-title').value,
+      slug: document.getElementById('article-slug').value,
+      category: document.getElementById('article-category').value,
+      excerpt: document.getElementById('article-excerpt').value,
+      cover_image_url: document.getElementById('article-cover-image').value,
+      content: document.getElementById('article-content').value,
+      meta_title: document.getElementById('article-meta-title').value,
+      meta_description: document.getElementById('article-meta-description').value,
+      status: articleSaveStatus
+    };
+  }
+
+  async function saveArticle(event) {
+    event.preventDefault();
+    const id = document.getElementById('article-id').value;
+    const url = id ? `${API_BASE}/api/admin/articles/${id}?key=${encodeURIComponent(adminKey)}` : `${API_BASE}/api/admin/articles?key=${encodeURIComponent(adminKey)}`;
+    try {
+      const res = await fetch(url, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(articlePayload()) });
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        throw new Error(error.detail || '保存に失敗しました');
+      }
+      const msg = document.getElementById('article-save-msg');
+      msg.textContent = articleSaveStatus === 'published' ? '公開しました' : '下書きを保存しました';
+      msg.classList.add('show');
+      setTimeout(() => msg.classList.remove('show'), 2500);
+      resetArticleForm();
+      loadArticles();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  async function deleteArticle(id) {
+    const article = articles.find(a => a.id === id);
+    if (!article || !confirm(`「${article.title}」を削除しますか？`)) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/articles/${id}?key=${encodeURIComponent(adminKey)}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      if (String(document.getElementById('article-id').value) === String(id)) resetArticleForm();
+      loadArticles();
+    } catch (err) {
+      alert('削除に失敗しました');
+    }
+  }
+
+  function insertArticleFormat(type) {
+    const field = document.getElementById('article-content');
+    const start = field.selectionStart;
+    const end = field.selectionEnd;
+    const selected = field.value.slice(start, end) || 'テキスト';
+    const formats = { h2: `## ${selected}`, h3: `### ${selected}`, bold: `**${selected}**`, bullet: `- ${selected}`, number: `1. ${selected}`, link: `[${selected}](https://)` };
+    field.setRangeText(formats[type], start, end, 'end');
+    field.focus();
   }
 
   // --- ユーティリティ ---

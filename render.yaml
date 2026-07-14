@@ -19,6 +19,8 @@ services:
         value: /var/data/bookings.db
       - key: TRAINING_DATES_PATH
         value: /var/data/training_dates.json
+      - key: REFERRAL_CODES_PATH
+        value: /var/data/referral_codes.json
       - key: SMTP_EMAIL
         sync: false
       - key: SMTP_PASSWORD

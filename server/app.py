@@ -5,6 +5,8 @@ FastAPI + Stripe Checkout + SQLite + Excel出力 + メール通知
 
 import json
 import os
+import html
+import re
 import smtplib
 import sqlite3
 import traceback
@@ -22,7 +24,7 @@ import stripe
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from openpyxl.styles import Alignment, Font, PatternFill
 from pydantic import BaseModel
@@ -171,6 +173,24 @@ def init_db():
     """)
     conn.execute("UPDATE bookings SET payment_status = 'paid' WHERE payment_status = '完了'")
     conn.execute("UPDATE bookings SET created_at = REPLACE(created_at, '/', '-') WHERE created_at LIKE '____/__/__%'")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS articles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            slug TEXT NOT NULL UNIQUE,
+            title TEXT NOT NULL,
+            category TEXT NOT NULL DEFAULT '',
+            excerpt TEXT NOT NULL DEFAULT '',
+            content TEXT NOT NULL DEFAULT '',
+            cover_image_url TEXT NOT NULL DEFAULT '',
+            meta_title TEXT NOT NULL DEFAULT '',
+            meta_description TEXT NOT NULL DEFAULT '',
+            status TEXT NOT NULL DEFAULT 'draft',
+            published_at TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_articles_public ON articles(status, published_at DESC)")
     conn.commit()
     conn.close()
 
@@ -1178,6 +1198,265 @@ async def admin_save_referral_codes(request: Request, key: str = ""):
         raise HTTPException(status_code=400, detail="codesリストが必要です")
     save_referral_codes({"codes": body["codes"]})
     return {"status": "ok", "count": len(body["codes"])}
+
+
+# --- Column CMS ---
+ARTICLE_SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+
+
+def article_timestamp() -> str:
+    return datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+
+
+def article_summary(content: str, limit: int = 160) -> str:
+    plain = re.sub(r"[#>*_`\[\]()]", "", content or "")
+    plain = re.sub(r"\s+", " ", plain).strip()
+    return plain[:limit]
+
+
+def inline_markdown(text: str) -> str:
+    escaped = html.escape(text, quote=False)
+    escaped = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", escaped)
+
+    def link_replacer(match):
+        label, url = match.group(1), html.unescape(match.group(2))
+        if not re.match(r"^(https?://|mailto:)", url, re.IGNORECASE):
+            return label
+        return f'<a href="{html.escape(url, quote=True)}" rel="noopener noreferrer">{label}</a>'
+
+    return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", link_replacer, escaped)
+
+
+def markdown_to_html(content: str) -> str:
+    """Render the limited article format accepted by the admin editor."""
+    blocks, list_type, paragraph = [], None, []
+
+    def flush_paragraph():
+        nonlocal paragraph
+        if paragraph:
+            blocks.append(f"<p>{inline_markdown('<br>'.join(paragraph))}</p>")
+            paragraph = []
+
+    def close_list():
+        nonlocal list_type
+        if list_type:
+            blocks.append(f"</{list_type}>")
+            list_type = None
+
+    for raw_line in (content or "").splitlines():
+        line = raw_line.strip()
+        if not line:
+            flush_paragraph()
+            close_list()
+            continue
+        heading = re.match(r"^(#{2,3})\s+(.+)$", line)
+        if heading:
+            flush_paragraph()
+            close_list()
+            level = len(heading.group(1))
+            blocks.append(f"<h{level}>{inline_markdown(heading.group(2))}</h{level}>")
+            continue
+        ordered = re.match(r"^\d+[.)]\s+(.+)$", line)
+        bullet = re.match(r"^[-*]\s+(.+)$", line)
+        if ordered or bullet:
+            flush_paragraph()
+            expected_type, item = ("ol", ordered.group(1)) if ordered else ("ul", bullet.group(1))
+            if list_type and list_type != expected_type:
+                close_list()
+            if not list_type:
+                blocks.append(f"<{expected_type}>")
+                list_type = expected_type
+            blocks.append(f"<li>{inline_markdown(item)}</li>")
+            continue
+        if line.startswith("> "):
+            flush_paragraph()
+            close_list()
+            blocks.append(f"<blockquote>{inline_markdown(line[2:])}</blockquote>")
+            continue
+        close_list()
+        paragraph.append(line)
+    flush_paragraph()
+    close_list()
+    return "\n".join(blocks)
+
+
+def get_article_by_slug(slug: str):
+    conn = get_db()
+    article = conn.execute(
+        "SELECT * FROM articles WHERE slug = ? AND status = 'published'", (slug,)
+    ).fetchone()
+    conn.close()
+    return article
+
+
+def public_layout(title: str, description: str, canonical: str, body: str, article=None) -> str:
+    image = article["cover_image_url"] if article and article["cover_image_url"] else "https://symmetrylab.jp/images/hero-consulting.jpg"
+    article_json = ""
+    if article:
+        data = {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": article["title"],
+            "description": description,
+            "datePublished": article["published_at"],
+            "dateModified": article["updated_at"],
+            "mainEntityOfPage": canonical,
+            "image": image,
+            "author": {"@type": "Organization", "name": "SYMMETRY Lab株式会社"},
+            "publisher": {"@type": "Organization", "name": "SYMMETRY Lab株式会社"},
+        }
+        article_json = '<script type="application/ld+json">' + json.dumps(data, ensure_ascii=False).replace("</", "<\\/") + "</script>"
+    return f"""<!DOCTYPE html>
+<html lang="ja"><head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{html.escape(title)}</title><meta name="description" content="{html.escape(description, quote=True)}">
+  <meta name="robots" content="index, follow, max-image-preview:large"><link rel="canonical" href="{html.escape(canonical, quote=True)}">
+  <meta property="og:type" content="article"><meta property="og:title" content="{html.escape(title, quote=True)}"><meta property="og:description" content="{html.escape(description, quote=True)}"><meta property="og:url" content="{html.escape(canonical, quote=True)}"><meta property="og:image" content="{html.escape(image, quote=True)}">
+  <meta name="twitter:card" content="summary_large_image"><link rel="stylesheet" href="/css/style.css?v=20260714">
+  <style>.column-wrap{{max-width:820px;margin:0 auto}}.column-meta{{color:#6b7280;font-size:.9rem;margin-bottom:1rem}}.column-content{{font-size:1rem;line-height:2;color:#273142}}.column-content h2{{font-size:1.65rem;margin:2.5rem 0 1rem;color:#1a2332}}.column-content h3{{font-size:1.3rem;margin:2rem 0 .75rem;color:#1a2332}}.column-content p,.column-content ul,.column-content ol{{margin:0 0 1.25rem}}.column-content ul,.column-content ol{{padding-left:1.5rem}}.column-content blockquote{{margin:1.5rem 0;padding:.75rem 1rem;border-left:3px solid #00b4d8;background:#f4f6f9}}.column-content a{{color:#007f9d;text-decoration:underline}}.column-cover{{width:100%;max-height:420px;object-fit:cover;margin:1.5rem 0 2rem;border-radius:8px}}</style>
+  {article_json}
+</head><body>
+<nav class="navbar"><div class="container"><a href="/index.html" class="nav-logo"><img src="/images/logo_full.png" alt="SYMMETRY Lab" class="nav-logo-img"></a><button class="nav-toggle" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button><div class="nav-links"><a href="/company.html">会社概要</a><a href="/services.html">サービス</a><a href="/blog/">コラム</a><a href="/contact.html">お問い合わせ</a></div></div></nav>
+{body}
+<footer class="footer"><div class="container"><div class="footer-bottom"><span>&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</span></div></div></footer>
+<script src="/js/main.js"></script>
+</body></html>"""
+
+
+@app.get("/api/admin/articles")
+async def admin_list_articles(key: str = ""):
+    if key != ADMIN_KEY:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM articles ORDER BY COALESCE(published_at, updated_at) DESC").fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+
+def validate_article_payload(body: dict) -> dict:
+    slug = (body.get("slug") or "").strip().lower()
+    title = (body.get("title") or "").strip()
+    status = body.get("status", "draft")
+    if not title or len(title) > 120:
+        raise HTTPException(status_code=400, detail="タイトルは1〜120文字で入力してください")
+    if not ARTICLE_SLUG_RE.fullmatch(slug):
+        raise HTTPException(status_code=400, detail="URLは半角小文字・数字・ハイフンのみで入力してください")
+    if status not in ("draft", "published"):
+        raise HTTPException(status_code=400, detail="公開状態が不正です")
+    content = (body.get("content") or "").strip()
+    if status == "published" and not content:
+        raise HTTPException(status_code=400, detail="公開するには本文を入力してください")
+    return {
+        "slug": slug, "title": title, "category": (body.get("category") or "").strip()[:50],
+        "excerpt": (body.get("excerpt") or article_summary(content))[:300], "content": content,
+        "cover_image_url": (body.get("cover_image_url") or "").strip()[:1000],
+        "meta_title": (body.get("meta_title") or title)[:120],
+        "meta_description": (body.get("meta_description") or article_summary(content))[:200], "status": status,
+    }
+
+
+@app.post("/api/admin/articles")
+async def admin_create_article(request: Request, key: str = ""):
+    if key != ADMIN_KEY:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    data, now = validate_article_payload(await request.json()), article_timestamp()
+    data["published_at"] = now if data["status"] == "published" else None
+    conn = get_db()
+    try:
+        cursor = conn.execute("""INSERT INTO articles
+            (slug,title,category,excerpt,content,cover_image_url,meta_title,meta_description,status,published_at,created_at,updated_at)
+            VALUES (:slug,:title,:category,:excerpt,:content,:cover_image_url,:meta_title,:meta_description,:status,:published_at,:created_at,:updated_at)""", {**data, "created_at": now, "updated_at": now})
+        conn.commit()
+    except sqlite3.IntegrityError:
+        raise HTTPException(status_code=409, detail="このURLはすでに使われています")
+    finally:
+        conn.close()
+    return {"id": cursor.lastrowid, "slug": data["slug"]}
+
+
+@app.put("/api/admin/articles/{article_id}")
+async def admin_update_article(article_id: int, request: Request, key: str = ""):
+    if key != ADMIN_KEY:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    data, now = validate_article_payload(await request.json()), article_timestamp()
+    conn = get_db()
+    current = conn.execute("SELECT published_at FROM articles WHERE id = ?", (article_id,)).fetchone()
+    if not current:
+        conn.close()
+        raise HTTPException(status_code=404, detail="記事が見つかりません")
+    data["published_at"] = current["published_at"] or now if data["status"] == "published" else None
+    try:
+        conn.execute("""UPDATE articles SET slug=:slug,title=:title,category=:category,excerpt=:excerpt,content=:content,
+            cover_image_url=:cover_image_url,meta_title=:meta_title,meta_description=:meta_description,status=:status,
+            published_at=:published_at,updated_at=:updated_at WHERE id=:id""", {**data, "updated_at": now, "id": article_id})
+        conn.commit()
+    except sqlite3.IntegrityError:
+        raise HTTPException(status_code=409, detail="このURLはすでに使われています")
+    finally:
+        conn.close()
+    return {"id": article_id, "slug": data["slug"]}
+
+
+@app.delete("/api/admin/articles/{article_id}")
+async def admin_delete_article(article_id: int, key: str = ""):
+    if key != ADMIN_KEY:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    conn = get_db()
+    cursor = conn.execute("DELETE FROM articles WHERE id = ?", (article_id,))
+    conn.commit()
+    conn.close()
+    if not cursor.rowcount:
+        raise HTTPException(status_code=404, detail="記事が見つかりません")
+    return {"status": "deleted"}
+
+
+@app.get("/blog", include_in_schema=False)
+async def blog_without_trailing_slash():
+    return RedirectResponse("/blog/", status_code=308)
+
+
+@app.get("/blog/index.html", include_in_schema=False)
+async def legacy_blog_index():
+    return RedirectResponse("/blog/", status_code=308)
+
+
+@app.get("/blog/", response_class=HTMLResponse, include_in_schema=False)
+async def public_blog_index():
+    conn = get_db()
+    articles = conn.execute("SELECT * FROM articles WHERE status = 'published' ORDER BY published_at DESC").fetchall()
+    conn.close()
+    cards = []
+    for article in articles:
+        date = (article["published_at"] or "")[:10].replace("-", ".")
+        category = html.escape(article["category"] or "コラム")
+        cards.append(f'''<article style="padding:1.5rem 0;border-bottom:1px solid #e5e7eb"><p class="column-meta">{date} / {category}</p><h2 style="font-size:1.35rem;margin-bottom:.7rem"><a href="/blog/{article["slug"]}/" style="color:#1a2332;text-decoration:none">{html.escape(article["title"])}</a></h2><p>{html.escape(article["excerpt"] or article_summary(article["content"]))}</p><p style="margin-top:1rem"><a href="/blog/{article["slug"]}/">続きを読む</a></p></article>''')
+    listing = "".join(cards) or "<p>現在公開中のコラムはありません。</p>"
+    body = f'<section class="section"><div class="container column-wrap"><div class="section-header"><h1>コラム</h1><p>戦略コンサル転職、ケース面接、実務スキルに役立つ情報を発信しています。</p></div>{listing}</div></section>'
+    return HTMLResponse(public_layout("コラム | SYMMETRY Lab株式会社", "戦略コンサル転職に役立つコラム。実務スキルやケース面接のノウハウを解説します。", "https://symmetrylab.jp/blog/", body))
+
+
+@app.get("/blog/{slug}/", response_class=HTMLResponse, include_in_schema=False)
+async def public_article(slug: str):
+    article = get_article_by_slug(slug)
+    if not article:
+        raise HTTPException(status_code=404, detail="Not found")
+    canonical = f"https://symmetrylab.jp/blog/{article['slug']}/"
+    date = (article["published_at"] or "")[:10].replace("-", ".")
+    image = f'<img class="column-cover" src="{html.escape(article["cover_image_url"], quote=True)}" alt="{html.escape(article["title"], quote=True)}">' if article["cover_image_url"] else ""
+    body = f'<section class="section"><div class="container column-wrap"><p class="column-meta"><a href="/blog/">コラム</a> / {html.escape(article["category"] or "コラム")} / {date}</p><h1 style="font-size:2rem;line-height:1.5">{html.escape(article["title"])}</h1>{image}<div class="column-content">{markdown_to_html(article["content"])}</div></div></section>'
+    return HTMLResponse(public_layout(article["meta_title"] or article["title"], article["meta_description"] or article_summary(article["content"]), canonical, body, article))
+
+
+@app.get("/sitemap.xml", response_class=HTMLResponse, include_in_schema=False)
+async def dynamic_sitemap():
+    static_urls = ["/", "/lp-case.html", "/lp-training.html", "/services.html", "/booking.html", "/blog/", "/faq.html", "/company.html", "/contact.html", "/privacy.html", "/tokushoho.html"]
+    conn = get_db()
+    articles = conn.execute("SELECT slug, updated_at FROM articles WHERE status = 'published' ORDER BY published_at DESC").fetchall()
+    conn.close()
+    urls = [(f"https://symmetrylab.jp{path}", "2026-07-14") for path in static_urls]
+    urls.extend((f"https://symmetrylab.jp/blog/{row['slug']}/", (row["updated_at"] or "")[:10]) for row in articles)
+    entries = "".join(f"<url><loc>{html.escape(loc)}</loc><lastmod>{lastmod}</lastmod></url>" for loc, lastmod in urls)
+    return HTMLResponse(f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{entries}</urlset>', media_type="application/xml")
 
 
 @app.api_route("/api/health", methods=["GET", "HEAD"])
