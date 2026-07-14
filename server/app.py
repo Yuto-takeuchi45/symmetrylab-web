@@ -1214,7 +1214,7 @@ def normalize_article_content(content: str) -> str:
     content = re.sub(r"(https?://)\s+([A-Za-z0-9])", r"\1\2", content)
     content = re.sub(r"(?m)^\s*[•・]\s+", "- ", content)
     content = re.sub(r"(?m)^\s*(\d+)[、]\s+", r"\1. ", content)
-    return content
+    return "\n".join(line.strip() for line in content.splitlines())
 
 
 def article_summary(content: str, limit: int = 160) -> str:
@@ -1263,7 +1263,7 @@ def markdown_to_html(content: str) -> str:
     def flush_paragraph():
         nonlocal paragraph
         if paragraph:
-            blocks.append(f"<p>{'<br>'.join(inline_markdown(line) for line in paragraph)}</p>")
+            blocks.append(f"<p>{inline_markdown(''.join(paragraph))}</p>")
             paragraph = []
 
     def close_list():
