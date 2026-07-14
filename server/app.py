@@ -1217,24 +1217,43 @@ def article_summary(content: str, limit: int = 160) -> str:
 def inline_markdown(text: str) -> str:
     escaped = html.escape(text, quote=False)
     escaped = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", escaped)
+    link_placeholders = []
 
     def link_replacer(match):
         label, url = match.group(1), html.unescape(match.group(2))
         if not re.match(r"^(https?://|mailto:)", url, re.IGNORECASE):
             return label
-        return f'<a href="{html.escape(url, quote=True)}" rel="noopener noreferrer">{label}</a>'
+        token = f"\u0000LINK{len(link_placeholders)}\u0000"
+        link_placeholders.append((token, f'<a href="{html.escape(url, quote=True)}" rel="noopener noreferrer">{label}</a>'))
+        return token
 
-    return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", link_replacer, escaped)
+    escaped = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", link_replacer, escaped)
+
+    def bare_url_replacer(match):
+        url = match.group(0)
+        suffix = ""
+        while url and url[-1] in ".,;:!?)]}、。":
+            suffix = url[-1] + suffix
+            url = url[:-1]
+        if not url:
+            return match.group(0)
+        return f'<a href="{html.escape(url, quote=True)}" rel="noopener noreferrer">{html.escape(url)}</a>{suffix}'
+
+    escaped = re.sub(r"(?<![\"'=])(https?://[^\s<]+)", bare_url_replacer, escaped)
+    for token, link in link_placeholders:
+        escaped = escaped.replace(token, link)
+    return escaped
 
 
 def markdown_to_html(content: str) -> str:
     """Render the limited article format accepted by the admin editor."""
     blocks, list_type, paragraph = [], None, []
+    content = re.sub(r"<br\s*/?>", "\n", content or "", flags=re.IGNORECASE)
 
     def flush_paragraph():
         nonlocal paragraph
         if paragraph:
-            blocks.append(f"<p>{inline_markdown('<br>'.join(paragraph))}</p>")
+            blocks.append(f"<p>{'<br>'.join(inline_markdown(line) for line in paragraph)}</p>")
             paragraph = []
 
     def close_list():
@@ -1243,7 +1262,7 @@ def markdown_to_html(content: str) -> str:
             blocks.append(f"</{list_type}>")
             list_type = None
 
-    for raw_line in (content or "").splitlines():
+    for raw_line in content.splitlines():
         line = raw_line.strip()
         if not line:
             flush_paragraph()
