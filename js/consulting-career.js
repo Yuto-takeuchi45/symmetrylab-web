@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const status = document.querySelector('#career-form-status');
   const complete = document.querySelector('#career-complete');
   const reset = document.querySelector('#career-reset');
+  let isSubmitting = false;
 
   if (menuToggle && nav) {
     menuToggle.addEventListener('click', () => {
@@ -95,6 +96,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  const isConsultationTimeAvailable = (dateString, timeString) => {
+    const hour = Number.parseInt(timeString.split(':')[0], 10);
+    const dayOfWeek = new Date(`${dateString}T00:00:00`).getDay();
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    return isWeekend ? hour >= 9 && hour <= 20 : hour >= 19 && hour < 24;
+  };
+
   const selectScheduleDate = async (dateString, cell) => {
     schedule.grid.querySelectorAll('.career-date').forEach((dateCell) => dateCell.classList.remove('is-selected'));
     cell.classList.add('is-selected');
@@ -109,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch(`${window.location.origin}/api/available-dates?training_type=case_interview&date=${dateString}`);
       if (!response.ok) throw new Error('schedule');
       const data = await response.json();
-      const timeSlots = data.time_slots || [];
+      const timeSlots = (data.time_slots || []).filter((slot) => isConsultationTimeAvailable(dateString, slot.time));
       if (!timeSlots.length) {
         schedule.timeGrid.innerHTML = '<p class="career-schedule-status is-error">この日の空き時間はありません。別の日をお選びください。</p>';
         return;
@@ -125,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
           button.classList.add('is-selected');
           schedule.selectedTime = slot.time;
           schedule.appointment.value = `${dateString} ${slot.time}`;
+          document.getElementById('career-appointment-mode').value = 'selected';
           schedule.selected.textContent = `相談希望日時：${dateString.replaceAll('-', '/')} ${slot.time}`;
           schedule.selected.hidden = false;
         });
@@ -139,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
     schedule.selectedDate = '';
     schedule.selectedTime = '';
     schedule.appointment.value = '';
+    document.getElementById('career-appointment-mode').value = '';
     schedule.timeSection.hidden = true;
     schedule.selected.hidden = true;
     schedule.skip.classList.remove('is-selected');
@@ -161,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
       schedule.selectedDate = '';
       schedule.selectedTime = '';
       schedule.appointment.value = '後日調整';
+      document.getElementById('career-appointment-mode').value = 'later';
       schedule.timeSection.hidden = true;
       schedule.selected.textContent = '相談希望日時：後日調整';
       schedule.selected.hidden = false;
@@ -200,6 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
+    window.SYMMETRY_CAREER_TRACKING?.trackSubmitAttempt();
     clearErrors();
     let valid = true;
 
@@ -221,6 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!consent.checked) { showError('career-consent', '個人情報の取扱いへの同意が必要です。'); valid = false; }
 
     if (!valid) {
+      window.SYMMETRY_CAREER_TRACKING?.trackValidationError(form);
       status.textContent = '入力内容をご確認ください。';
       status.className = 'career-form-status is-error';
       const firstError = form.querySelector('.has-error input, .has-error select, .has-error textarea, .career-consent-error:not(:empty)');
@@ -229,12 +243,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const submit = form.querySelector('.career-submit');
+    isSubmitting = true;
     submit.disabled = true;
     submit.querySelector('.career-submit-label').hidden = true;
     submit.querySelector('.career-submit-loading').hidden = false;
 
     // 開発用モック: 外部API・メール・提携人材紹介会社には送信しません。
     window.setTimeout(() => {
+      window.SYMMETRY_CAREER_TRACKING?.recordApplicationComplete(form);
       form.hidden = true;
       complete.hidden = false;
       formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -242,6 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   reset.addEventListener('click', () => {
+    isSubmitting = false;
     form.reset();
     form.hidden = false;
     complete.hidden = true;
@@ -251,5 +268,6 @@ document.addEventListener('DOMContentLoaded', () => {
     submit.querySelector('.career-submit-loading').hidden = true;
     clearErrors();
     resetScheduleSelection();
+    window.SYMMETRY_CAREER_TRACKING?.resetApplication(form);
   });
 });

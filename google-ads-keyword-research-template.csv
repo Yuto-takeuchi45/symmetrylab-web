@@ -1,0 +1,44 @@
+keyword_type,cluster,ad_group,keyword,recommended_match_type,search_intent,landing_page,priority,keyword_planner_avg_monthly_searches,keyword_planner_competition,keyword_planner_low_top_of_page_bid,keyword_planner_high_top_of_page_bid,decision,notes
+standard,コンサル転職・転職エージェント,コンサル転職,コンサル 転職,phrase,転職支援を探している,consulting-career,high,,,,,pending,キーワードプランナーで数値を入力
+standard,コンサル転職・転職エージェント,コンサル転職,コンサルタント 転職,phrase,転職先を探している,consulting-career,high,,,,,pending,
+standard,コンサル転職・転職エージェント,コンサル転職,コンサル 転職 支援,phrase,転職支援サービスを探している,consulting-career,high,,,,,pending,
+standard,コンサル転職・転職エージェント,コンサル転職エージェント,コンサル 転職 エージェント,phrase,エージェントを探している,consulting-career,high,,,,,pending,
+standard,コンサル転職・転職エージェント,コンサル転職エージェント,コンサル 転職 紹介,phrase,求人紹介を探している,consulting-career,medium,,,,,pending,
+standard,コンサル転職・転職エージェント,コンサル転職エージェント,外資系コンサル 転職,phrase,外資コンサルへの転職意向,consulting-career,high,,,,,pending,
+standard,コンサル転職・転職エージェント,コンサル転職エージェント,経営コンサル 転職,phrase,経営コンサルへの転職意向,consulting-career,medium,,,,,pending,
+standard,未経験・異業種からの転職,未経験コンサル転職,コンサル 転職 未経験,phrase,未経験での転職相談,consulting-career,high,,,,,pending,
+standard,未経験・異業種からの転職,未経験コンサル転職,未経験 コンサル 転職,phrase,未経験での転職相談,consulting-career,high,,,,,pending,
+standard,未経験・異業種からの転職,未経験コンサル転職,異業種 コンサル 転職,phrase,異業種からの転職相談,consulting-career,high,,,,,pending,
+standard,未経験・異業種からの転職,未経験コンサル転職,未経験 コンサル 転職 エージェント,phrase,未経験向け支援を探している,consulting-career,medium,,,,,pending,
+standard,未経験・異業種からの転職,未経験コンサル転職,コンサル 転職 20代,phrase,若手の転職相談,consulting-career,medium,,,,,pending,
+standard,未経験・異業種からの転職,未経験コンサル転職,コンサル 転職 30代,phrase,30代の転職相談,consulting-career,medium,,,,,pending,
+standard,戦略・総合コンサル,戦略コンサル転職,戦略コンサル 転職,phrase,戦略コンサルへの転職意向,consulting-career,high,,,,,pending,
+standard,戦略・総合コンサル,戦略コンサル転職,戦略コンサル 中途,phrase,中途採用を探している,consulting-career,high,,,,,pending,
+standard,戦略・総合コンサル,戦略コンサル転職,戦略コンサル 未経験 転職,phrase,未経験で戦略コンサルを検討,consulting-career,high,,,,,pending,
+standard,戦略・総合コンサル,総合コンサル転職,総合コンサル 転職,phrase,総合コンサルへの転職意向,consulting-career,high,,,,,pending,
+standard,戦略・総合コンサル,総合コンサル転職,総合コンサル 中途,phrase,中途採用を探している,consulting-career,high,,,,,pending,
+standard,戦略・総合コンサル,総合コンサル転職,外資系コンサル 中途,phrase,外資系中途転職,consulting-career,medium,,,,,pending,
+standard,ファーム名別,McKinsey転職,マッキンゼー 転職,phrase,ファーム指定の転職意向,consulting-career,medium,,,,,pending,広告文とLPの適合性を確認
+standard,ファーム名別,BCG転職,BCG 転職,phrase,ファーム指定の転職意向,consulting-career,medium,,,,,pending,広告文とLPの適合性を確認
+standard,ファーム名別,Bain転職,ベイン 転職,phrase,ファーム指定の転職意向,consulting-career,medium,,,,,pending,広告文とLPの適合性を確認
+standard,ファーム名別,アクセンチュア転職,アクセンチュア 転職,phrase,ファーム指定の転職意向,consulting-career,medium,,,,,pending,広告文とLPの適合性を確認
+standard,ファーム名別,Big4コンサル転職,デロイト コンサル 転職,phrase,ファーム指定の転職意向,consulting-career,medium,,,,,pending,正式な検索語句をプランナーで確認
+standard,ファーム名別,Big4コンサル転職,PwC コンサル 転職,phrase,ファーム指定の転職意向,consulting-career,medium,,,,,pending,正式な検索語句をプランナーで確認
+standard,ファーム名別,Big4コンサル転職,EY コンサル 転職,phrase,ファーム指定の転職意向,consulting-career,medium,,,,,pending,正式な検索語句をプランナーで確認
+standard,ファーム名別,Big4コンサル転職,KPMG コンサル 転職,phrase,ファーム指定の転職意向,consulting-career,medium,,,,,pending,正式な検索語句をプランナーで確認
+standard,面接・ケース面接対策,面接対策,コンサル 転職 面接,phrase,選考対策を探している,consulting-career,high,,,,,pending,
+standard,面接・ケース面接対策,面接対策,コンサル 面接 対策,phrase,面接対策を探している,consulting-career,high,,,,,pending,
+standard,面接・ケース面接対策,ケース面接対策,ケース面接 対策,phrase,ケース面接対策を探している,consulting-career,high,,,,,pending,
+standard,面接・ケース面接対策,ケース面接対策,ケース面接 転職,phrase,転職のケース面接対策,consulting-career,high,,,,,pending,
+standard,面接・ケース面接対策,ケース面接対策,ケース面接 練習,phrase,ケース面接の練習相手を探している,consulting-career,high,,,,,pending,
+standard,面接・ケース面接対策,ケース面接対策,フェルミ推定 面接,phrase,ケース面接の個別対策,consulting-career,medium,,,,,pending,
+standard,面接・ケース面接対策,応募書類対策,コンサル 職務経歴書,phrase,応募書類の対策を探している,consulting-career,medium,,,,,pending,
+standard,面接・ケース面接対策,応募書類対策,コンサル 志望動機,phrase,志望動機の対策を探している,consulting-career,medium,,,,,pending,
+negative,除外候補,新卒・就活,コンサル 新卒,phrase,新卒採用意向,none,high,,,,,pending,中途転職LPの対象外
+negative,除外候補,新卒・就活,コンサル 就活,phrase,就職活動意向,none,high,,,,,pending,中途転職LPの対象外
+negative,除外候補,新卒・就活,コンサル インターン,phrase,インターン探し,none,high,,,,,pending,中途転職LPの対象外
+negative,除外候補,学習・教材,ケース面接 本,phrase,教材購入意向,none,medium,,,,,pending,サービス申込意向と異なる可能性
+negative,除外候補,学習・教材,ケース面接 問題集,phrase,教材購入意向,none,medium,,,,,pending,サービス申込意向と異なる可能性
+negative,除外候補,資格・学習,コンサル 資格,phrase,資格取得意向,none,medium,,,,,pending,転職相談と異なる可能性
+negative,除外候補,求人以外,コンサル 仕事内容,phrase,情報収集のみの可能性,none,low,,,,,pending,検索語句を見て除外判断
+negative,除外候補,求人以外,コンサル 年収,phrase,年収情報の収集,none,low,,,,,pending,転職意向があれば残す

@@ -144,6 +144,19 @@
           <div class="career-form-heading"><span>無料相談申込フォーム</span><small><i>*</i> 必須項目</small></div>
           <div class="career-form-status" id="career-form-status" role="status" aria-live="polite"></div>
           <form id="career-application-form" novalidate>
+            <input type="hidden" id="career-tracking-lead-id" name="tracking_lead_id" value="">
+            <input type="hidden" id="career-gclid" name="gclid" value="">
+            <input type="hidden" id="career-gbraid" name="gbraid" value="">
+            <input type="hidden" id="career-wbraid" name="wbraid" value="">
+            <input type="hidden" id="career-utm-source" name="utm_source" value="">
+            <input type="hidden" id="career-utm-medium" name="utm_medium" value="">
+            <input type="hidden" id="career-utm-campaign" name="utm_campaign" value="">
+            <input type="hidden" id="career-utm-term" name="utm_term" value="">
+            <input type="hidden" id="career-utm-content" name="utm_content" value="">
+            <input type="hidden" id="career-landing-page" name="landing_page" value="">
+            <input type="hidden" id="career-first-touch-at" name="first_touch_at" value="">
+            <input type="hidden" id="career-last-touch-at" name="last_touch_at" value="">
+            <input type="hidden" id="career-appointment-mode" name="appointment_mode" value="">
             <div class="career-form-grid">
               <div class="career-field career-field-wide"><label for="career-name">氏名 <i>*</i></label><input id="career-name" name="name" type="text" autocomplete="name" placeholder="山田 太郎" required><span class="career-error" data-error-for="career-name"></span></div>
               <div class="career-field"><label for="career-email">メールアドレス <i>*</i></label><input id="career-email" name="email" type="email" autocomplete="email" placeholder="example@email.com" required><span class="career-error" data-error-for="career-email"></span></div>
@@ -192,6 +205,7 @@
     </div>
     <div class="career-container career-footer-bottom"><span>&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</span></div>
   </footer>
+  <script src="../js/consulting-career-tracking.js" defer></script>
   <script src="../js/consulting-career.js"></script>
 </body>
 </html>

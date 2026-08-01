@@ -1514,6 +1514,17 @@ async def health():
     return {"status": "ok", "time": datetime.now().isoformat()}
 
 
+@app.get("/api/tracking-config", include_in_schema=False)
+async def tracking_config():
+    """Expose public tag identifiers without hard-coding production IDs in the LP."""
+    return {
+        "gtm_container_id": os.getenv("SYMMETRY_GTM_CONTAINER_ID", "").strip(),
+        "ga4_measurement_id": os.getenv("SYMMETRY_GA4_MEASUREMENT_ID", "").strip(),
+        "google_ads_conversion_id": os.getenv("SYMMETRY_GOOGLE_ADS_CONVERSION_ID", "").strip(),
+        "google_ads_conversion_label": os.getenv("SYMMETRY_GOOGLE_ADS_CONVERSION_LABEL", "").strip(),
+    }
+
+
 @app.on_event("startup")
 async def startup():
     init_db()
