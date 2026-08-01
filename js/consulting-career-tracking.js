@@ -9,6 +9,7 @@
     'utm_campaign', 'utm_term', 'utm_content'
   ];
   const completedForms = new WeakMap();
+  const pendingLeadIds = new WeakMap();
   const startedForms = new WeakSet();
   const pendingDirectEvents = [];
   let directGtagReady = false;
@@ -188,11 +189,17 @@
     });
   };
 
+  const prepareApplication = (form) => {
+    const leadId = pendingLeadIds.get(form) || createAnonymousId();
+    pendingLeadIds.set(form, leadId);
+    hydrateForm(form, leadId);
+    return leadId;
+  };
+
   const recordApplicationComplete = (form) => {
     if (completedForms.has(form)) return completedForms.get(form);
-    const leadId = createAnonymousId();
+    const leadId = prepareApplication(form);
     completedForms.set(form, leadId);
-    hydrateForm(form, leadId);
     const appointmentMode = (form.elements.appointment_mode && form.elements.appointment_mode.value) || 'later';
     const parameters = {
       form_id: 'career_application',
@@ -216,6 +223,7 @@
 
   const resetApplication = (form) => {
     completedForms.delete(form);
+    pendingLeadIds.delete(form);
     hydrateForm(form);
   };
 
@@ -224,6 +232,7 @@
     trackFormStart,
     trackSubmitAttempt,
     trackValidationError,
+    prepareApplication,
     recordApplicationComplete,
     resetApplication,
     getAttribution: () => ({ ...attribution })

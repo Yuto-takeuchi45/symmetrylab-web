@@ -242,6 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    window.SYMMETRY_CAREER_TRACKING?.prepareApplication(form);
     const submit = form.querySelector('.career-submit');
     isSubmitting = true;
     submit.disabled = true;
