@@ -4,12 +4,14 @@
   window.dataLayer = window.dataLayer || [];
 
   const ATTRIBUTION_STORAGE_KEY = 'symmetrylab_career_attribution_v1';
+  const CLIENT_SUBMISSION_STORAGE_KEY = 'symmetrylab_career_client_submission_v1';
+  const COMPLETED_SUBMISSION_STORAGE_KEY = 'symmetrylab_career_completed_submission_v1';
   const ATTRIBUTION_KEYS = [
     'gclid', 'gbraid', 'wbraid', 'utm_source', 'utm_medium',
     'utm_campaign', 'utm_term', 'utm_content'
   ];
   const completedForms = new WeakMap();
-  const pendingLeadIds = new WeakMap();
+  const pendingSubmissionIds = new WeakMap();
   const startedForms = new WeakSet();
   const pendingDirectEvents = [];
   let directGtagReady = false;
@@ -18,6 +20,14 @@
   const getStorage = () => {
     try {
       return window.localStorage;
+    } catch (error) {
+      return null;
+    }
+  };
+
+  const getSessionStorage = () => {
+    try {
+      return window.sessionStorage;
     } catch (error) {
       return null;
     }
@@ -71,6 +81,7 @@
 
   const hiddenFieldMap = {
     tracking_lead_id: 'career-tracking-lead-id',
+    client_submission_id: 'career-client-submission-id',
     gclid: 'career-gclid',
     gbraid: 'career-gbraid',
     wbraid: 'career-wbraid',
@@ -84,8 +95,14 @@
     last_touch_at: 'career-last-touch-at'
   };
 
-  const hydrateForm = (form, leadId = '') => {
-    const values = { ...attribution, tracking_lead_id: leadId };
+  const hydrateForm = (form, leadId = '', clientSubmissionId = '') => {
+    const sessionStorage = getSessionStorage();
+    const storedClientSubmissionId = sessionStorage?.getItem(CLIENT_SUBMISSION_STORAGE_KEY) || '';
+    const values = {
+      ...attribution,
+      tracking_lead_id: leadId,
+      client_submission_id: clientSubmissionId || pendingSubmissionIds.get(form) || storedClientSubmissionId
+    };
     Object.entries(hiddenFieldMap).forEach(([name, id]) => {
       const field = form.elements[name] || document.getElementById(id);
       if (field) field.value = values[name] || '';
@@ -190,22 +207,34 @@
   };
 
   const prepareApplication = (form) => {
-    const leadId = pendingLeadIds.get(form) || createAnonymousId();
-    pendingLeadIds.set(form, leadId);
-    hydrateForm(form, leadId);
-    return leadId;
+    const sessionStorage = getSessionStorage();
+    const completedSubmission = sessionStorage?.getItem(COMPLETED_SUBMISSION_STORAGE_KEY);
+    if (completedSubmission) {
+      sessionStorage.removeItem(COMPLETED_SUBMISSION_STORAGE_KEY);
+      sessionStorage.removeItem(CLIENT_SUBMISSION_STORAGE_KEY);
+    }
+    const clientSubmissionId = pendingSubmissionIds.get(form)
+      || sessionStorage?.getItem(CLIENT_SUBMISSION_STORAGE_KEY)
+      || createAnonymousId();
+    pendingSubmissionIds.set(form, clientSubmissionId);
+    sessionStorage?.setItem(CLIENT_SUBMISSION_STORAGE_KEY, clientSubmissionId);
+    hydrateForm(form, '', clientSubmissionId);
+    return clientSubmissionId;
   };
 
-  const recordApplicationComplete = (form) => {
+  const recordApplicationComplete = (form, serverLeadId) => {
+    if (!serverLeadId) return null;
     if (completedForms.has(form)) return completedForms.get(form);
-    const leadId = prepareApplication(form);
-    completedForms.set(form, leadId);
+    const clientSubmissionId = pendingSubmissionIds.get(form) || prepareApplication(form);
+    completedForms.set(form, serverLeadId);
+    getSessionStorage()?.setItem(COMPLETED_SUBMISSION_STORAGE_KEY, serverLeadId);
+    hydrateForm(form, serverLeadId, clientSubmissionId);
     const appointmentMode = (form.elements.appointment_mode && form.elements.appointment_mode.value) || 'later';
     const parameters = {
       form_id: 'career_application',
-      lead_id: leadId,
-      event_id: leadId,
-      transaction_id: leadId,
+      lead_id: serverLeadId,
+      event_id: serverLeadId,
+      transaction_id: serverLeadId,
       appointment_mode: appointmentMode,
       attribution_source: attribution.utm_source || (attribution.gclid ? 'google_ads' : 'direct'),
       gclid: attribution.gclid || '',
@@ -218,12 +247,15 @@
       utm_content: attribution.utm_content || ''
     };
     pushEvent('generate_lead', parameters);
-    return leadId;
+    return serverLeadId;
   };
 
   const resetApplication = (form) => {
     completedForms.delete(form);
-    pendingLeadIds.delete(form);
+    pendingSubmissionIds.delete(form);
+    const sessionStorage = getSessionStorage();
+    sessionStorage?.removeItem(CLIENT_SUBMISSION_STORAGE_KEY);
+    sessionStorage?.removeItem(COMPLETED_SUBMISSION_STORAGE_KEY);
     hydrateForm(form);
   };
 

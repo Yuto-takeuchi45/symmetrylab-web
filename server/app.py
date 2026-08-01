@@ -7,6 +7,8 @@ import json
 import os
 import html
 import re
+import csv
+import hmac
 import smtplib
 import sqlite3
 import traceback
@@ -15,9 +17,12 @@ import urllib.error
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from io import BytesIO
+from io import BytesIO, StringIO
 from pathlib import Path
 from typing import Optional
+from uuid import uuid4
+from urllib.parse import urlparse
+from zoneinfo import ZoneInfo
 
 import openpyxl
 import stripe
@@ -35,8 +40,9 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 STRIPE_WEBHOOK_SECRET_TEST = os.getenv("STRIPE_WEBHOOK_SECRET_TEST", "")
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
-ADMIN_KEY = os.getenv("ADMIN_KEY", "symmetry-admin-2026")
+ADMIN_KEY = os.getenv("ADMIN_KEY", "").strip()
 DB_PATH = os.getenv("DB_PATH", "bookings.db")
+JST = ZoneInfo("Asia/Tokyo")
 
 # DBパスの親ディレクトリが書き込み不可ならローカル bookings.db にフォールバック
 # （Render Freeプランで永続ディスク /var/data が使えないケース等）
@@ -144,6 +150,41 @@ class CheckoutRequest(BaseModel):
     referral_code: str = ""
 
 
+class CareerApplicationRequest(BaseModel):
+    client_submission_id: str
+    website: str = ""
+    name: str
+    email: str
+    phone: str
+    industry: str
+    job: str
+    experience: str
+    income: str
+    area: str
+    timing: str
+    status: str
+    message: str = ""
+    appointment: str = ""
+    appointment_mode: str = ""
+    consent: bool
+    gclid: str = ""
+    gbraid: str = ""
+    wbraid: str = ""
+    utm_source: str = ""
+    utm_medium: str = ""
+    utm_campaign: str = ""
+    utm_term: str = ""
+    utm_content: str = ""
+    landing_page: str = "/consulting-career/"
+    first_touch_at: str = ""
+    last_touch_at: str = ""
+
+
+class CareerApplicationStatusRequest(BaseModel):
+    status: str
+    admin_notes: str = ""
+
+
 # --- SQLite ---
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -191,6 +232,57 @@ def init_db():
         )
     """)
     conn.execute("CREATE INDEX IF NOT EXISTS idx_articles_public ON articles(status, published_at DESC)")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS career_applications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            application_id TEXT NOT NULL UNIQUE,
+            client_submission_id TEXT NOT NULL UNIQUE,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            application_status TEXT NOT NULL DEFAULT 'new',
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            industry TEXT NOT NULL,
+            job TEXT NOT NULL,
+            experience TEXT NOT NULL,
+            income TEXT NOT NULL,
+            area TEXT NOT NULL,
+            timing TEXT NOT NULL,
+            activity_status TEXT NOT NULL,
+            message TEXT NOT NULL DEFAULT '',
+            appointment TEXT NOT NULL DEFAULT '',
+            appointment_mode TEXT NOT NULL DEFAULT '',
+            consent_at TEXT NOT NULL,
+            privacy_policy_version TEXT NOT NULL,
+            gclid TEXT NOT NULL DEFAULT '',
+            gbraid TEXT NOT NULL DEFAULT '',
+            wbraid TEXT NOT NULL DEFAULT '',
+            utm_source TEXT NOT NULL DEFAULT '',
+            utm_medium TEXT NOT NULL DEFAULT '',
+            utm_campaign TEXT NOT NULL DEFAULT '',
+            utm_term TEXT NOT NULL DEFAULT '',
+            utm_content TEXT NOT NULL DEFAULT '',
+            landing_page TEXT NOT NULL DEFAULT '',
+            first_touch_at TEXT NOT NULL DEFAULT '',
+            last_touch_at TEXT NOT NULL DEFAULT '',
+            source TEXT NOT NULL DEFAULT 'unknown',
+            admin_notes TEXT NOT NULL DEFAULT ''
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_career_applications_created ON career_applications(created_at DESC)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_career_applications_status ON career_applications(application_status)")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS career_application_status_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            application_id TEXT NOT NULL,
+            status TEXT NOT NULL,
+            changed_at TEXT NOT NULL,
+            admin_notes TEXT NOT NULL DEFAULT '',
+            FOREIGN KEY (application_id) REFERENCES career_applications(application_id)
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_career_status_history_application ON career_application_status_history(application_id, changed_at)")
     conn.commit()
     conn.close()
 
@@ -248,15 +340,25 @@ def resolve_training(training_type: str, data: Optional[dict] = None):
     return training
 
 
-def count_bookings_for_date(training_type: str, date: str) -> int:
+def _count_used_slots(conn: sqlite3.Connection, training_type: str, date: str) -> int:
     training = resolve_training(training_type)
     type_name = training.get("name", "") if training else ""
-    conn = get_db()
-    cursor = conn.execute(
+    booking_count = conn.execute(
         "SELECT COUNT(*) FROM bookings WHERE training_name = ? AND training_date = ?",
         (type_name, date)
-    )
-    count = cursor.fetchone()[0]
+    ).fetchone()[0]
+    career_application_count = 0
+    if training_type in ("case_interview", "case_interview_new", "case_interview_mid"):
+        career_application_count = conn.execute(
+            "SELECT COUNT(*) FROM career_applications WHERE appointment = ? AND appointment_mode = 'selected' AND application_status != 'closed'",
+            (date,),
+        ).fetchone()[0]
+    return booking_count + career_application_count
+
+
+def count_bookings_for_date(training_type: str, date: str) -> int:
+    conn = get_db()
+    count = _count_used_slots(conn, training_type, date)
     conn.close()
     return count
 
@@ -674,6 +776,208 @@ def send_line_booking_notification(metadata: dict, amount: int):
     send_line_push(user_id, messages)
 
 
+CAREER_APPLICATION_STATUSES = {
+    "new", "contacted", "qualified_candidate", "agent_referral",
+    "interview", "joined", "closed"
+}
+
+CAREER_APPLICATION_CHOICES = {
+    "industry": {"金融・保険", "IT・インターネット", "メーカー", "商社・物流", "広告・メディア", "官公庁・非営利", "その他"},
+    "job": {"営業・事業開発", "企画・マーケティング", "経営企画・管理", "IT・エンジニア", "金融専門職", "コンサルタント", "その他"},
+    "experience": {"1年未満", "1〜3年", "4〜6年", "7〜10年", "11年以上"},
+    "income": {"400万円未満", "400〜600万円", "600〜800万円", "800〜1,000万円", "1,000万円以上"},
+    "area": {"戦略", "総合", "その他", "未定"},
+    "timing": {"3か月以内", "半年以内", "1年以内", "時期未定"},
+    "status": {"情報収集中", "応募前・準備中", "応募・選考中", "内定・オファーあり"},
+}
+
+
+def _career_trim(value: str, field_name: str, max_length: int, required: bool = False) -> str:
+    value = (value or "").strip()
+    if required and not value:
+        raise HTTPException(status_code=422, detail=f"{field_name}は必須です")
+    if len(value) > max_length:
+        raise HTTPException(status_code=422, detail=f"{field_name}が長すぎます")
+    return value
+
+
+def _validate_career_appointment(appointment: str, appointment_mode: str) -> tuple[str, str]:
+    appointment = _career_trim(appointment, "相談希望日時", 40)
+    appointment_mode = _career_trim(appointment_mode, "相談希望日時の選択方法", 20)
+    if not appointment:
+        return appointment, appointment_mode
+    if appointment_mode not in ("selected", "later"):
+        raise HTTPException(status_code=422, detail="相談希望日時の選択方法が正しくありません")
+    if appointment_mode == "later":
+        return appointment, appointment_mode
+    try:
+        appointment_dt = datetime.strptime(appointment, "%Y-%m-%d %H:%M").replace(tzinfo=JST)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="相談希望日時の形式が正しくありません") from exc
+    if appointment_dt < datetime.now(JST):
+        raise HTTPException(status_code=422, detail="過去の日時は選択できません")
+    is_weekend = appointment_dt.weekday() >= 5
+    allowed = (9 <= appointment_dt.hour <= 20) if is_weekend else (19 <= appointment_dt.hour <= 23)
+    if allowed and appointment_dt.minute == 0:
+        return appointment, appointment_mode
+    raise HTTPException(status_code=422, detail="相談可能時間外の日時です")
+
+
+def _ensure_career_appointment_available(conn: sqlite3.Connection, appointment: str) -> None:
+    if not appointment:
+        return
+    training = resolve_training("case_interview")
+    if not training:
+        raise HTTPException(status_code=409, detail="相談可能な日時を確認できません")
+    date, time = appointment.split(" ", 1)
+    if date in training.get("blocked_dates", []):
+        raise HTTPException(status_code=409, detail="選択した日は現在受付していません")
+    available_slots = training.get("available_slots", {})
+    configured_times = available_slots.get(date) if available_slots else None
+    if available_slots and configured_times is None:
+        raise HTTPException(status_code=409, detail="選択した日程は現在受付していません")
+    if configured_times is not None and time not in configured_times:
+        raise HTTPException(status_code=409, detail="選択した時間は現在受付していません")
+    if configured_times is None and time not in training.get("time_slots", []):
+        raise HTTPException(status_code=409, detail="選択した時間は現在受付していません")
+
+    used_slots = _count_used_slots(conn, "case_interview", appointment)
+    if used_slots >= int(training.get("max_capacity", 0)):
+        raise HTTPException(status_code=409, detail="選択した時間は満席です。別の日時をお選びください")
+
+
+def _validate_career_application(req: CareerApplicationRequest) -> CareerApplicationRequest:
+    if req.website.strip():
+        raise HTTPException(status_code=422, detail="申込を受け付けられませんでした")
+    req.client_submission_id = _career_trim(req.client_submission_id, "申込識別子", 100, required=True)
+    if not re.fullmatch(r"[A-Za-z0-9_-]{10,100}", req.client_submission_id):
+        raise HTTPException(status_code=422, detail="申込識別子が正しくありません")
+    req.name = _career_trim(req.name, "氏名", 120, required=True)
+    req.email = _career_trim(req.email, "メールアドレス", 254, required=True)
+    if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", req.email):
+        raise HTTPException(status_code=422, detail="メールアドレスの形式が正しくありません")
+    req.phone = _career_trim(req.phone, "電話番号", 40, required=True)
+    if len(re.sub(r"[^0-9]", "", req.phone)) < 7:
+        raise HTTPException(status_code=422, detail="電話番号の形式が正しくありません")
+
+    required_fields = (
+        ("industry", "現在の業界"), ("job", "現在の職種"),
+        ("experience", "社会人経験年数"), ("income", "現在の年収帯"),
+        ("area", "希望するコンサル領域"), ("timing", "転職希望時期"),
+        ("status", "現在の転職活動・選考状況"),
+    )
+    for field_name, label in required_fields:
+        setattr(req, field_name, _career_trim(getattr(req, field_name), label, 120, required=True))
+        if getattr(req, field_name) not in CAREER_APPLICATION_CHOICES[field_name]:
+            raise HTTPException(status_code=422, detail=f"{label}の選択肢が正しくありません")
+    req.message = _career_trim(req.message, "相談内容", 5000)
+    req.gclid = _career_trim(req.gclid, "gclid", 500)
+    req.gbraid = _career_trim(req.gbraid, "gbraid", 500)
+    req.wbraid = _career_trim(req.wbraid, "wbraid", 500)
+    req.utm_source = _career_trim(req.utm_source, "utm_source", 200)
+    req.utm_medium = _career_trim(req.utm_medium, "utm_medium", 200)
+    req.utm_campaign = _career_trim(req.utm_campaign, "utm_campaign", 200)
+    req.utm_term = _career_trim(req.utm_term, "utm_term", 200)
+    req.utm_content = _career_trim(req.utm_content, "utm_content", 200)
+    req.landing_page = _career_trim(req.landing_page, "ランディングページ", 500)
+    req.first_touch_at = _career_trim(req.first_touch_at, "初回流入日時", 80)
+    req.last_touch_at = _career_trim(req.last_touch_at, "最終流入日時", 80)
+    req.appointment, req.appointment_mode = _validate_career_appointment(req.appointment, req.appointment_mode)
+    if not req.consent:
+        raise HTTPException(status_code=422, detail="個人情報の取扱いへの同意が必要です")
+    return req
+
+
+def _career_origin_allowed(request: Request) -> bool:
+    origin = request.headers.get("origin", "").rstrip("/")
+    if not origin:
+        return False
+    origin_url = urlparse(origin)
+    base_url = urlparse(BASE_URL)
+    allowed = {
+        BASE_URL.rstrip("/"),
+        "http://127.0.0.1:8000",
+        "http://localhost:8000",
+    }
+    if origin in allowed:
+        return True
+    return (
+        base_url.hostname in {"127.0.0.1", "localhost"}
+        and origin_url.scheme == "http"
+        and origin_url.hostname in {"127.0.0.1", "localhost"}
+    )
+
+
+@app.post("/api/consulting-career/applications")
+async def create_career_application(request: Request, req: CareerApplicationRequest):
+    if not _career_origin_allowed(request):
+        raise HTTPException(status_code=403, detail="許可されていない送信元です")
+    req = _validate_career_application(req)
+    conn = get_db()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        existing = conn.execute(
+            "SELECT application_id, created_at FROM career_applications WHERE client_submission_id = ?",
+            (req.client_submission_id,),
+        ).fetchone()
+        if existing:
+            conn.rollback()
+            return {
+                "ok": True,
+                "duplicate": True,
+                "application_id": existing["application_id"],
+                "lead_id": existing["application_id"],
+                "created_at": existing["created_at"],
+            }
+
+        _ensure_career_appointment_available(conn, req.appointment if req.appointment_mode == "selected" else "")
+        application_id = str(uuid4())
+        now = datetime.now().isoformat(timespec="seconds")
+        source = "google_ads" if (req.gclid or req.gbraid or req.wbraid) else (req.utm_source or "unknown")
+        conn.execute("""
+            INSERT INTO career_applications (
+                application_id, client_submission_id, created_at, updated_at,
+                application_status, name, email, phone, industry, job,
+                experience, income, area, timing, activity_status, message,
+                appointment, appointment_mode, consent_at, privacy_policy_version,
+                gclid, gbraid, wbraid, utm_source, utm_medium, utm_campaign,
+                utm_term, utm_content, landing_page, first_touch_at, last_touch_at, source
+            ) VALUES (?, ?, ?, ?, 'new', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            application_id, req.client_submission_id, now, now,
+            req.name, req.email, req.phone, req.industry, req.job,
+            req.experience, req.income, req.area, req.timing, req.status, req.message,
+            req.appointment, req.appointment_mode, now,
+            os.getenv("PRIVACY_POLICY_VERSION", "current"),
+            req.gclid, req.gbraid, req.wbraid, req.utm_source, req.utm_medium,
+            req.utm_campaign, req.utm_term, req.utm_content, req.landing_page,
+            req.first_touch_at, req.last_touch_at, source,
+        ))
+        conn.execute(
+            "INSERT INTO career_application_status_history (application_id, status, changed_at, admin_notes) VALUES (?, 'new', ?, '')",
+            (application_id, now),
+        )
+        conn.commit()
+        return {"ok": True, "duplicate": False, "application_id": application_id, "lead_id": application_id, "created_at": now}
+    except sqlite3.IntegrityError:
+        conn.rollback()
+        existing = conn.execute(
+            "SELECT application_id, created_at FROM career_applications WHERE client_submission_id = ?",
+            (req.client_submission_id,),
+        ).fetchone()
+        if existing:
+            return {
+                "ok": True,
+                "duplicate": True,
+                "application_id": existing["application_id"],
+                "lead_id": existing["application_id"],
+                "created_at": existing["created_at"],
+            }
+        raise HTTPException(status_code=500, detail="申込を保存できませんでした")
+    finally:
+        conn.close()
+
+
 # --- APIエンドポイント ---
 @app.get("/api/available-dates")
 async def get_available_dates(training_type: str, date: str = ""):
@@ -685,7 +989,9 @@ async def get_available_dates(training_type: str, date: str = ""):
     time_slots = training.get("time_slots", [])
 
     if date:
-        if date < datetime.now().strftime("%Y-%m-%d"):
+        if date < datetime.now(JST).strftime("%Y-%m-%d"):
+            return {"time_slots": []}
+        if date in training.get("blocked_dates", []):
             return {"time_slots": []}
         # available_slotsが空なら全スロット許可、設定済みならその日のスロットのみ
         if avail_slots:
@@ -713,6 +1019,7 @@ async def get_available_dates(training_type: str, date: str = ""):
         "time_slots": time_slots,
         "available_dates": available_dates,
         "available_slots": avail_slots,
+        "blocked_dates": training.get("blocked_dates", []),
     }
 
 
@@ -1066,7 +1373,7 @@ async def stripe_webhook(request: Request):
 @app.get("/api/bookings/export")
 async def export_bookings(key: str = ""):
     """予約一覧をExcelでダウンロード"""
-    if key != ADMIN_KEY:
+    if not _legacy_admin_key_is_valid(key):
         raise HTTPException(status_code=403, detail="認証が必要です")
 
     try:
@@ -1109,7 +1416,7 @@ async def export_bookings(key: str = ""):
 @app.get("/api/bookings")
 async def list_bookings(key: str = ""):
     """予約一覧をJSON形式で取得"""
-    if key != ADMIN_KEY:
+    if not _legacy_admin_key_is_valid(key):
         raise HTTPException(status_code=403, detail="認証が必要です")
     conn = get_db()
     rows = conn.execute("SELECT * FROM bookings ORDER BY id DESC").fetchall()
@@ -1117,10 +1424,131 @@ async def list_bookings(key: str = ""):
     return [dict(row) for row in rows]
 
 
+def _legacy_admin_key_is_valid(key: str = "") -> bool:
+    return bool(ADMIN_KEY) and hmac.compare_digest(key, ADMIN_KEY)
+
+
+def _admin_key_is_valid(request: Request) -> bool:
+    supplied = request.headers.get("X-Admin-Key", "")
+    return bool(ADMIN_KEY) and hmac.compare_digest(supplied, ADMIN_KEY)
+
+
+@app.get("/api/admin/consulting-career/applications")
+async def list_career_applications(request: Request, status: str = "", limit: int = 100):
+    if not _admin_key_is_valid(request):
+        raise HTTPException(status_code=403, detail="認証が必要です")
+    limit = min(max(limit, 1), 500)
+    conn = get_db()
+    try:
+        if status:
+            if status not in CAREER_APPLICATION_STATUSES:
+                raise HTTPException(status_code=400, detail="無効なステータスです")
+            rows = conn.execute(
+                "SELECT * FROM career_applications WHERE application_status = ? ORDER BY id DESC LIMIT ?",
+                (status, limit),
+            ).fetchall()
+        else:
+            rows = conn.execute("SELECT * FROM career_applications ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
+    finally:
+        conn.close()
+    return [dict(row) for row in rows]
+
+
+@app.patch("/api/admin/consulting-career/applications/{application_id}")
+async def update_career_application(
+    application_id: str,
+    request: Request,
+    payload: CareerApplicationStatusRequest,
+):
+    if not _admin_key_is_valid(request):
+        raise HTTPException(status_code=403, detail="認証が必要です")
+    if payload.status not in CAREER_APPLICATION_STATUSES:
+        raise HTTPException(status_code=400, detail="無効なステータスです")
+    if len(payload.admin_notes) > 5000:
+        raise HTTPException(status_code=422, detail="管理メモが長すぎます")
+    conn = get_db()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        current = conn.execute(
+            "SELECT application_status FROM career_applications WHERE application_id = ?",
+            (application_id,),
+        ).fetchone()
+        if not current:
+            conn.rollback()
+            raise HTTPException(status_code=404, detail="申込が見つかりません")
+        now = datetime.now().isoformat(timespec="seconds")
+        notes = payload.admin_notes.strip()
+        conn.execute(
+            "UPDATE career_applications SET application_status = ?, admin_notes = ?, updated_at = ? WHERE application_id = ?",
+            (payload.status, notes, now, application_id),
+        )
+        if current["application_status"] != payload.status:
+            conn.execute(
+                "INSERT INTO career_application_status_history (application_id, status, changed_at, admin_notes) VALUES (?, ?, ?, ?)",
+                (application_id, payload.status, now, notes),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+    return {"ok": True, "application_id": application_id, "status": payload.status}
+
+
+@app.get("/api/admin/consulting-career/applications/{application_id}/history")
+async def get_career_application_history(application_id: str, request: Request):
+    if not _admin_key_is_valid(request):
+        raise HTTPException(status_code=403, detail="認証が必要です")
+    conn = get_db()
+    try:
+        rows = conn.execute(
+            "SELECT status, changed_at, admin_notes FROM career_application_status_history WHERE application_id = ? ORDER BY id ASC",
+            (application_id,),
+        ).fetchall()
+    finally:
+        conn.close()
+    return [dict(row) for row in rows]
+
+
+@app.get("/api/admin/consulting-career/applications/export")
+async def export_career_applications(request: Request):
+    if not _admin_key_is_valid(request):
+        raise HTTPException(status_code=403, detail="認証が必要です")
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM career_applications ORDER BY id DESC").fetchall()
+    conn.close()
+    headers = [
+        "申込ID", "クライアント申込ID", "申込日時", "更新日時", "対応ステータス",
+        "氏名", "メールアドレス", "電話番号", "現在の業界", "現在の職種",
+        "社会人経験年数", "現在の年収帯", "希望領域", "転職希望時期",
+        "転職活動・選考状況", "相談内容", "相談希望日時", "日時選択方法",
+        "同意日時", "プライバシーポリシーバージョン", "gclid", "gbraid", "wbraid",
+        "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
+        "ランディングページ", "初回流入日時", "最終流入日時", "流入元", "管理メモ",
+    ]
+    fields = [
+        "application_id", "client_submission_id", "created_at", "updated_at", "application_status",
+        "name", "email", "phone", "industry", "job", "experience", "income", "area", "timing",
+        "activity_status", "message", "appointment", "appointment_mode", "consent_at",
+        "privacy_policy_version", "gclid", "gbraid", "wbraid", "utm_source", "utm_medium",
+        "utm_campaign", "utm_term", "utm_content", "landing_page", "first_touch_at", "last_touch_at",
+        "source", "admin_notes",
+    ]
+    output = StringIO(newline="")
+    writer = csv.writer(output)
+    writer.writerow(headers)
+    for row in rows:
+        writer.writerow([row[field] for field in fields])
+    content = ("\ufeff" + output.getvalue()).encode("utf-8")
+    return StreamingResponse(
+        BytesIO(content),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": "attachment; filename=consulting-career-applications.csv"},
+    )
+
+
 @app.get("/api/admin/blocked-dates")
 async def get_blocked_dates(key: str = ""):
     """予約可能日時一覧を取得"""
-    if key != ADMIN_KEY:
+    if not _legacy_admin_key_is_valid(key):
         raise HTTPException(status_code=403, detail="認証が必要です")
     data = load_training_dates()
     result = {}
@@ -1136,7 +1564,7 @@ async def get_blocked_dates(key: str = ""):
 @app.post("/api/admin/blocked-dates")
 async def update_blocked_dates(request: Request, key: str = ""):
     """予約可能日時を更新"""
-    if key != ADMIN_KEY:
+    if not _legacy_admin_key_is_valid(key):
         raise HTTPException(status_code=403, detail="認証が必要です")
     body = await request.json()
     training_type = body.get("training_type", "")
@@ -1157,7 +1585,7 @@ async def update_blocked_dates(request: Request, key: str = ""):
 @app.get("/api/admin/stats")
 async def get_stats(key: str = ""):
     """ダッシュボード統計"""
-    if key != ADMIN_KEY:
+    if not _legacy_admin_key_is_valid(key):
         raise HTTPException(status_code=403, detail="認証が必要です")
     conn = get_db()
     total = conn.execute("SELECT COUNT(*) FROM bookings").fetchone()[0]
@@ -1183,7 +1611,7 @@ async def api_validate_referral(code: str = "", training_type: str = ""):
 @app.get("/api/admin/referral-codes")
 async def admin_get_referral_codes(key: str = ""):
     """全紹介コード一覧（管理画面用）"""
-    if key != ADMIN_KEY:
+    if not _legacy_admin_key_is_valid(key):
         raise HTTPException(status_code=403, detail="認証が必要です")
     return load_referral_codes()
 
@@ -1191,7 +1619,7 @@ async def admin_get_referral_codes(key: str = ""):
 @app.post("/api/admin/referral-codes")
 async def admin_save_referral_codes(request: Request, key: str = ""):
     """紹介コード一覧を上書き保存（管理画面用）"""
-    if key != ADMIN_KEY:
+    if not _legacy_admin_key_is_valid(key):
         raise HTTPException(status_code=403, detail="認証が必要です")
     body = await request.json()
     if "codes" not in body or not isinstance(body["codes"], list):
@@ -1354,7 +1782,7 @@ def public_layout(title: str, description: str, canonical: str, body: str, artic
 
 @app.get("/api/admin/articles")
 async def admin_list_articles(key: str = ""):
-    if key != ADMIN_KEY:
+    if not _legacy_admin_key_is_valid(key):
         raise HTTPException(status_code=403, detail="Unauthorized")
     conn = get_db()
     rows = conn.execute("SELECT * FROM articles ORDER BY COALESCE(published_at, updated_at) DESC").fetchall()
@@ -1364,7 +1792,7 @@ async def admin_list_articles(key: str = ""):
 
 @app.post("/api/admin/articles/preview", response_class=HTMLResponse)
 async def admin_preview_article(request: Request, key: str = ""):
-    if key != ADMIN_KEY:
+    if not _legacy_admin_key_is_valid(key):
         raise HTTPException(status_code=403, detail="Unauthorized")
     data = await request.json()
     now = article_timestamp()
@@ -1407,7 +1835,7 @@ def validate_article_payload(body: dict) -> dict:
 
 @app.post("/api/admin/articles")
 async def admin_create_article(request: Request, key: str = ""):
-    if key != ADMIN_KEY:
+    if not _legacy_admin_key_is_valid(key):
         raise HTTPException(status_code=403, detail="Unauthorized")
     data, now = validate_article_payload(await request.json()), article_timestamp()
     data["published_at"] = now if data["status"] == "published" else None
@@ -1426,7 +1854,7 @@ async def admin_create_article(request: Request, key: str = ""):
 
 @app.put("/api/admin/articles/{article_id}")
 async def admin_update_article(article_id: int, request: Request, key: str = ""):
-    if key != ADMIN_KEY:
+    if not _legacy_admin_key_is_valid(key):
         raise HTTPException(status_code=403, detail="Unauthorized")
     data, now = validate_article_payload(await request.json()), article_timestamp()
     conn = get_db()
@@ -1449,7 +1877,7 @@ async def admin_update_article(article_id: int, request: Request, key: str = "")
 
 @app.delete("/api/admin/articles/{article_id}")
 async def admin_delete_article(article_id: int, key: str = ""):
-    if key != ADMIN_KEY:
+    if not _legacy_admin_key_is_valid(key):
         raise HTTPException(status_code=403, detail="Unauthorized")
     conn = get_db()
     cursor = conn.execute("DELETE FROM articles WHERE id = ?", (article_id,))

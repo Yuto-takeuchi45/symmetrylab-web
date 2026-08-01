@@ -209,6 +209,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (error) error.textContent = message;
   };
 
+  const submitCareerApplication = async () => {
+    const payload = Object.fromEntries(new FormData(form).entries());
+    payload.consent = document.getElementById('career-consent').checked;
+    const response = await fetch('/api/consulting-career/applications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok || !data.lead_id) {
+      const detail = typeof data.detail === 'string' ? data.detail : '申込を受け付けられませんでした。';
+      throw new Error(detail);
+    }
+    return data;
+  };
+
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     if (isSubmitting) return;
@@ -249,13 +265,25 @@ document.addEventListener('DOMContentLoaded', () => {
     submit.querySelector('.career-submit-label').hidden = true;
     submit.querySelector('.career-submit-loading').hidden = false;
 
-    // 開発用モック: 外部API・メール・提携人材紹介会社には送信しません。
-    window.setTimeout(() => {
-      window.SYMMETRY_CAREER_TRACKING?.recordApplicationComplete(form);
-      form.hidden = true;
-      complete.hidden = false;
-      formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 700);
+    submitCareerApplication()
+      .then((data) => {
+        try {
+          window.SYMMETRY_CAREER_TRACKING?.recordApplicationComplete(form, data.lead_id);
+        } catch (trackingError) {
+          console.error('career conversion tracking failed after application save', trackingError);
+        }
+        form.hidden = true;
+        complete.hidden = false;
+        formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      })
+      .catch((error) => {
+        isSubmitting = false;
+        submit.disabled = false;
+        submit.querySelector('.career-submit-label').hidden = false;
+        submit.querySelector('.career-submit-loading').hidden = true;
+        status.textContent = error.message || '送信に失敗しました。時間をおいて再度お試しください。';
+        status.className = 'career-form-status is-error';
+      });
   });
 
   reset.addEventListener('click', () => {

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>コンサル転職相談 申込管理 | SYMMETRY Lab</title>
+  <link rel="stylesheet" href="css/style.css?v=20260624-0209">
+  <style>
+    .career-admin { max-width: 1180px; margin: 0 auto; padding: 3rem 1.25rem 5rem; }
+    .career-admin h1 { margin-bottom: .5rem; }
+    .career-admin-note { color: #667085; margin-bottom: 2rem; }
+    .career-admin-toolbar { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; margin-bottom: 1.5rem; }
+    .career-admin-toolbar label { display: grid; gap: .35rem; font-size: .85rem; font-weight: 700; }
+    .career-admin-toolbar input, .career-admin-toolbar select, .career-admin-toolbar button { min-height: 42px; padding: .55rem .75rem; border: 1px solid #d0d5dd; border-radius: 6px; background: #fff; }
+    .career-admin-toolbar button { cursor: pointer; background: #1f2937; color: #fff; border-color: #1f2937; font-weight: 700; }
+    .career-admin-toolbar button.secondary { background: #fff; color: #1f2937; }
+    .career-admin-status { min-height: 1.5rem; color: #667085; }
+    .career-admin-status.is-error { color: #b42318; }
+    .career-admin-table-wrap { overflow-x: auto; border: 1px solid #eaecf0; border-radius: 8px; }
+    .career-admin-table { width: 100%; min-width: 980px; border-collapse: collapse; font-size: .88rem; }
+    .career-admin-table th, .career-admin-table td { padding: .8rem .75rem; border-bottom: 1px solid #eaecf0; text-align: left; vertical-align: top; }
+    .career-admin-table th { background: #f8fafc; color: #344054; white-space: nowrap; }
+    .career-admin-table td small { display: block; color: #667085; margin-top: .25rem; }
+    .career-admin-table select, .career-admin-table textarea { width: 100%; padding: .4rem; border: 1px solid #d0d5dd; border-radius: 4px; }
+    .career-admin-table textarea { min-height: 3.5rem; }
+    .career-admin-save { padding: .45rem .65rem; border: 0; border-radius: 4px; background: #36c9e6; color: #102a43; font-weight: 700; cursor: pointer; }
+    .career-admin-empty { padding: 2rem; text-align: center; color: #667085; }
+  </style>
+</head>
+<body>
+  <main class="career-admin">
+    <h1>コンサル転職相談 申込管理</h1>
+    <p class="career-admin-note">申込者情報を扱う管理画面です。URLを広告や一般ユーザーへ共有しないでください。</p>
+    <div class="career-admin-toolbar">
+      <label>管理キー<input id="career-admin-key" type="password" autocomplete="current-password"></label>
+      <label>ステータス<select id="career-admin-filter"><option value="">すべて</option><option value="new">新規</option><option value="contacted">連絡済み</option><option value="qualified_candidate">有効候補者</option><option value="agent_referral">紹介済み</option><option value="interview">選考中</option><option value="joined">入社</option><option value="closed">終了</option></select></label>
+      <button id="career-admin-load" type="button">申込を読み込む</button>
+      <button id="career-admin-export" class="secondary" type="button">CSV出力</button>
+    </div>
+    <p id="career-admin-status" class="career-admin-status" role="status" aria-live="polite"></p>
+    <div class="career-admin-table-wrap">
+      <table class="career-admin-table">
+        <thead><tr><th>受付日時</th><th>申込者</th><th>希望日時</th><th>流入元</th><th>ステータス</th><th>管理メモ</th><th>更新</th></tr></thead>
+        <tbody id="career-admin-list"><tr><td class="career-admin-empty" colspan="7">管理キーを入力して読み込んでください。</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+  <script src="js/consulting-career-admin.js"></script>
+</body>
+</html>
