@@ -444,17 +444,19 @@ Google広告で確認します。
 
 この章のチェックボックスは、コード実装とは別に、Render・Resend・GTM・GA4・Google広告の管理画面で実行する必須作業です。すべて完了するまで広告配信を開始しません。
 
+2026-08-01時点で、Render本番環境には`ADMIN_KEY`、`ADMIN_EMAIL`、`RESEND_API_KEY`、`RESEND_FROM_EMAIL`、`RESEND_FROM_NAME`が設定済みです。秘密値そのものはこの資料やソースコードへ記載しません。メールの実到達確認は未実施です。
+
 ### 11-1. Renderとメールの必須設定
 
-- [ ] `BASE_URL`を本番URLへ設定し、`https://本番ドメイン/consulting-career`と末尾スラッシュ付きURLの両方が表示できることを確認
-- [ ] `ADMIN_KEY`へランダムな秘密値を設定。ソースコード、URL、チャットへ記載しない
-- [ ] `ADMIN_EMAIL`へ申込通知を受け取る社内メールアドレスを設定
-- [ ] Resendを使う場合、`RESEND_API_KEY`と認証済みの`RESEND_FROM_EMAIL`を設定
+- [x] `BASE_URL`を本番URLへ設定し、`https://symmetrylab.jp/consulting-career`と末尾スラッシュ付きURLの両方が表示できることを確認
+- [x] `ADMIN_KEY`へランダムな秘密値を設定。ソースコード、URL、チャットへ記載しない
+- [x] `ADMIN_EMAIL`へ申込通知を受け取る社内メールアドレスを設定
+- [x] Resendを使う場合、`RESEND_API_KEY`と認証済みの`RESEND_FROM_EMAIL`を設定
 - [ ] SMTPを使う場合、`SMTP_EMAIL`、`SMTP_PASSWORD`、`SMTP_HOST`、`SMTP_PORT`を設定
 - [ ] 本番ではメール送信テストを行い、管理者と申込者の両方に届くことを確認
-- [ ] Renderの永続ディスクが有効で、`DB_PATH=/var/data/bookings.db`のままであることを確認
+- [x] Renderの永続ディスクが有効で、`DB_PATH=/var/data/bookings.db`のままであることを確認
 - [ ] DBのバックアップ方法と復旧手順を決める
-- [ ] このコミットをRenderへデプロイし、起動ログにエラーがないことを確認
+- [x] コミット`a42640d`をRenderへデプロイし、起動ログにエラーがないことを確認
 
 ### 11-2. GTM・GA4・Google広告IDの必須設定
 
