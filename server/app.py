@@ -27,7 +27,7 @@ from zoneinfo import ZoneInfo
 import openpyxl
 import stripe
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -585,6 +585,69 @@ def send_email(to_email: str, subject: str, html_body: str) -> bool:
     return _send_email_via_smtp(to_email, subject, html_body)
 
 
+def _career_application_email_html(application: dict, audience: str) -> str:
+    name = html.escape(application.get("name", ""))
+    appointment = html.escape(application.get("appointment") or "後日調整")
+    appointment_note = "希望日時" if application.get("appointment_mode") == "selected" else "相談日時"
+    message = html.escape(application.get("message", "")) or "（記載なし）"
+    application_id = html.escape(application.get("application_id", ""))
+    if audience == "admin":
+        return f"""
+        <div style="font-family:Arial,'Noto Sans JP',sans-serif;line-height:1.8;color:#1f2937;max-width:680px;">
+          <h1 style="font-size:20px;border-bottom:3px solid #36c9e6;padding-bottom:12px;">コンサル転職相談の新規申込</h1>
+          <p>管理画面で詳細を確認してください。</p>
+          <table style="border-collapse:collapse;width:100%;">
+            <tr><th style="text-align:left;padding:8px;background:#f3f4f6;">申込ID</th><td style="padding:8px;">{application_id}</td></tr>
+            <tr><th style="text-align:left;padding:8px;background:#f3f4f6;">氏名</th><td style="padding:8px;">{name}</td></tr>
+            <tr><th style="text-align:left;padding:8px;background:#f3f4f6;">メール</th><td style="padding:8px;">{html.escape(application.get("email", ""))}</td></tr>
+            <tr><th style="text-align:left;padding:8px;background:#f3f4f6;">電話番号</th><td style="padding:8px;">{html.escape(application.get("phone", ""))}</td></tr>
+            <tr><th style="text-align:left;padding:8px;background:#f3f4f6;">現在の業界・職種</th><td style="padding:8px;">{html.escape(application.get("industry", ""))} / {html.escape(application.get("job", ""))}</td></tr>
+            <tr><th style="text-align:left;padding:8px;background:#f3f4f6;">希望領域</th><td style="padding:8px;">{html.escape(application.get("area", ""))}</td></tr>
+            <tr><th style="text-align:left;padding:8px;background:#f3f4f6;">{appointment_note}</th><td style="padding:8px;">{appointment}</td></tr>
+            <tr><th style="text-align:left;padding:8px;background:#f3f4f6;">流入元</th><td style="padding:8px;">{html.escape(application.get("source", "unknown"))}</td></tr>
+            <tr><th style="text-align:left;padding:8px;background:#f3f4f6;">GCLID / キャンペーン</th><td style="padding:8px;">{html.escape(application.get("gclid", "") or "なし")} / {html.escape(application.get("utm_campaign", "") or "なし")}</td></tr>
+          </table>
+          <h2 style="font-size:16px;margin-top:24px;">相談内容</h2>
+          <p style="white-space:pre-wrap;background:#f8fafc;padding:12px;">{message}</p>
+        </div>
+        """
+    return f"""
+    <div style="font-family:Arial,'Noto Sans JP',sans-serif;line-height:1.8;color:#1f2937;max-width:680px;">
+      <h1 style="font-size:20px;border-bottom:3px solid #36c9e6;padding-bottom:12px;">無料相談のお申込みを受け付けました</h1>
+      <p>{name} 様</p>
+      <p>コンサル転職支援の無料相談へお申込みいただきありがとうございます。担当者が内容を確認のうえ、ご連絡します。</p>
+      <p><strong>{appointment_note}：</strong>{appointment}</p>
+      <p style="font-size:13px;color:#667085;">このメールは申込受付のお知らせです。日時を選択した場合も、担当者からの連絡をもって確定となります。</p>
+      <p style="font-size:13px;color:#667085;">申込ID：{application_id}</p>
+    </div>
+    """
+
+
+def send_career_application_notifications(application: dict) -> None:
+    """保存済みの申込について、管理者と申込者へ通知する。通知失敗は申込結果を変更しない。"""
+    admin_recipients = get_admin_emails()
+    admin_subject = "【SYMMETRY Lab】コンサル転職相談の新規申込"
+    admin_html = _career_application_email_html(application, "admin")
+    if not admin_recipients:
+        print("[コンサル転職相談] ADMIN_EMAIL未設定のため管理者通知をスキップ")
+    for recipient in admin_recipients:
+        try:
+            send_email(recipient, admin_subject, admin_html)
+        except Exception as exc:
+            print(f"[コンサル転職相談] 管理者通知に失敗 ({recipient}): {exc}")
+
+    applicant_email = application.get("email", "")
+    if applicant_email:
+        try:
+            send_email(
+                applicant_email,
+                "【SYMMETRY Lab】無料相談のお申込みを受け付けました",
+                _career_application_email_html(application, "applicant"),
+            )
+        except Exception as exc:
+            print(f"[コンサル転職相談] 申込者通知に失敗 ({applicant_email}): {exc}")
+
+
 def send_booking_confirmation(metadata: dict, amount: int):
     """予約確認メールを顧客に送信"""
     customer_name = metadata.get("customer_name", "")
@@ -909,7 +972,7 @@ def _career_origin_allowed(request: Request) -> bool:
 
 
 @app.post("/api/consulting-career/applications")
-async def create_career_application(request: Request, req: CareerApplicationRequest):
+async def create_career_application(request: Request, background_tasks: BackgroundTasks, req: CareerApplicationRequest):
     if not _career_origin_allowed(request):
         raise HTTPException(status_code=403, detail="許可されていない送信元です")
     req = _validate_career_application(req)
@@ -958,6 +1021,25 @@ async def create_career_application(request: Request, req: CareerApplicationRequ
             (application_id, now),
         )
         conn.commit()
+        background_tasks.add_task(
+            send_career_application_notifications,
+            {
+                "application_id": application_id,
+                "created_at": now,
+                "name": req.name,
+                "email": req.email,
+                "phone": req.phone,
+                "industry": req.industry,
+                "job": req.job,
+                "area": req.area,
+                "appointment": req.appointment,
+                "appointment_mode": req.appointment_mode,
+                "message": req.message,
+                "source": source,
+                "gclid": req.gclid,
+                "utm_campaign": req.utm_campaign,
+            },
+        )
         return {"ok": True, "duplicate": False, "application_id": application_id, "lead_id": application_id, "created_at": now}
     except sqlite3.IntegrityError:
         conn.rollback()

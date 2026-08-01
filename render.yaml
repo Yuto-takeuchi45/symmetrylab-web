@@ -31,5 +31,11 @@ services:
         value: "587"
       - key: ADMIN_EMAIL
         sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false
+      - key: RESEND_FROM_NAME
+        value: SYMMETRY Lab
       - key: LINE_CHANNEL_ACCESS_TOKEN
         sync: false

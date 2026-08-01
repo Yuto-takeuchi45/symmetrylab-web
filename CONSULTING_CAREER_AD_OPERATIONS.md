@@ -270,6 +270,20 @@ LPは`GET /api/tracking-config`から公開可能なIDを取得します。
 
 本番ではGTMを入口にし、GTMと直接`gtag.js`を同時に有効化しないでください。
 
+### 広告IDを登録するタイミング
+
+広告を出す前に、計測に使うIDをRenderの環境変数へ登録します。ソースコードや申込フォームへ直接入力するものではありません。
+
+1. GA4プロパティとGTMコンテナを用意し、GTMコンテナIDを取得する
+2. Google広告で「申込完了」のコンバージョンアクションを作成する
+3. 表示されたGoogle広告コンバージョンIDとラベルを控える
+4. Renderの環境変数へ`SYMMETRY_GTM_CONTAINER_ID`、必要に応じて`SYMMETRY_GOOGLE_ADS_CONVERSION_ID`と`SYMMETRY_GOOGLE_ADS_CONVERSION_LABEL`を設定する
+5. 再起動後、`/api/tracking-config`で公開用IDが反映されたことを確認し、GTMプレビューでテストする
+
+推奨構成では、GTMコンテナIDをLPに読み込ませ、Google広告のコンバージョンID・ラベルはGTMのGoogle広告コンバージョンタグへ設定します。LP側のGoogle広告ID環境変数は、GTMを使えない場合の直接タグ用です。広告キャンペーンIDをLPやDBへ登録する必要はありません。
+
+Google広告からのクリックでは、Google広告側の設定によりURLへ`gclid`が付く場合があります。付いた場合はLPが自動取得して申込レコードへ保存します。広告管理画面のキャンペーン名などは、広告の最終URLに設定したUTMを通じて保存します。
+
 ### GTMで作成するもの
 
 データレイヤー変数:
@@ -342,6 +356,17 @@ joined
 
 対象外・対応終了の場合は`closed`にします。`closed`にした日時選択申込は、相談枠の残席計算から除外されます。
 
+### 通知メール
+
+申込がDBへ保存された後、次の通知を送ります。
+
+- `ADMIN_EMAIL`に設定した管理者宛て：申込内容、希望日時、流入元、GCLIDなど
+- 申込者のメールアドレス宛て：申込受付のお知らせ、申込ID、日時確定に関する案内
+
+メール送信は申込保存後のバックグラウンド処理です。メールが失敗しても申込自体は成功扱いとなり、管理画面の申込レコードを正本として確認します。Renderのログで送信結果を確認できます。
+
+送信サービスはRenderではResendを推奨します。`RESEND_API_KEY`と、Resendで認証済みの`RESEND_FROM_EMAIL`を設定してください。Resend未設定時は既存のSMTP設定（`SMTP_EMAIL`、`SMTP_PASSWORD`など）を使用します。`ADMIN_EMAIL`はカンマ区切りで複数指定できます。
+
 ### CSVを出力する
 
 管理画面の「CSV出力」を押すと、次のファイル名で保存されます。
@@ -395,6 +420,10 @@ Google広告で確認します。
 | `SYMMETRY_GOOGLE_ADS_CONVERSION_ID` | 直接タグ用のGoogle広告コンバージョンID |
 | `SYMMETRY_GOOGLE_ADS_CONVERSION_LABEL` | 直接タグ用のGoogle広告コンバージョンラベル |
 | `ADMIN_KEY` | 管理APIの認証キー。強い秘密値を設定 |
+| `ADMIN_EMAIL` | 新規申込通知の宛先。カンマ区切りで複数指定可能 |
+| `RESEND_API_KEY` | Resendの送信用APIキー。Renderでは推奨 |
+| `RESEND_FROM_EMAIL` | Resendで認証済みの送信元メールアドレス |
+| `RESEND_FROM_NAME` | 送信元表示名 |
 | `PRIVACY_POLICY_VERSION` | 申込時に保存する同意文面のバージョン |
 
 ### サーバー運用
@@ -407,6 +436,10 @@ Google広告で確認します。
 
 `tracking.env.example`は値の例であり、本番の実値はソースコードへ直接書き込みません。
 
+### RenderのDB
+
+現在のRender構成は、Render Postgresではなく、Renderの永続ディスク上に既存のSQLite DBを保存する構成です。`render.yaml`で`/var/data`を永続ディスクとしてマウントし、`DB_PATH=/var/data/bookings.db`を指定しています。申込フォームのDB接続先はこの既存DBで、起動時に申込用テーブルが作成されます。永続ディスクを外したり、`DB_PATH`を一時領域へ変更したりするとデータが失われるため、本番では変更しないでください。
+
 ## 11. 本番公開前チェックリスト
 
 ### サーバー
@@ -415,7 +448,7 @@ Google広告で確認します。
 - [ ] 強い`ADMIN_KEY`を秘密管理機能から設定
 - [ ] DBの永続ディスク、バックアップ、復旧手順を確認
 - [ ] HTTPSで公開
-- [ ] 申込受付後の社内通知を設定
+- [ ] `ADMIN_EMAIL`とResendまたはSMTPを設定し、管理者・申込者への通知をテスト
 - [ ] 個人情報の保存期間・削除手順を決定
 - [ ] 管理画面のアクセス元を制限
 - [ ] レート制限・ボット対策を検討
@@ -464,7 +497,8 @@ Google広告で確認します。
 
 ## 13. 現在の制限事項
 
-- 申込保存後のメール通知・Slack通知などは未実装
+- 申込保存後のメール通知は実装済み。ResendまたはSMTPの環境変数設定が必要
+- Slack通知は未実装
 - 提携人材紹介会社やCRMへの自動連携は未実装
 - Google広告へのオフラインコンバージョン自動送信は未実装
 - CAPTCHA・本格的なレート制限は別途導入が必要
