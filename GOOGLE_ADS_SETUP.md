@@ -2,6 +2,8 @@
 
 対象LP: `/consulting-career/`
 
+画面・URL・申込運用・広告運用全体の手順は、[CONSULTING_CAREER_AD_OPERATIONS.md](CONSULTING_CAREER_AD_OPERATIONS.md)にまとめています。この資料は、主にGTM・GA4・Google広告の技術設定を確認するための補足資料です。
+
 この資料は、ローカル・プレビュー環境で計測設計を確認し、本番のタグIDを設定するための手順です。今回の実装では、本番タグIDをソースコードへ書き込んでいません。
 
 ## 実装済みの構成
