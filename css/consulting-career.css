@@ -85,7 +85,9 @@
 .career-form-card { padding: 32px; background: #fff; color: var(--career-ink); }
 .career-form-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-bottom: 17px; border-bottom: 1px solid var(--career-line); font-weight: 700; }
 .career-form-heading small { color: var(--career-muted); font-size: .72rem; font-weight: 400; }
-.career-form-heading i, .career-field i, .career-consent i { color: #d33f49; font-style: normal; }
+.career-form-heading i, .career-field i, .career-consent i { color: var(--career-accent-dark); font-style: normal; }
+.career-field label i, .career-field legend i, .career-consent i { font-size: 0; }
+.career-field label i::after, .career-field legend i::after, .career-consent i::after { content: '*必須'; font-size: .72rem; }
 .career-form-status { min-height: 0; margin-top: 12px; padding: 0; font-size: .82rem; }
 .career-form-status.is-error { padding: 10px 12px; background: #fff1f2; color: #b42318; }
 .career-form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 17px 16px; margin-top: 22px; }

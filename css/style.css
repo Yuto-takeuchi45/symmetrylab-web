@@ -210,6 +210,46 @@ p {
   margin: 0 auto;
 }
 
+.mobile-only {
+  display: none;
+}
+
+/* Homepage hero: allow grid items and text to shrink on narrow screens. */
+.home-hero .hero-content-grid,
+.home-hero .hero-content-grid > * {
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .mobile-only {
+    display: block;
+  }
+
+  .home-hero .hero-content-grid > div,
+  .home-hero .hero-content-grid img {
+    width: 100%;
+  }
+
+  .home-hero h1 {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    font-size: clamp(1.5rem, 7vw, 1.8rem) !important;
+  }
+
+  .home-hero p {
+    word-break: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .home-hero .hero-content-grid img {
+    height: auto !important;
+  }
+
+  .home-hero-break {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
   .hero-content-grid {
     grid-template-columns: 1fr;
@@ -924,6 +964,23 @@ a.btn-primary:hover {
   margin: 0;
 }
 
+/* Job training reasons: keep the three explanation boxes visually consistent. */
+#practical-skills .service-reasons {
+  display: grid !important;
+  grid-template-rows: repeat(3, minmax(180px, 1fr));
+  gap: 1.5rem !important;
+  min-width: 0;
+}
+
+#practical-skills .service-reason-card {
+  min-height: 180px;
+  min-width: 0;
+}
+
+#practical-skills .service-reason-card > div:last-child {
+  min-width: 0;
+}
+
 /* --- Testimonials --- */
 .testimonial-card {
   background: var(--color-white);
@@ -1014,6 +1071,31 @@ a.btn-primary:hover {
 @media (max-width: 768px) {
   .cta-banner { padding: 12px 12px; }
   .cta-banner > .container { padding: 48px 28px; border-radius: 8px; }
+}
+
+@media (max-width: 768px) {
+  #practical-skills .service-reasons {
+    grid-template-rows: none;
+    gap: 1rem !important;
+    margin-top: 1.5rem !important;
+  }
+
+  #practical-skills .service-reason-card {
+    min-height: 0;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+    padding: 1.25rem !important;
+  }
+
+  #practical-skills .service-reason-card > div:first-child {
+    width: 64px !important;
+    height: 64px !important;
+  }
+
+  #practical-skills .service-reason-card > div:last-child {
+    width: 100%;
+  }
 }
 
 .cta-banner h2 {
@@ -1149,7 +1231,7 @@ a.btn-primary:hover {
 }
 
 .form-group label .required {
-  color: #EF4444;
+  color: var(--color-tiffany-dark);
   font-size: 0.8rem;
   margin-left: 0.25rem;
 }
@@ -1713,6 +1795,58 @@ a.btn-primary:hover {
   .company-table td {
     padding: 0.35rem 1.25rem 1rem !important;
     word-break: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Final mobile safeguards for content-heavy service pages. */
+@media (max-width: 768px) {
+  #practical-skills > .container,
+  #practical-skills .section-header,
+  #practical-skills .section-header h2,
+  #practical-skills .section-header p {
+    min-width: 0;
+    width: 100% !important;
+    max-width: 100%;
+    white-space: normal !important;
+    word-break: break-all !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  #practical-skills .section-header h2 {
+    font-size: clamp(1.2rem, 5.5vw, 1.5rem) !important;
+    width: calc(100vw - 80px) !important;
+  }
+
+  #practical-skills > .container {
+    overflow: hidden;
+  }
+
+  #practical-skills > .container > p,
+  #practical-skills > .container > p span {
+    width: calc(100vw - 80px);
+    max-width: 100%;
+    white-space: normal !important;
+    word-break: break-all !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  #practical-skills .grid-3,
+  #practical-skills .service-card,
+  #practical-skills .service-card-body,
+  #practical-skills .service-card-body > * {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  #practical-skills .grid-3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #practical-skills .service-card-body p,
+  #practical-skills .service-card-body li {
+    word-break: break-all;
     overflow-wrap: anywhere;
   }
 }

@@ -90,6 +90,10 @@
 }
 
 @media (max-width: 768px) {
+  .mobile-only {
+    display: block;
+  }
+
   .lp-logo img {
     height: 28px;
   }
@@ -430,13 +434,14 @@
 }
 
 .lp-hero-features {
-  display: flex;
-  gap: 24px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
   margin-bottom: 16px;
-  flex-wrap: wrap;
   padding: 12px 20px;
   border: 1px solid var(--lp-gray-200);
   border-radius: 8px;
+  min-width: 0;
 }
 
 .lp-hero-feature {
@@ -447,6 +452,10 @@
   font-weight: 600;
   color: var(--lp-gray-800);
   letter-spacing: 0.02em;
+  justify-content: center;
+  min-width: 0;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .lp-hero-feature::before {
@@ -592,7 +601,7 @@
 }
 
 .lp-problems-list {
-  max-width: 100%;
+  max-width: 1100px;
   margin: 0 auto;
   background: transparent;
   border: none;
@@ -664,6 +673,25 @@
   align-items: center;
   transition: all 0.3s ease;
   position: relative;
+}
+
+.lp-solution-cards {
+  display: grid;
+  grid-template-rows: repeat(3, minmax(220px, 1fr));
+  gap: 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+  min-width: 0;
+}
+
+.lp-solution-cards .lp-solution-card {
+  height: 100%;
+  width: 100%;
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+  margin-bottom: 0;
+  min-width: 0;
 }
 
 .lp-solution-card::before {
@@ -2059,9 +2087,13 @@
   }
 
   .lp-hero-features {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 14px;
     padding: 20px 0;
+  }
+
+  .lp-hero-feature {
+    justify-content: center;
   }
 
   .lp-hero-cta {
@@ -2095,6 +2127,24 @@
     flex-direction: column;
     padding: 36px 28px;
     gap: 24px;
+  }
+
+  .lp-solution-cards {
+    grid-template-rows: none;
+    gap: 16px;
+  }
+
+  .lp-solution-cards .lp-solution-card {
+    height: auto;
+  }
+
+  .lp-hero-copy,
+  .lp-hero-form,
+  .lp-hero-features,
+  .lp-solution-cards,
+  .lp-solution-content {
+    width: 100%;
+    min-width: 0;
   }
 
   .lp-instructor {
@@ -2231,5 +2281,63 @@
   .lp-page,
   .lp-page * {
     max-width: 100%;
+  }
+}
+
+/* Final mobile safeguards for the case-interview landing page. */
+@media (max-width: 768px) {
+  .lp-hero-inner,
+  .lp-hero-copy,
+  .lp-hero-form,
+  .lp-hero h1,
+  .lp-hero-sub,
+  .lp-hero-features,
+  .lp-problems-list,
+  .lp-problems h2,
+  .lp-problem-item,
+  .lp-solution-cards,
+  .lp-solution-card,
+  .lp-solution-content,
+  .lp-solution-content h3,
+  .lp-solution-content p {
+    min-width: 0;
+    width: 100% !important;
+    max-width: 100%;
+    white-space: normal !important;
+    word-break: break-all !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .lp-hero-inner {
+    overflow: hidden;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .lp-hero h1 {
+    font-size: clamp(1.45rem, 7vw, 1.8rem) !important;
+    width: calc(100vw - 80px) !important;
+  }
+
+  .lp-hero-sub {
+    width: calc(100vw - 80px) !important;
+  }
+
+  .lp-hero,
+  .lp-hero-inner,
+  .lp-section,
+  .lp-section > .lp-container,
+  .lp-problems,
+  .lp-problems .lp-container,
+  .lp-form-section,
+  .lp-form-section > .lp-container,
+  .lp-flow,
+  .lp-flow-item,
+  .lp-solution-cards,
+  .lp-solution-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
 }
