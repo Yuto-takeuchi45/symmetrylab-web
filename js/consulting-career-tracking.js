@@ -173,7 +173,12 @@
         const settings = config || {};
         trackingConfig = settings;
         window.SYMMETRY_TRACKING_CONFIG = settings;
-        if (validGtmId(settings.gtm_container_id)) loadGtm(settings.gtm_container_id);
+        // Google Ads conversion is intentionally sent by the existing direct
+        // gtag path whenever an Ads conversion ID is configured. This keeps
+        // the post-save conversion independent of a GTM container that may
+        // not contain the matching Google Ads conversion tag.
+        if (validAdsId(settings.google_ads_conversion_id)) loadDirectTags(settings);
+        else if (validGtmId(settings.gtm_container_id)) loadGtm(settings.gtm_container_id);
         else loadDirectTags(settings);
       });
   };

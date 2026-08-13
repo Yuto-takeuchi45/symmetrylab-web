@@ -39,3 +39,7 @@ services:
         value: SYMMETRY Lab
       - key: LINE_CHANNEL_ACCESS_TOKEN
         sync: false
+      - key: SYMMETRY_GOOGLE_ADS_CONVERSION_ID
+        value: AW-18344529693
+      - key: SYMMETRY_GOOGLE_ADS_CONVERSION_LABEL
+        value: bIkKCK27_uAcE2JeratE
