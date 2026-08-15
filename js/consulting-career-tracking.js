@@ -15,6 +15,7 @@
   const startedForms = new WeakSet();
   const pendingDirectEvents = [];
   let directGtagReady = false;
+  let taggingMode = 'pending';
   let trackingConfig = {};
 
   const getStorage = () => {
@@ -113,40 +114,50 @@
     if (!directGtagReady || typeof window.gtag !== 'function') return;
     const { event, ...parameters } = payload;
     window.gtag('event', event, parameters);
-    if (event === 'generate_lead'
-      && validAdsId(trackingConfig.google_ads_conversion_id)
-      && trackingConfig.google_ads_conversion_label) {
+    const conversionTarget = getAdsConversionTarget();
+    if (event === 'generate_lead' && conversionTarget && payload.transaction_id) {
       window.gtag('event', 'conversion', {
-        send_to: `${trackingConfig.google_ads_conversion_id}/${trackingConfig.google_ads_conversion_label}`,
-        transaction_id: payload.transaction_id
+        send_to: conversionTarget,
+        transaction_id: String(payload.transaction_id)
       });
     }
   };
 
   const pushEvent = (event, parameters = {}) => {
     const payload = { event, ...parameters };
-    window.dataLayer.push(payload);
-    if (directGtagReady) sendDirectEvent(payload);
-    else pendingDirectEvents.push(payload);
+    if (taggingMode === 'gtm') {
+      window.dataLayer.push(payload);
+    } else if (taggingMode === 'direct') {
+      sendDirectEvent(payload);
+    } else if (taggingMode === 'pending') {
+      pendingDirectEvents.push(payload);
+    }
   };
 
   const validGtmId = (value) => /^GTM-[A-Z0-9]+$/i.test(value) && !value.includes('XXXX');
   const validGa4Id = (value) => /^G-[A-Z0-9]+$/i.test(value) && !value.includes('XXXX');
   const validAdsId = (value) => /^AW-[0-9]+$/i.test(value) && !value.includes('XXXX');
+  const getAdsConversionTarget = () => {
+    const adsId = String(trackingConfig.google_ads_conversion_id || '').trim();
+    const label = String(trackingConfig.google_ads_conversion_label || '').trim();
+    return validAdsId(adsId) && label ? `${adsId}/${label}` : '';
+  };
 
   const loadGtm = (containerId) => {
+    taggingMode = 'gtm';
     window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
     const script = document.createElement('script');
     script.async = true;
     script.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(containerId)}`;
     document.head.appendChild(script);
-    pendingDirectEvents.length = 0;
+    pendingDirectEvents.splice(0).forEach((payload) => window.dataLayer.push(payload));
   };
 
   const loadDirectTags = (config) => {
     const ga4Id = validGa4Id(config.ga4_measurement_id) ? config.ga4_measurement_id : '';
     const adsId = validAdsId(config.google_ads_conversion_id) ? config.google_ads_conversion_id : '';
     if (!ga4Id && !adsId) {
+      taggingMode = 'none';
       pendingDirectEvents.length = 0;
       return;
     }
@@ -162,6 +173,7 @@
     script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ga4Id || adsId)}`;
     document.head.appendChild(script);
     directGtagReady = true;
+    taggingMode = 'direct';
     pendingDirectEvents.splice(0).forEach(sendDirectEvent);
   };
 
