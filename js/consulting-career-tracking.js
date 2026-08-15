@@ -118,12 +118,13 @@
   };
 
   const sendAdsConversion = (transactionId) => {
-    const conversionTarget = getAdsConversionTarget();
-    if (!conversionTarget || !transactionId) return;
+    if (!transactionId) return;
     if (!directGtagReady || typeof window.gtag !== 'function') {
       pendingAdsConversions.push(String(transactionId));
       return;
     }
+    const conversionTarget = getAdsConversionTarget();
+    if (!conversionTarget) return;
     window.gtag('event', 'conversion', {
       send_to: conversionTarget,
       transaction_id: String(transactionId)
