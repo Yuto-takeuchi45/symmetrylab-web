@@ -14,6 +14,7 @@
   const pendingSubmissionIds = new WeakMap();
   const startedForms = new WeakSet();
   const pendingDirectEvents = [];
+  const pendingAdsConversions = [];
   let directGtagReady = false;
   let taggingMode = 'pending';
   let trackingConfig = {};
@@ -114,13 +115,19 @@
     if (!directGtagReady || typeof window.gtag !== 'function') return;
     const { event, ...parameters } = payload;
     window.gtag('event', event, parameters);
+  };
+
+  const sendAdsConversion = (transactionId) => {
     const conversionTarget = getAdsConversionTarget();
-    if (event === 'generate_lead' && conversionTarget && payload.transaction_id) {
-      window.gtag('event', 'conversion', {
-        send_to: conversionTarget,
-        transaction_id: String(payload.transaction_id)
-      });
+    if (!conversionTarget || !transactionId) return;
+    if (!directGtagReady || typeof window.gtag !== 'function') {
+      pendingAdsConversions.push(String(transactionId));
+      return;
     }
+    window.gtag('event', 'conversion', {
+      send_to: conversionTarget,
+      transaction_id: String(transactionId)
+    });
   };
 
   const pushEvent = (event, parameters = {}) => {
@@ -175,6 +182,7 @@
     directGtagReady = true;
     taggingMode = 'direct';
     pendingDirectEvents.splice(0).forEach(sendDirectEvent);
+    pendingAdsConversions.splice(0).forEach(sendAdsConversion);
   };
 
   const initialiseTagging = () => {
@@ -264,6 +272,7 @@
       utm_content: attribution.utm_content || ''
     };
     pushEvent('generate_lead', parameters);
+    sendAdsConversion(serverLeadId);
     return serverLeadId;
   };
 
