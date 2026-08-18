@@ -127,7 +127,8 @@
     const conversionTarget = getAdsConversionTarget();
     if (!conversionTarget) return;
     window.gtag('event', 'conversion', {
-      send_to: conversionTarget
+      send_to: conversionTarget,
+      transaction_id: String(transactionId)
     });
   };
 
