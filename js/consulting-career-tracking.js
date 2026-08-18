@@ -119,29 +119,17 @@
   };
 
   const sendAdsConversion = (transactionId) => {
-    if (!transactionId) {
-      console.info('symmetry ads conversion skipped: missing transaction id');
-      return;
-    }
+    if (!transactionId) return;
     if (!directGtagReady || !directGtagLoaded || typeof window.gtag !== 'function') {
-      console.info('symmetry ads conversion queued', {
-        directGtagReady,
-        directGtagLoaded,
-        hasGtag: typeof window.gtag === 'function'
-      });
       pendingAdsConversions.push(String(transactionId));
       return;
     }
     const conversionTarget = getAdsConversionTarget();
-    if (!conversionTarget) {
-      console.info('symmetry ads conversion skipped: missing target', {
-        configKeys: Object.keys(trackingConfig)
-      });
-      return;
-    }
-    console.info('symmetry ads conversion dispatch', { conversionTarget });
+    if (!conversionTarget) return;
     window.gtag('event', 'conversion', {
       send_to: conversionTarget,
+      value: 1,
+      currency: 'JPY',
       transaction_id: String(transactionId)
     });
   };
