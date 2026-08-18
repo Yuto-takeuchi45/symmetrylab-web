@@ -1905,7 +1905,8 @@ def get_article_by_slug(slug: str):
 
 
 def public_layout(title: str, description: str, canonical: str, body: str, article=None, preview: bool = False) -> str:
-    image = article["cover_image_url"] if article and article["cover_image_url"] else "https://symmetrylab.jp/images/hero-consulting.jpg"
+    raw_image = article["cover_image_url"] if article and article["cover_image_url"] else "/images/hero-consulting.jpg"
+    image = raw_image if raw_image.startswith(("http://", "https://")) else f"{BASE_URL.rstrip('/')}/{raw_image.lstrip('/')}"
     article_json = ""
     if article:
         data = {
