@@ -16,6 +16,7 @@
   const pendingDirectEvents = [];
   const pendingAdsConversions = [];
   let directGtagReady = false;
+  let directGtagLoaded = false;
   let taggingMode = 'pending';
   let trackingConfig = {};
 
@@ -119,7 +120,7 @@
 
   const sendAdsConversion = (transactionId) => {
     if (!transactionId) return;
-    if (!directGtagReady || typeof window.gtag !== 'function') {
+    if (!directGtagReady || !directGtagLoaded || typeof window.gtag !== 'function') {
       pendingAdsConversions.push(String(transactionId));
       return;
     }
@@ -179,11 +180,14 @@
     const script = document.createElement('script');
     script.async = true;
     script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ga4Id || adsId)}`;
+    script.addEventListener('load', () => {
+      directGtagLoaded = true;
+      directGtagReady = true;
+      taggingMode = 'direct';
+      pendingDirectEvents.splice(0).forEach(sendDirectEvent);
+      pendingAdsConversions.splice(0).forEach(sendAdsConversion);
+    }, { once: true });
     document.head.appendChild(script);
-    directGtagReady = true;
-    taggingMode = 'direct';
-    pendingDirectEvents.splice(0).forEach(sendDirectEvent);
-    pendingAdsConversions.splice(0).forEach(sendAdsConversion);
   };
 
   const initialiseTagging = () => {
