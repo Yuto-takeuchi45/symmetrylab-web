@@ -24,6 +24,8 @@ from uuid import uuid4
 from urllib.parse import urlparse
 from zoneinfo import ZoneInfo
 
+from .article_seed_data import SEED_ARTICLES
+
 import openpyxl
 import stripe
 from dotenv import load_dotenv
@@ -192,6 +194,79 @@ def get_db():
     return conn
 
 
+def editorial_content(article: dict) -> str:
+    """Keep repository-seeded articles aligned with SymmetryLab's CTA policy."""
+    content = article["content"].rstrip()
+    if "内定率" in content:
+        return content
+    replacements = (
+        (
+            "大手外資コンサル出身者だけで構成されたチームが、経験の棚卸しからケース面接対策まで丁寧に伴走し、内定獲得に向けた準備を具体化します。",
+            "大手外資コンサル出身者による丁寧なケース面接対策と高い内定率を強みに、経験の棚卸しから内定獲得までの準備を具体化します。",
+        ),
+        (
+            "大手外資コンサル出身者が、受講者一人ひとりの思考の癖に合わせて丁寧にケース面接を指導し、転職に向けた準備を具体的に整えます。",
+            "大手外資コンサル出身者が、受講者一人ひとりの思考の癖に合わせて丁寧にケース面接を指導し、高い内定率を支える準備を具体的に整えます。",
+        ),
+        (
+            "戦略を描くチームと、システムや業務を実装するチームが別れているケース",
+            "戦略を描くチームと、システムや業務を実装するチームが分かれているケース",
+        ),
+    )
+    for before, after in replacements:
+        if before in content:
+            return content.replace(before, after)
+    return content + "\n\nSymmetryLabは大手外資コンサル出身者による丁寧なケース面接対策と高い内定率を強みに、コンサル転職を支援しています。"
+
+
+def seed_articles(conn):
+    """Insert reviewed repository articles once without overwriting CMS edits."""
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS article_seed_history (
+            slug TEXT PRIMARY KEY,
+            seeded_at TEXT NOT NULL
+        )
+    """)
+    now = datetime.now(JST).strftime("%Y-%m-%dT%H:%M:%S")
+    for article in SEED_ARTICLES:
+        slug = article["slug"]
+        existing = conn.execute("SELECT id FROM articles WHERE slug = ?", (slug,)).fetchone()
+        if existing:
+            conn.execute(
+                "INSERT OR IGNORE INTO article_seed_history (slug, seeded_at) VALUES (?, ?)",
+                (slug, now),
+            )
+            continue
+        seeded = conn.execute(
+            "SELECT slug FROM article_seed_history WHERE slug = ?", (slug,)
+        ).fetchone()
+        if seeded:
+            continue
+        published_at = article.get("published_at") or now
+        conn.execute("""
+            INSERT INTO articles
+            (slug, title, category, excerpt, content, cover_image_url, meta_title,
+             meta_description, status, published_at, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'published', ?, ?, ?)
+        """, (
+            slug,
+            article["title"],
+            article.get("category", "コラム"),
+            article.get("excerpt", ""),
+            editorial_content(article),
+            article.get("cover_image_url", ""),
+            article.get("meta_title", article["title"]),
+            article.get("meta_description", article.get("excerpt", "")),
+            published_at,
+            published_at,
+            published_at,
+        ))
+        conn.execute(
+            "INSERT INTO article_seed_history (slug, seeded_at) VALUES (?, ?)",
+            (slug, now),
+        )
+
+
 def init_db():
     conn = get_db()
     conn.execute("""
@@ -283,6 +358,7 @@ def init_db():
         )
     """)
     conn.execute("CREATE INDEX IF NOT EXISTS idx_career_status_history_application ON career_application_status_history(application_id, changed_at)")
+    seed_articles(conn)
     conn.commit()
     conn.close()
 
@@ -1991,7 +2067,8 @@ async def public_blog_index():
         category = html.escape(article["category"] or "コラム")
         cards.append(f'''<article style="padding:1.5rem 0;border-bottom:1px solid #e5e7eb"><p class="column-meta">{date} / {category}</p><h2 style="font-size:1.35rem;margin-bottom:.7rem"><a href="/blog/{article["slug"]}/" style="color:#1a2332;text-decoration:none">{html.escape(article["title"])}</a></h2><p>{html.escape(article["excerpt"] or article_summary(article["content"]))}</p><p style="margin-top:1rem"><a href="/blog/{article["slug"]}/">続きを読む</a></p></article>''')
     listing = "".join(cards) or "<p>現在公開中のコラムはありません。</p>"
-    body = f'<section class="section"><div class="container column-wrap"><div class="section-header"><h1>コラム</h1><p>戦略コンサル転職、ケース面接、実務スキルに役立つ情報を発信しています。</p></div>{listing}</div></section>'
+    cta = '<div style="margin-top:2rem;padding:1.5rem;background:#1f2937;color:#fff;border-radius:8px"><h2 style="color:#fff;font-size:1.3rem">ケース面接の準備を、今日から具体化する</h2><p>大手外資コンサル出身者が、思考の癖に合わせて丁寧にケース面接を指導。高い内定率を支える実践的な対策を提供します。</p><p style="margin-bottom:0"><a href="/lp-case.html" class="btn-primary">ケース面接対策を見る</a></p></div>'
+    body = f'<section class="section"><div class="container column-wrap"><div class="section-header"><h1>コラム</h1><p>戦略コンサル転職、ケース面接、実務スキルに役立つ情報を発信しています。</p></div>{listing}{cta}</div></section>'
     return HTMLResponse(public_layout("コラム | SYMMETRY Lab株式会社", "戦略コンサル転職に役立つコラム。実務スキルやケース面接のノウハウを解説します。", "https://symmetrylab.jp/blog/", body))
 
 
