@@ -42,4 +42,4 @@ services:
       - key: SYMMETRY_GOOGLE_ADS_CONVERSION_ID
         value: AW-18344529693
       - key: SYMMETRY_GOOGLE_ADS_CONVERSION_LABEL
-        value: bIkKCK27_uAcE2JeratE
+        value: bIkKCK27_uAcEJ2eratE
