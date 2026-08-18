@@ -174,12 +174,6 @@
     window.dataLayer = window.dataLayer || [];
     window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
     window.gtag('js', new Date());
-    window.gtag('consent', 'default', {
-      ad_storage: 'granted',
-      analytics_storage: 'granted',
-      ad_user_data: 'granted',
-      ad_personalization: 'granted'
-    });
     if (ga4Id) window.gtag('config', ga4Id, { send_page_view: false });
     if (adsId) window.gtag('config', adsId);
 
