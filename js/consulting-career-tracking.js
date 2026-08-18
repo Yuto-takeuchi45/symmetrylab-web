@@ -127,10 +127,7 @@
     const conversionTarget = getAdsConversionTarget();
     if (!conversionTarget) return;
     window.gtag('event', 'conversion', {
-      send_to: conversionTarget,
-      value: 1,
-      currency: 'JPY',
-      transaction_id: String(transactionId)
+      send_to: conversionTarget
     });
   };
 
