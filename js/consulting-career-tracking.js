@@ -2,7 +2,6 @@
   'use strict';
 
   window.dataLayer = window.dataLayer || [];
-  const trackingDebug = new URLSearchParams(window.location.search).get('tracking_debug') === '1';
 
   const ATTRIBUTION_STORAGE_KEY = 'symmetrylab_career_attribution_v1';
   const CLIENT_SUBMISSION_STORAGE_KEY = 'symmetrylab_career_client_submission_v1';
@@ -123,15 +122,10 @@
     if (!transactionId) return;
     if (!directGtagReady || !directGtagLoaded || typeof window.gtag !== 'function') {
       pendingAdsConversions.push(String(transactionId));
-      if (trackingDebug) console.info('symmetry ads conversion queued', { transaction_id: String(transactionId) });
       return;
     }
     const conversionTarget = getAdsConversionTarget();
     if (!conversionTarget) return;
-    if (trackingDebug) console.info('symmetry ads conversion dispatch', {
-      send_to: conversionTarget,
-      transaction_id: String(transactionId)
-    });
     window.gtag('event', 'conversion', {
       send_to: conversionTarget,
       transaction_id: String(transactionId)
