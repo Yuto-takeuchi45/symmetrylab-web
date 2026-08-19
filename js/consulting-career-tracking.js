@@ -191,7 +191,10 @@
   };
 
   const initialiseTagging = () => {
-    fetch('/api/tracking-config', { credentials: 'same-origin' })
+    fetch(`/api/tracking-config?ts=${Date.now()}`, {
+      credentials: 'same-origin',
+      cache: 'no-store'
+    })
       .then((response) => response.ok ? response.json() : {})
       .catch(() => ({}))
       .then((config) => {
