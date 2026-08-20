@@ -227,11 +227,47 @@ def seed_articles(conn):
             seeded_at TEXT NOT NULL
         )
     """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS article_seed_revision_history (
+            slug TEXT NOT NULL,
+            revision_id TEXT NOT NULL,
+            applied_at TEXT NOT NULL,
+            PRIMARY KEY (slug, revision_id)
+        )
+    """)
     now = datetime.now(JST).strftime("%Y-%m-%dT%H:%M:%S")
     for article in SEED_ARTICLES:
         slug = article["slug"]
         existing = conn.execute("SELECT id FROM articles WHERE slug = ?", (slug,)).fetchone()
         if existing:
+            revision_id = article.get("revision_id")
+            if revision_id:
+                revision = conn.execute(
+                    "SELECT 1 FROM article_seed_revision_history WHERE slug = ? AND revision_id = ?",
+                    (slug, revision_id),
+                ).fetchone()
+                if not revision:
+                    conn.execute("""
+                        UPDATE articles
+                        SET title = ?, category = ?, excerpt = ?, content = ?,
+                            cover_image_url = ?, meta_title = ?, meta_description = ?,
+                            updated_at = ?
+                        WHERE slug = ?
+                    """, (
+                        article["title"],
+                        article.get("category", "コラム"),
+                        article.get("excerpt", ""),
+                        editorial_content(article),
+                        article.get("cover_image_url", ""),
+                        article.get("meta_title", article["title"]),
+                        article.get("meta_description", article.get("excerpt", "")),
+                        now,
+                        slug,
+                    ))
+                    conn.execute(
+                        "INSERT INTO article_seed_revision_history (slug, revision_id, applied_at) VALUES (?, ?, ?)",
+                        (slug, revision_id, now),
+                    )
             conn.execute(
                 "INSERT OR IGNORE INTO article_seed_history (slug, seeded_at) VALUES (?, ?)",
                 (slug, now),
