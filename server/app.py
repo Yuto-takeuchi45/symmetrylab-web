@@ -26,6 +26,12 @@ from zoneinfo import ZoneInfo
 
 from .article_seed_data import SEED_ARTICLES
 
+ARTICLE_SLUG_REDIRECTS = {
+    article["legacy_slug"]: article["slug"]
+    for article in SEED_ARTICLES
+    if article.get("legacy_slug")
+}
+
 import openpyxl
 import stripe
 from dotenv import load_dotenv
@@ -238,6 +244,12 @@ def seed_articles(conn):
     now = datetime.now(JST).strftime("%Y-%m-%dT%H:%M:%S")
     for article in SEED_ARTICLES:
         slug = article["slug"]
+        legacy_slug = article.get("legacy_slug")
+        if legacy_slug:
+            legacy = conn.execute("SELECT id FROM articles WHERE slug = ?", (legacy_slug,)).fetchone()
+            current = conn.execute("SELECT id FROM articles WHERE slug = ?", (slug,)).fetchone()
+            if legacy and not current:
+                conn.execute("UPDATE articles SET slug = ? WHERE slug = ?", (slug, legacy_slug))
         existing = conn.execute("SELECT id FROM articles WHERE slug = ?", (slug,)).fetchone()
         if existing:
             revision_id = article.get("revision_id")
@@ -2111,6 +2123,9 @@ async def public_blog_index():
 
 @app.get("/blog/{slug}/", response_class=HTMLResponse, include_in_schema=False)
 async def public_article(slug: str):
+    redirected_slug = ARTICLE_SLUG_REDIRECTS.get(slug)
+    if redirected_slug:
+        return RedirectResponse(url=f"/blog/{redirected_slug}/", status_code=301)
     article = get_article_by_slug(slug)
     if not article:
         raise HTTPException(status_code=404, detail="Not found")
