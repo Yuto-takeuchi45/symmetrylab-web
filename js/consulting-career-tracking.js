@@ -267,7 +267,6 @@
       form_id: 'career_application',
       lead_id: serverLeadId,
       event_id: serverLeadId,
-      transaction_id: serverLeadId,
       appointment_mode: appointmentMode,
       attribution_source: attribution.utm_source || (attribution.gclid ? 'google_ads' : 'direct'),
       gclid: attribution.gclid || '',
