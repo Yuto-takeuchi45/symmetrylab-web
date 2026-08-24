@@ -1865,7 +1865,7 @@ def inline_markdown(text: str) -> str:
     def link_replacer(match):
         label = match.group(1)
         url = re.sub(r"\s+", "", html.unescape(match.group(2)))
-        if not re.match(r"^(https?://|mailto:)", url, re.IGNORECASE):
+        if not re.match(r"^(https?://|mailto:|/(?!/))", url, re.IGNORECASE):
             return label
         token = f"\u0000LINK{len(link_placeholders)}\u0000"
         link_placeholders.append((token, f'<a href="{html.escape(url, quote=True)}" rel="noopener noreferrer">{label}</a>'))
