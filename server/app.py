@@ -1894,6 +1894,30 @@ def markdown_to_html(content: str) -> str:
     blocks, list_type, paragraph = [], None, []
     content = normalize_article_content(content)
 
+    def table_cells(line: str) -> list[str]:
+        value = line.strip()
+        if value.startswith("|"):
+            value = value[1:]
+        if value.endswith("|"):
+            value = value[:-1]
+        return [cell.strip() for cell in value.split("|")]
+
+    def is_table_separator(line: str) -> bool:
+        cells = table_cells(line)
+        return bool(cells) and all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells)
+
+    def render_table(header_line: str, row_lines: list[str]) -> str:
+        headers = table_cells(header_line)
+        column_count = len(headers)
+        head_html = "".join(f"<th scope=\"col\">{inline_markdown(cell)}</th>" for cell in headers)
+        body_rows = []
+        for row_line in row_lines:
+            cells = table_cells(row_line)
+            cells = (cells + [""] * column_count)[:column_count]
+            body_rows.append("<tr>" + "".join(f"<td>{inline_markdown(cell)}</td>" for cell in cells) + "</tr>")
+        body_html = f"<tbody>{''.join(body_rows)}</tbody>" if body_rows else ""
+        return f'<div class="table-wrap"><table><thead><tr>{head_html}</tr></thead>{body_html}</table></div>'
+
     def flush_paragraph():
         nonlocal paragraph
         if paragraph:
@@ -1906,11 +1930,30 @@ def markdown_to_html(content: str) -> str:
             blocks.append(f"</{list_type}>")
             list_type = None
 
-    for raw_line in content.splitlines():
+    lines = content.splitlines()
+    line_index = 0
+    while line_index < len(lines):
+        raw_line = lines[line_index]
         line = raw_line.strip()
         if not line:
             flush_paragraph()
             close_list()
+            line_index += 1
+            continue
+        if (
+            "|" in line
+            and line_index + 1 < len(lines)
+            and is_table_separator(lines[line_index + 1])
+        ):
+            flush_paragraph()
+            close_list()
+            table_rows = []
+            next_index = line_index + 2
+            while next_index < len(lines) and lines[next_index].strip() and "|" in lines[next_index]:
+                table_rows.append(lines[next_index])
+                next_index += 1
+            blocks.append(render_table(line, table_rows))
+            line_index = next_index
             continue
         heading = re.match(r"^(#{2,3})\s+(.+)$", line)
         if heading:
@@ -1918,6 +1961,7 @@ def markdown_to_html(content: str) -> str:
             close_list()
             level = len(heading.group(1))
             blocks.append(f"<h{level}>{inline_markdown(heading.group(2))}</h{level}>")
+            line_index += 1
             continue
         ordered = re.match(r"^\d+[.)]\s+(.+)$", line)
         bullet = re.match(r"^[-*]\s+(.+)$", line)
@@ -1930,14 +1974,17 @@ def markdown_to_html(content: str) -> str:
                 blocks.append(f"<{expected_type}>")
                 list_type = expected_type
             blocks.append(f"<li>{inline_markdown(item)}</li>")
+            line_index += 1
             continue
         if line.startswith("> "):
             flush_paragraph()
             close_list()
             blocks.append(f"<blockquote>{inline_markdown(line[2:])}</blockquote>")
+            line_index += 1
             continue
         close_list()
         paragraph.append(line)
+        line_index += 1
     flush_paragraph()
     close_list()
     return "\n".join(blocks)
@@ -1977,7 +2024,7 @@ def public_layout(title: str, description: str, canonical: str, body: str, artic
   <meta name="robots" content="{'noindex, nofollow' if preview else 'index, follow, max-image-preview:large'}">{' ' if preview else f'<link rel="canonical" href="{html.escape(canonical, quote=True)}">'}
   <meta property="og:type" content="article"><meta property="og:title" content="{html.escape(title, quote=True)}"><meta property="og:description" content="{html.escape(description, quote=True)}"><meta property="og:url" content="{html.escape(canonical, quote=True)}"><meta property="og:image" content="{html.escape(image, quote=True)}">
   <meta name="twitter:card" content="summary_large_image"><link rel="stylesheet" href="/css/style.css?v=20260714">
-  <style>.column-wrap{{max-width:820px;margin:0 auto}}.column-meta{{color:#6b7280;font-size:.9rem;margin-bottom:1rem}}.column-content{{font-size:1rem;line-height:2;color:#273142}}.column-content h2{{font-size:1.65rem;margin:2.5rem 0 1rem;color:#1a2332}}.column-content h3{{font-size:1.3rem;margin:2rem 0 .75rem;color:#1a2332}}.column-content p,.column-content ul,.column-content ol{{margin:0 0 1.25rem}}.column-content ul{{padding-left:1.5rem;list-style:disc}}.column-content ol{{padding-left:1.5rem;list-style:decimal}}.column-content li{{padding-left:.2rem;margin:.35rem 0}}.column-content blockquote{{margin:1.5rem 0;padding:.75rem 1rem;border-left:3px solid #00b4d8;background:#f4f6f9}}.column-content a{{color:#007f9d;text-decoration:underline}}.column-cover{{width:100%;max-height:420px;object-fit:cover;margin:1.5rem 0 2rem;border-radius:8px}}</style>
+  <style>.column-wrap{{max-width:820px;margin:0 auto}}.column-meta{{color:#6b7280;font-size:.9rem;margin-bottom:1rem}}.column-content{{font-size:1rem;line-height:2;color:#273142}}.column-content h2{{font-size:1.65rem;margin:2.5rem 0 1rem;color:#1a2332}}.column-content h3{{font-size:1.3rem;margin:2rem 0 .75rem;color:#1a2332}}.column-content p,.column-content ul,.column-content ol{{margin:0 0 1.25rem}}.column-content ul{{padding-left:1.5rem;list-style:disc}}.column-content ol{{padding-left:1.5rem;list-style:decimal}}.column-content li{{padding-left:.2rem;margin:.35rem 0}}.column-content blockquote{{margin:1.5rem 0;padding:.75rem 1rem;border-left:3px solid #00b4d8;background:#f4f6f9}}.column-content a{{color:#007f9d;text-decoration:underline}}.column-content .table-wrap{{overflow-x:auto;margin:1.5rem 0}}.column-content table{{width:100%;border-collapse:collapse;font-size:.95rem;line-height:1.7;background:#fff}}.column-content th,.column-content td{{border:1px solid #d8dee8;padding:.65rem .75rem;text-align:left;vertical-align:top}}.column-content th{{background:#f4f6f9;font-weight:700;color:#1a2332}}.column-cover{{width:100%;max-height:420px;object-fit:cover;margin:1.5rem 0 2rem;border-radius:8px}}</style>
   {article_json}
 </head><body>
 <nav class="navbar"><div class="container"><a href="/index.html" class="nav-logo"><img src="/images/logo_full.png" alt="SYMMETRY Lab" class="nav-logo-img"></a><button class="nav-toggle" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button><div class="nav-links"><a href="/company.html">会社概要</a><a href="/services.html">サービス</a><a href="/blog/">コラム</a><a href="/contact.html">お問い合わせ</a></div></div></nav>
