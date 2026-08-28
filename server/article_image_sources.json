@@ -115,5 +115,21 @@
     "license": "Pexels License (free to use)",
     "license_url": "https://www.pexels.com/legal-pages/license/",
     "retrieved_at": "2026-08-27"
+  },
+  "big4-strategy-application-scorecard-20260828": {
+    "source_page": "https://unsplash.com/photos/business-people-collaborating-in-a-modern-office-meeting-VRT8k7BJ7wk",
+    "direct_asset": "https://images.unsplash.com/photo-1758518729711-1cbacd55efdb?auto=format&fit=crop&fm=jpg&ixlib=rb-4.1.0&q=82&w=1800",
+    "creator": "Vitaly Gariev",
+    "license": "Unsplash License (free to use)",
+    "license_url": "https://unsplash.com/license",
+    "retrieved_at": "2026-08-28"
+  },
+  "consulting-transfer-business-summary-250-350-20260828": {
+    "source_page": "https://unsplash.com/photos/person-writing-on-clipboard-at-desk-with-laptop-Y2NR5WmOPDA",
+    "direct_asset": "https://images.unsplash.com/photo-1762341112870-1eb70d45b23e?auto=format&fit=crop&fm=jpg&ixlib=rb-4.1.0&q=82&w=1800",
+    "creator": "Zulfugar Karimov",
+    "license": "Unsplash License (free to use)",
+    "license_url": "https://unsplash.com/license",
+    "retrieved_at": "2026-08-28"
   }
 }
