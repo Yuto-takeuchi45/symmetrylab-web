@@ -147,5 +147,21 @@
     "license": "Pexels License (free to use)",
     "license_url": "https://www.pexels.com/legal-pages/license/",
     "retrieved_at": "2026-08-29"
+  },
+  "consulting-transfer-credentials-20260830": {
+    "source_page": "https://www.pexels.com/photo/university-student-studying-in-classroom-37811192/",
+    "direct_asset": "https://images.pexels.com/photos/37811192/pexels-photo-37811192.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "creator": "Eduard Perez",
+    "license": "Pexels License (free to use)",
+    "license_url": "https://www.pexels.com/legal-pages/license/",
+    "retrieved_at": "2026-08-30"
+  },
+  "consulting-transfer-reapply-20260830": {
+    "source_page": "https://www.pexels.com/photo/a-person-marking-a-day-in-a-calendar-17668838/",
+    "direct_asset": "https://images.pexels.com/photos/17668838/pexels-photo-17668838.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "creator": "Edge Training",
+    "license": "Pexels License (free to use)",
+    "license_url": "https://www.pexels.com/legal-pages/license/",
+    "retrieved_at": "2026-08-30"
   }
 }
