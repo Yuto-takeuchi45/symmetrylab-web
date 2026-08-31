@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
       schedule.blockedDates = data.blocked_dates || [];
       renderScheduleCalendar();
       schedule.calendar.hidden = false;
-      setScheduleStatus('空き日程から相談希望日時を選択できます。');
+      setScheduleStatus('');
     } catch (error) {
       setScheduleStatus('空き日程を取得できませんでした。日時は後から調整できます。', true);
     }
@@ -211,6 +211,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const submitCareerApplication = async () => {
     const payload = Object.fromEntries(new FormData(form).entries());
+    payload.area = Array.from(form.querySelectorAll('input[name="area"]:checked'))
+      .map((input) => input.value)
+      .join('、');
     payload.consent = document.getElementById('career-consent').checked;
     const response = await fetch('/api/consulting-career/applications', {
       method: 'POST',
@@ -243,8 +246,8 @@ document.addEventListener('DOMContentLoaded', () => {
       valid = false;
     }
 
-    const area = form.querySelector('input[name="area"]:checked');
-    if (!area) { showError('career-area', '希望するコンサル領域を選択してください。'); valid = false; }
+    const areas = form.querySelectorAll('input[name="area"]:checked');
+    if (!areas.length) { showError('career-area', '希望するコンサル領域を1つ以上選択してください。'); valid = false; }
 
     const consent = document.getElementById('career-consent');
     if (!consent.checked) { showError('career-consent', '個人情報の取扱いへの同意が必要です。'); valid = false; }

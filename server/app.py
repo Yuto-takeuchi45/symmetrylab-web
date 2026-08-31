@@ -960,12 +960,12 @@ CAREER_APPLICATION_STATUSES = {
 }
 
 CAREER_APPLICATION_CHOICES = {
-    "industry": {"金融・保険", "IT・インターネット", "メーカー", "商社・物流", "広告・メディア", "官公庁・非営利", "その他"},
+    "industry": {"金融・保険", "IT・インターネット", "メーカー", "商社・物流", "広告・メディア", "官公庁・非営利", "小売・サービス", "医療・ヘルスケア", "コンサルティング", "その他"},
     "job": {"営業・事業開発", "企画・マーケティング", "経営企画・管理", "IT・エンジニア", "金融専門職", "コンサルタント", "その他"},
-    "experience": {"1年未満", "1〜3年", "4〜6年", "7〜10年", "11年以上"},
-    "income": {"400万円未満", "400〜600万円", "600〜800万円", "800〜1,000万円", "1,000万円以上"},
-    "area": {"戦略", "総合", "その他", "未定"},
-    "timing": {"3か月以内", "半年以内", "1年以内", "時期未定"},
+    "experience": {"1~3年目", "4~6年目", "7~10年目", "11年目以上"},
+    "income": {"~600万円未満", "~800万円未満", "~1000万円未満"},
+    "area": {"戦略", "総合", "IT", "その他", "未定"},
+    "timing": {"3カ月以内", "3カ月～6カ月以内", "6ヶ月～1年以内", "1年以上", "時期未定"},
     "status": {"情報収集中", "応募前・準備中", "応募・選考中", "内定・オファーあり"},
 }
 
@@ -1046,7 +1046,14 @@ def _validate_career_application(req: CareerApplicationRequest) -> CareerApplica
     )
     for field_name, label in required_fields:
         setattr(req, field_name, _career_trim(getattr(req, field_name), label, 120, required=True))
-        if getattr(req, field_name) not in CAREER_APPLICATION_CHOICES[field_name]:
+        value = getattr(req, field_name)
+        if field_name == "area":
+            selected_areas = [item.strip() for item in value.split("、") if item.strip()]
+            if not selected_areas or len(selected_areas) != len(set(selected_areas)) or not all(
+                item in CAREER_APPLICATION_CHOICES["area"] for item in selected_areas
+            ):
+                raise HTTPException(status_code=422, detail=f"{label}の選択肢が正しくありません")
+        elif value not in CAREER_APPLICATION_CHOICES[field_name]:
             raise HTTPException(status_code=422, detail=f"{label}の選択肢が正しくありません")
     req.message = _career_trim(req.message, "相談内容", 5000)
     req.gclid = _career_trim(req.gclid, "gclid", 500)
