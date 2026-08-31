@@ -5,3 +5,14 @@ bookings.db
 *.db
 ~$*
 .DS_Store
+
+# Local editorial drafts, review outputs, and visual QA captures
+drafts/
+_review_tmp/
+work/
+
+# Local ad-upload export
+google-ads-keywords-upload.csv
+
+# Superseded local image not referenced by the site
+images/blog-consulting-resume-project-20260822.jpg

@@ -226,7 +226,7 @@ def editorial_content(article: dict) -> str:
 
 
 def seed_articles(conn):
-    """Insert reviewed repository articles once without overwriting CMS edits."""
+    """Create repository-seeded articles once; never overwrite CMS edits."""
     conn.execute("""
         CREATE TABLE IF NOT EXISTS article_seed_history (
             slug TEXT PRIMARY KEY,
@@ -252,34 +252,15 @@ def seed_articles(conn):
                 conn.execute("UPDATE articles SET slug = ? WHERE slug = ?", (slug, legacy_slug))
         existing = conn.execute("SELECT id FROM articles WHERE slug = ?", (slug,)).fetchone()
         if existing:
+            # The admin CMS is the source of truth after the first insert. A
+            # repository change must never replace a title, body, metadata,
+            # status, or image that a person edited in the CMS.
             revision_id = article.get("revision_id")
             if revision_id:
-                revision = conn.execute(
-                    "SELECT 1 FROM article_seed_revision_history WHERE slug = ? AND revision_id = ?",
-                    (slug, revision_id),
-                ).fetchone()
-                if not revision:
-                    conn.execute("""
-                        UPDATE articles
-                        SET title = ?, category = ?, excerpt = ?, content = ?,
-                            cover_image_url = ?, meta_title = ?, meta_description = ?,
-                            updated_at = ?
-                        WHERE slug = ?
-                    """, (
-                        article["title"],
-                        article.get("category", "コラム"),
-                        article.get("excerpt", ""),
-                        editorial_content(article),
-                        article.get("cover_image_url", ""),
-                        article.get("meta_title", article["title"]),
-                        article.get("meta_description", article.get("excerpt", "")),
-                        now,
-                        slug,
-                    ))
-                    conn.execute(
-                        "INSERT INTO article_seed_revision_history (slug, revision_id, applied_at) VALUES (?, ?, ?)",
-                        (slug, revision_id, now),
-                    )
+                conn.execute(
+                    "INSERT OR IGNORE INTO article_seed_revision_history (slug, revision_id, applied_at) VALUES (?, ?, ?)",
+                    (slug, revision_id, now),
+                )
             conn.execute(
                 "INSERT OR IGNORE INTO article_seed_history (slug, seeded_at) VALUES (?, ?)",
                 (slug, now),
@@ -290,12 +271,15 @@ def seed_articles(conn):
         ).fetchone()
         if seeded:
             continue
-        published_at = article.get("published_at") or now
+        status = article.get("status", "published")
+        if status not in ("draft", "published"):
+            status = "draft"
+        published_at = (article.get("published_at") or now) if status == "published" else None
         conn.execute("""
             INSERT INTO articles
             (slug, title, category, excerpt, content, cover_image_url, meta_title,
              meta_description, status, published_at, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'published', ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             slug,
             article["title"],
@@ -305,14 +289,21 @@ def seed_articles(conn):
             article.get("cover_image_url", ""),
             article.get("meta_title", article["title"]),
             article.get("meta_description", article.get("excerpt", "")),
+            status,
             published_at,
-            published_at,
-            published_at,
+            now,
+            now,
         ))
         conn.execute(
             "INSERT INTO article_seed_history (slug, seeded_at) VALUES (?, ?)",
             (slug, now),
         )
+        revision_id = article.get("revision_id")
+        if revision_id:
+            conn.execute(
+                "INSERT OR IGNORE INTO article_seed_revision_history (slug, revision_id, applied_at) VALUES (?, ?, ?)",
+                (slug, revision_id, now),
+            )
 
 
 def init_db():
