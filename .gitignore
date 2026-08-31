@@ -10,6 +10,7 @@ bookings.db
 drafts/
 _review_tmp/
 work/
+.tmp-lp-image-inspect/
 
 # Local ad-upload export
 google-ads-keywords-upload.csv
