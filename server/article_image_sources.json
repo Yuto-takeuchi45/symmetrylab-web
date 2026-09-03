@@ -179,5 +179,21 @@
     "license": "Pexels License (free to use)",
     "license_url": "https://www.pexels.com/legal-pages/license/",
     "retrieved_at": "2026-09-01"
+  },
+  "consulting-final-interview-questions-20260903": {
+    "source_page": "https://unsplash.com/photos/a-man-and-a-woman-sitting-at-a-table-with-a-laptop-n7u_Zfl4ALs",
+    "direct_asset": "https://images.unsplash.com/photo-1690264588465-41c2c7b3a582?auto=format&fit=crop&fm=jpg&ixlib=rb-4.1.0&q=80&w=1600",
+    "creator": "Walls.io",
+    "license": "Unsplash License (free to use)",
+    "license_url": "https://unsplash.com/license",
+    "retrieved_at": "2026-09-03"
+  },
+  "consulting-english-resume-20260903": {
+    "source_page": "https://www.pexels.com/photo/a-clipboard-near-pen-and-laptop-on-a-marble-surface-4101343/",
+    "direct_asset": "https://images.pexels.com/photos/4101343/pexels-photo-4101343.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "creator": "Markus Winkler",
+    "license": "Pexels License (free to use)",
+    "license_url": "https://www.pexels.com/legal-pages/license/",
+    "retrieved_at": "2026-09-03"
   }
 }
