@@ -22,10 +22,10 @@
 .career-nav .career-nav-cta:hover { color: #fff; background: var(--career-accent-dark); }
 .career-menu-toggle { display: none; border: 0; background: transparent; padding: 8px; cursor: pointer; }
 .career-menu-toggle span { display: block; width: 24px; height: 2px; margin: 5px; background: var(--career-ink); }
-.career-hero { padding: 42px 0 30px; background: url('../images/hero-consulting-support.jpeg?v=20260831') center / cover no-repeat; border-bottom: 1px solid var(--career-line); }
+.career-hero { padding: 42px 0 30px; background: linear-gradient(rgba(255,255,255,.34), rgba(255,255,255,.34)), url('../images/hero-consulting-support.jpeg?v=20260831') center / cover no-repeat; border-bottom: 1px solid var(--career-line); }
 .career-hero-inner { min-height: 594px; display: flex; flex-direction: column; justify-content: space-between; }
 .career-kicker { margin: 0 0 18px; color: var(--career-accent); font: 600 .74rem/1.2 Inter, sans-serif; letter-spacing: .16em; }
-.career-hero-copy { width: min(76%, 842px); padding: 30px 54px 52px; background: rgba(248,250,250,.84); }
+.career-hero-copy { width: min(76%, 842px); padding: 30px 54px 52px; background: rgba(248,250,250,.84); clip-path: polygon(0 0, 100% 0, 100% 76%, 86% 100%, 0 100%); }
 .career-hero h1 { margin: 0; color: #000; font-size: clamp(2rem, 3.8vw, 3rem); line-height: 1.35; letter-spacing: .02em; }
 .career-hero h1 span { color: var(--career-accent); }
 .career-lead { max-width: 650px; margin: 25px 0 30px; color: #6b7280; font-size: 1rem; }
@@ -196,7 +196,7 @@ fieldset.career-field { border: 0; padding: 0; margin: 0; min-inline-size: 0; }
   .career-nav .career-nav-cta { margin-top: 10px; padding: 10px 15px; border-bottom: 0; text-align: center; }
   .career-hero { padding: 28px 0 18px; background-position: 60% center; }
   .career-hero-inner { min-height: 0; gap: 28px; }
-  .career-hero-copy { width: 100%; padding: 26px 22px 32px; }
+  .career-hero-copy { width: 100%; padding: 26px 22px 32px; clip-path: none; }
   .career-reason-layout, .career-faq-layout, .career-application-layout { grid-template-columns: 1fr; gap: 38px; }
   .career-hero h1 { font-size: clamp(1.9rem, 9vw, 2.65rem); }
   .career-hero h1 span { display: block; }
