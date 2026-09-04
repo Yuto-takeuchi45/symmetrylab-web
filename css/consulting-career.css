@@ -81,11 +81,11 @@
 #flow { scroll-margin-top: 110px; }
 .career-flow { position: relative; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 24px; margin: 0; padding: 0 24px; list-style: none; }
 .career-flow li { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 318px; padding: 88px 0 0 30px; border-left: 0; background: transparent; }
-.career-flow li::before { position: absolute; top: 78px; bottom: 0; left: 0; width: 4px; background: var(--career-accent); content: ''; }
+.career-flow li::before { position: absolute; top: 78px; bottom: 38px; left: 0; width: 4px; background: var(--career-accent); content: ''; }
 .career-flow li > span { position: absolute; z-index: 1; top: 0; left: -22px; display: grid; width: 78px; height: 78px; margin: 0; padding: 0; place-items: center; border: 10px solid var(--career-accent); border-radius: 50%; background: #fff; color: #2e2e38; font: 700 1.05rem/1 Inter, sans-serif; letter-spacing: 0; }
 .career-flow-connector { position: absolute; z-index: 1; top: 32px; right: 5px; left: 56px; display: block; height: 14px; pointer-events: none; }
-.career-flow-connector::before { position: absolute; top: 6px; right: 10px; left: 0; height: 2px; background: linear-gradient(90deg, transparent calc(100% - 12px), var(--career-accent) calc(100% - 12px)), repeating-linear-gradient(90deg, var(--career-accent) 0 18px, transparent 18px 24px, var(--career-accent) 24px 27px, transparent 27px 33px, var(--career-accent) 33px 36px, transparent 36px 42px); content: ''; }
-.career-flow-connector::after { position: absolute; top: 1px; right: 0; width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 10px solid var(--career-accent); content: ''; }
+.career-flow-connector::before { position: absolute; top: 50%; right: 12px; left: 0; height: 3px; transform: translateY(-50%); background: linear-gradient(90deg, transparent calc(100% - 14px), var(--career-accent) calc(100% - 14px)), repeating-linear-gradient(90deg, var(--career-accent) 0 18px, transparent 18px 24px, var(--career-accent) 24px 27px, transparent 27px 33px, var(--career-accent) 33px 36px, transparent 36px 42px); content: ''; }
+.career-flow-connector::after { position: absolute; top: 50%; right: 0; width: 0; height: 0; transform: translateY(-50%); border-top: 7px solid transparent; border-bottom: 7px solid transparent; border-left: 12px solid var(--career-accent); content: ''; }
 .career-flow img { position: static; align-self: flex-start; width: 52px; height: 50px; margin: 0 0 6px; object-fit: contain; mix-blend-mode: multiply; }
 .career-flow h3 { margin: 0 0 16px; color: #111827; font-size: 1.08rem; line-height: 1.35; white-space: normal; }
 .career-flow p { max-width: 220px; color: #111827; font-size: .84rem; line-height: 1.36; }
@@ -227,7 +227,7 @@ fieldset.career-field { border: 0; padding: 0; margin: 0; min-inline-size: 0; }
   #support .career-section-heading { margin-bottom: 42px; }
   .career-flow { display: grid; grid-template-columns: 1fr; gap: 0; padding: 0 0 0 19px; }
   .career-flow li { min-height: 168px; padding: 56px 18px 22px 58px; }
-  .career-flow li::before { top: 58px; width: 3px; }
+  .career-flow li::before { top: 58px; bottom: 0; width: 3px; }
   .career-flow li > span { top: 0; left: -19px; width: 58px; height: 58px; border-width: 7px; font-size: .85rem; }
   .career-flow-connector { display: none; }
   .career-flow li::after { position: absolute; right: auto; bottom: -13px; left: -10px; width: 0; height: 0; border-top: 14px solid var(--career-accent); border-right: 9px solid transparent; border-left: 9px solid transparent; content: ''; }
