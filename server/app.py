@@ -21,7 +21,7 @@ from io import BytesIO, StringIO
 from pathlib import Path
 from typing import Optional
 from uuid import uuid4
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 from zoneinfo import ZoneInfo
 
 from .article_seed_data import SEED_ARTICLES
@@ -37,10 +37,10 @@ import stripe
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from openpyxl.styles import Alignment, Font, PatternFill
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 load_dotenv()
 
@@ -70,6 +70,13 @@ DEFAULT_TRAINING_DATES = Path(__file__).parent / "training_dates.json"
 TRAINING_DATES_PATH = Path(os.getenv("TRAINING_DATES_PATH", str(DEFAULT_TRAINING_DATES)))
 DEFAULT_REFERRAL_CODES = Path(__file__).parent / "referral_codes.json"
 REFERRAL_CODES_PATH = Path(os.getenv("REFERRAL_CODES_PATH", str(DEFAULT_REFERRAL_CODES)))
+DEFAULT_RECRUITMENT_JOBS = Path(__file__).parent.parent / "recruitment" / "jobs.json"
+RECRUITMENT_JOBS_PATH = Path(os.getenv("RECRUITMENT_JOBS_PATH", str(DEFAULT_RECRUITMENT_JOBS)))
+RECRUITMENT_LP_PATH = Path(__file__).parent.parent / "recruitment" / "index.html"
+DEFAULT_AD_CREATIVE_JOBS = Path(__file__).parent.parent / "ad_creative" / "jobs.json"
+_ad_creative_jobs_env = os.getenv("AD_CREATIVE_JOBS_PATH", "").strip()
+AD_CREATIVE_JOBS_PATH = Path(_ad_creative_jobs_env) if _ad_creative_jobs_env else DEFAULT_AD_CREATIVE_JOBS
+AD_CREATIVE_LP_PATH = Path(__file__).parent.parent / "ad_creative" / "symmetrylab-career-quiz-lp.html"
 
 # 起動毎にリポジトリ同梱のデフォルトを永続ディスクへ反映
 # ただし管理画面で設定する available_slots / blocked_dates は永続ディスク側を維持
@@ -188,7 +195,77 @@ class CareerApplicationRequest(BaseModel):
     last_touch_at: str = ""
 
 
+class RecruitmentApplicationRequest(BaseModel):
+    client_submission_id: str
+    website: str = ""
+    job_slug: str
+    name: str
+    email: str
+    phone: str
+    age: int
+    current_job: str
+    experience_years: str
+    preferred_location: str
+    timing: str
+    privacy_consent: bool
+    partner_consent: bool
+    motivation: str = ""
+    utm_source: str = ""
+    utm_medium: str = ""
+    utm_campaign: str = ""
+    utm_term: str = ""
+    utm_content: str = ""
+    fbclid: str = ""
+    meta_campaign_id: str = ""
+    meta_adset_id: str = ""
+    meta_ad_id: str = ""
+    meta_placement: str = ""
+    landing_page: str = "/recruitment/"
+    first_touch_at: str = ""
+    last_touch_at: str = ""
+
+
+class AdCreativeApplicationRequest(BaseModel):
+    client_submission_id: str
+    website: str = ""
+    job_public_id: str = ""
+    intention: str
+    q1_company_count: str
+    q2_timing: str
+    q3_income: str
+    q4_location: str
+    q5_education: str
+    q6_career: list[str] = Field(default_factory=list)
+    q7_industry: list[str] = Field(default_factory=list)
+    q8_priority: str
+    q9_role: str
+    q10_age_band: str
+    name: str
+    email: str
+    phone: str = ""
+    privacy_consent: bool
+    partner_consent: bool
+    utm_source: str = ""
+    utm_medium: str = ""
+    utm_campaign: str = ""
+    utm_term: str = ""
+    utm_content: str = ""
+    fbclid: str = ""
+    meta_campaign_id: str = ""
+    meta_adset_id: str = ""
+    meta_ad_id: str = ""
+    meta_placement: str = ""
+    landing_page: str = "/career-check/"
+    first_touch_at: str = ""
+    last_touch_at: str = ""
+
+
 class CareerApplicationStatusRequest(BaseModel):
+    status: str
+    admin_notes: str = ""
+
+
+class RecruitmentApplicationStatusRequest(BaseModel):
     status: str
     admin_notes: str = ""
 
@@ -397,6 +474,109 @@ def init_db():
         )
     """)
     conn.execute("CREATE INDEX IF NOT EXISTS idx_career_status_history_application ON career_application_status_history(application_id, changed_at)")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS recruitment_applications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            application_id TEXT NOT NULL UNIQUE,
+            client_submission_id TEXT NOT NULL UNIQUE,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            application_status TEXT NOT NULL DEFAULT 'new',
+            job_slug TEXT NOT NULL,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            age INTEGER NOT NULL,
+            current_job TEXT NOT NULL,
+            experience_years TEXT NOT NULL,
+            preferred_location TEXT NOT NULL,
+            timing TEXT NOT NULL,
+            motivation TEXT NOT NULL DEFAULT '',
+            privacy_consent_at TEXT NOT NULL,
+            partner_consent_at TEXT NOT NULL,
+            privacy_policy_version TEXT NOT NULL,
+            utm_source TEXT NOT NULL DEFAULT '',
+            utm_medium TEXT NOT NULL DEFAULT '',
+            utm_campaign TEXT NOT NULL DEFAULT '',
+            utm_term TEXT NOT NULL DEFAULT '',
+            utm_content TEXT NOT NULL DEFAULT '',
+            fbclid TEXT NOT NULL DEFAULT '',
+            meta_campaign_id TEXT NOT NULL DEFAULT '',
+            meta_adset_id TEXT NOT NULL DEFAULT '',
+            meta_ad_id TEXT NOT NULL DEFAULT '',
+            meta_placement TEXT NOT NULL DEFAULT '',
+            landing_page TEXT NOT NULL DEFAULT '/recruitment/',
+            first_touch_at TEXT NOT NULL DEFAULT '',
+            last_touch_at TEXT NOT NULL DEFAULT '',
+            source TEXT NOT NULL DEFAULT 'instagram_meta',
+            admin_notes TEXT NOT NULL DEFAULT ''
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_recruitment_applications_created ON recruitment_applications(created_at DESC)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_recruitment_applications_job ON recruitment_applications(job_slug)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_recruitment_applications_status ON recruitment_applications(application_status)")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS recruitment_application_status_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            application_id TEXT NOT NULL,
+            status TEXT NOT NULL,
+            changed_at TEXT NOT NULL,
+            admin_notes TEXT NOT NULL DEFAULT '',
+            FOREIGN KEY (application_id) REFERENCES recruitment_applications(application_id)
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_recruitment_status_history_application ON recruitment_application_status_history(application_id, changed_at)")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS ad_creative_applications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            application_id TEXT NOT NULL UNIQUE,
+            client_submission_id TEXT NOT NULL UNIQUE,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            application_status TEXT NOT NULL DEFAULT 'new',
+            job_public_id TEXT NOT NULL,
+            job_version TEXT NOT NULL DEFAULT '',
+            job_snapshot_json TEXT NOT NULL DEFAULT '{}',
+            intention TEXT NOT NULL,
+            answers_json TEXT NOT NULL DEFAULT '{}',
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            phone TEXT NOT NULL DEFAULT '',
+            age_band TEXT NOT NULL,
+            privacy_consent_at TEXT NOT NULL,
+            partner_consent_at TEXT NOT NULL,
+            consent_version TEXT NOT NULL,
+            utm_source TEXT NOT NULL DEFAULT '',
+            utm_medium TEXT NOT NULL DEFAULT '',
+            utm_campaign TEXT NOT NULL DEFAULT '',
+            utm_term TEXT NOT NULL DEFAULT '',
+            utm_content TEXT NOT NULL DEFAULT '',
+            fbclid TEXT NOT NULL DEFAULT '',
+            meta_campaign_id TEXT NOT NULL DEFAULT '',
+            meta_adset_id TEXT NOT NULL DEFAULT '',
+            meta_ad_id TEXT NOT NULL DEFAULT '',
+            meta_placement TEXT NOT NULL DEFAULT '',
+            landing_page TEXT NOT NULL DEFAULT '/career-check/',
+            first_touch_at TEXT NOT NULL DEFAULT '',
+            last_touch_at TEXT NOT NULL DEFAULT '',
+            source TEXT NOT NULL DEFAULT 'instagram_meta',
+            admin_notes TEXT NOT NULL DEFAULT ''
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_ad_creative_applications_created ON ad_creative_applications(created_at DESC)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_ad_creative_applications_status ON ad_creative_applications(application_status)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_ad_creative_applications_job ON ad_creative_applications(job_public_id)")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS ad_creative_application_status_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            application_id TEXT NOT NULL,
+            status TEXT NOT NULL,
+            changed_at TEXT NOT NULL,
+            admin_notes TEXT NOT NULL DEFAULT '',
+            FOREIGN KEY (application_id) REFERENCES ad_creative_applications(application_id)
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_ad_creative_status_history_application ON ad_creative_application_status_history(application_id, changed_at)")
     seed_articles(conn)
     conn.commit()
     conn.close()
@@ -970,6 +1150,132 @@ CAREER_APPLICATION_CHOICES = {
 }
 
 
+RECRUITMENT_APPLICATION_STATUSES = {
+    "new", "contacted", "interview_scheduled", "interview_completed",
+    "sent_to_wius", "applied", "in_selection", "placed", "rejected",
+}
+
+AD_CREATIVE_APPLICATION_STATUSES = {
+    "new", "contacted", "sent_to_partner", "closed", "rejected",
+}
+
+AD_CREATIVE_CHOICES = {
+    "intention": {"soon", "info"},
+    "q1_company_count": {"経験なし（アルバイト等のみ）", "1社", "2社", "3社", "4社以上"},
+    "q2_timing": {"1か月以内", "2〜3か月以内", "4〜6か月以内", "7か月以降", "時期未定・情報収集中"},
+    "q3_income": {"〜399万円", "400〜599万円", "600〜799万円", "800〜999万円", "1,000〜1,499万円", "1,500〜1,999万円", "2,000万円以上"},
+    "q4_location": {"東京・都内", "首都圏（神奈川・千葉・埼玉）", "関西", "その他の国内", "海外も検討", "特にこだわらない"},
+    "q5_education": {"大学院", "大学", "高専", "短大・専門学校", "高校", "その他・回答しない"},
+    "q8_priority": {"仕事内容・ポジション", "年収・待遇", "専門性・スキル", "成長機会・裁量", "勤務地・通勤条件", "働き方・ワークライフバランス", "まだ決めていない"},
+    "q9_role": {"コンサルタント", "企画・経営企画", "営業・事業開発", "マーケティング", "IT・データ・エンジニア", "管理・バックオフィス", "専門職・技術職", "職歴なし", "その他"},
+    "q10_age_band": {"18〜24歳", "25〜29歳", "30〜34歳", "35〜39歳", "40〜44歳", "45〜49歳", "50〜59歳", "60歳以上"},
+}
+AD_CREATIVE_MULTI_CHOICES = {
+    "q6_career": {"営業・事業開発", "企画・経営企画", "IT・エンジニア", "コンサルタント", "マーケティング", "事務・管理", "販売・サービス", "専門職・技術職", "その他", "まだ決めていない"},
+    "q7_industry": {"IT・Web・通信", "金融・保険", "メーカー・製造", "商社・流通・小売", "不動産・建設", "医療・ヘルスケア", "人材・教育", "飲食・サービス", "その他", "まだ決めていない"},
+}
+
+
+def load_ad_creative_jobs() -> dict:
+    """広告用の公開可否を分離した求人データを読み込む。"""
+    try:
+        with open(AD_CREATIVE_JOBS_PATH, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+    if not isinstance(raw, list):
+        return {}
+    jobs = {}
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        public_id = str(item.get("public_id", "")).strip()
+        if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,39}", public_id):
+            jobs[public_id] = item
+    return jobs
+
+
+def get_ad_creative_job(public_id: str, require_application: bool = False) -> Optional[dict]:
+    job = load_ad_creative_jobs().get(public_id)
+    if not job or job.get("status") not in {"published", "sample", "draft"}:
+        return None
+    if require_application and (
+        job.get("status") != "published"
+        or job.get("application_enabled") is not True
+        or job.get("is_sample") is True
+    ):
+        return None
+    return job
+
+
+def _public_ad_creative_job(job: dict) -> dict:
+    return {
+        key: value
+        for key, value in job.items()
+        if not key.startswith("_") and key not in {"source_url", "source_checked_at", "internal_note"}
+    }
+
+
+def load_recruitment_jobs() -> dict:
+    """求人LPで公開するfixtureを読み込む。公開データのみを対象にする。"""
+    try:
+        with open(RECRUITMENT_JOBS_PATH, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+    if isinstance(raw, list):
+        jobs = {
+            item.get("slug"): item
+            for item in raw
+            if isinstance(item, dict) and item.get("slug")
+        }
+    elif isinstance(raw, dict):
+        jobs = {
+            slug: item
+            for slug, item in raw.items()
+            if isinstance(item, dict) and item.get("slug", slug)
+        }
+    else:
+        return {}
+
+    # A public ID is part of the ad URL contract.  Fail closed when a fixture
+    # contains an invalid or duplicated ID instead of serving an ambiguous LP.
+    public_id_owners = {}
+    for slug, job in jobs.items():
+        public_id = str(job.get("public_id") or job.get("job_id") or "").strip()
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,39}", public_id):
+            job["_invalid_public_id"] = True
+            continue
+        previous_slug = public_id_owners.get(public_id)
+        if previous_slug:
+            jobs[previous_slug]["_invalid_public_id"] = True
+            job["_invalid_public_id"] = True
+        else:
+            public_id_owners[public_id] = slug
+    return jobs
+
+
+def get_recruitment_job(job_slug: str, require_application: bool = False) -> Optional[dict]:
+    job = load_recruitment_jobs().get(job_slug)
+    if not job or job.get("_invalid_public_id") or job.get("status") not in {"published", "sample"}:
+        return None
+    if require_application and (
+        job.get("status") != "published"
+        or job.get("application_enabled") is not True
+        or job.get("is_sample") is True
+    ):
+        return None
+    return job
+
+
+def get_recruitment_job_by_public_id(public_id: str) -> Optional[dict]:
+    for job in load_recruitment_jobs().values():
+        if not job.get("_invalid_public_id") and str(job.get("public_id") or job.get("job_id") or "") == public_id:
+            return job if job.get("status") in {"published", "sample"} else None
+    return None
+
+
 def _career_trim(value: str, field_name: str, max_length: int, required: bool = False) -> str:
     value = (value or "").strip()
     if required and not value:
@@ -977,6 +1283,83 @@ def _career_trim(value: str, field_name: str, max_length: int, required: bool = 
     if len(value) > max_length:
         raise HTTPException(status_code=422, detail=f"{field_name}が長すぎます")
     return value
+
+
+def _validate_recruitment_application(req: RecruitmentApplicationRequest) -> RecruitmentApplicationRequest:
+    if req.website.strip():
+        raise HTTPException(status_code=422, detail="申込を受け付けられませんでした")
+    req.client_submission_id = _career_trim(req.client_submission_id, "申込識別子", 100, required=True)
+    if not re.fullmatch(r"[A-Za-z0-9_-]{10,100}", req.client_submission_id):
+        raise HTTPException(status_code=422, detail="申込識別子が正しくありません")
+    req.job_slug = _career_trim(req.job_slug, "求人識別子", 80, required=True).lower()
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,79}", req.job_slug) or not get_recruitment_job(req.job_slug, require_application=True):
+        raise HTTPException(status_code=422, detail="求人が見つからないか、現在受付していません")
+
+    req.name = _career_trim(req.name, "氏名", 120, required=True)
+    req.email = _career_trim(req.email, "メールアドレス", 254, required=True)
+    if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", req.email):
+        raise HTTPException(status_code=422, detail="メールアドレスの形式が正しくありません")
+    req.phone = _career_trim(req.phone, "電話番号", 40, required=True)
+    if len(re.sub(r"[^0-9]", "", req.phone)) < 7:
+        raise HTTPException(status_code=422, detail="電話番号の形式が正しくありません")
+    if req.age < 18 or req.age > 80:
+        raise HTTPException(status_code=422, detail="年齢の入力内容を確認してください")
+
+    req.current_job = _career_trim(req.current_job, "現在の職種", 120, required=True)
+    req.experience_years = _career_trim(req.experience_years, "社会人経験年数", 40, required=True)
+    if req.experience_years not in {"1年未満", "1〜3年", "4〜6年", "7〜10年", "11年以上"}:
+        raise HTTPException(status_code=422, detail="社会人経験年数の選択肢が正しくありません")
+    req.preferred_location = _career_trim(req.preferred_location, "希望勤務地", 80, required=True)
+    if req.preferred_location not in {"東京23区", "東京近郊", "大阪", "その他の地域", "全国可", "未定"}:
+        raise HTTPException(status_code=422, detail="希望勤務地の選択肢が正しくありません")
+    req.timing = _career_trim(req.timing, "転職希望時期", 80, required=True)
+    if req.timing not in {"すぐに", "3カ月以内", "3〜6カ月以内", "6カ月〜1年以内", "1年以上先", "時期未定"}:
+        raise HTTPException(status_code=422, detail="転職希望時期の選択肢が正しくありません")
+    req.motivation = _career_trim(req.motivation, "相談内容", 2000)
+
+    for field_name, label, max_length in (
+        ("utm_source", "utm_source", 200),
+        ("utm_medium", "utm_medium", 200),
+        ("utm_campaign", "utm_campaign", 200),
+        ("utm_term", "utm_term", 200),
+        ("utm_content", "utm_content", 200),
+        ("fbclid", "fbclid", 500),
+        ("meta_campaign_id", "MetaキャンペーンID", 200),
+        ("meta_adset_id", "Meta広告セットID", 200),
+        ("meta_ad_id", "Meta広告ID", 200),
+        ("meta_placement", "Meta掲載面", 120),
+        ("landing_page", "ランディングページ", 500),
+        ("first_touch_at", "初回流入日時", 80),
+        ("last_touch_at", "最終流入日時", 80),
+    ):
+        setattr(req, field_name, _career_trim(getattr(req, field_name), label, max_length))
+    application_job = get_recruitment_job(req.job_slug, require_application=True)
+    landing_url = urlparse(req.landing_page)
+    if landing_url.scheme or landing_url.netloc:
+        raise HTTPException(status_code=422, detail="ランディングページが正しくありません")
+    landing_path = landing_url.path.rstrip("/") + "/"
+    public_id = str(application_job.get("public_id") or application_job.get("job_id") or "")
+    is_current_public_lp = landing_path == f"/jobs/{public_id}/"
+    legacy_query_slugs = [
+        value
+        for key in ("job", "job_slug")
+        for value in parse_qs(landing_url.query).get(key, [])
+        if value
+    ]
+    is_legacy_job_lp = landing_path == f"/recruitment/{req.job_slug}/"
+    is_legacy_root_lp = (
+        landing_path in {"/recruitment/", "/recruitment/index.html/"}
+        and legacy_query_slugs
+        and all(value == req.job_slug for value in legacy_query_slugs)
+    )
+    is_legacy_recruitment_lp = is_legacy_job_lp or is_legacy_root_lp
+    if not (is_current_public_lp or is_legacy_recruitment_lp):
+        raise HTTPException(status_code=422, detail="ランディングページが正しくありません")
+    if not req.privacy_consent:
+        raise HTTPException(status_code=422, detail="プライバシーポリシーへの同意が必要です")
+    if not req.partner_consent:
+        raise HTTPException(status_code=422, detail="提携事業者への情報共有に関する説明への同意が必要です")
+    return req
 
 
 def _validate_career_appointment(appointment: str, appointment_mode: str) -> tuple[str, str]:
@@ -1091,6 +1474,83 @@ def _career_origin_allowed(request: Request) -> bool:
         and origin_url.scheme == "http"
         and origin_url.hostname in {"127.0.0.1", "localhost"}
     )
+
+
+def _validate_ad_creative_application(req: AdCreativeApplicationRequest) -> AdCreativeApplicationRequest:
+    if req.website.strip():
+        raise HTTPException(status_code=422, detail="申込を受け付けられませんでした")
+    req.client_submission_id = _career_trim(req.client_submission_id, "申込識別子", 100, required=True)
+    if not re.fullmatch(r"[A-Za-z0-9_-]{10,100}", req.client_submission_id):
+        raise HTTPException(status_code=422, detail="申込識別子が正しくありません")
+    req.job_public_id = _career_trim(req.job_public_id, "求人識別子", 40)
+    if req.job_public_id and (
+        not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,39}", req.job_public_id)
+        or not get_ad_creative_job(req.job_public_id, require_application=True)
+    ):
+        raise HTTPException(status_code=422, detail="求人が見つからないか、現在受付していません")
+
+    for field_name, label in (
+        ("intention", "事前意向"),
+        ("q1_company_count", "会社数"),
+        ("q2_timing", "相談時期"),
+        ("q3_income", "現在の年収帯"),
+        ("q4_location", "希望勤務地"),
+        ("q5_education", "最終学歴"),
+        ("q8_priority", "重視条件"),
+        ("q9_role", "直近の役割"),
+        ("q10_age_band", "年代"),
+    ):
+        value = _career_trim(getattr(req, field_name), label, 120, required=True)
+        setattr(req, field_name, value)
+        allowed = AD_CREATIVE_CHOICES[field_name]
+        if value not in allowed:
+            raise HTTPException(status_code=422, detail=f"{label}の選択肢が正しくありません")
+
+    for field_name, label in (("q6_career", "希望キャリア"), ("q7_industry", "興味のある業界")):
+        values = getattr(req, field_name)
+        if not isinstance(values, list) or not values or len(values) > 10:
+            raise HTTPException(status_code=422, detail=f"{label}を1つ以上選択してください")
+        values = [_career_trim(str(value), label, 120, required=True) for value in values]
+        if len(set(values)) != len(values) or any(value not in AD_CREATIVE_MULTI_CHOICES[field_name] for value in values):
+            raise HTTPException(status_code=422, detail=f"{label}の選択肢が正しくありません")
+        if "まだ決めていない" in values and len(values) != 1:
+            raise HTTPException(status_code=422, detail=f"{label}の未定は他の選択肢と併用できません")
+        setattr(req, field_name, values)
+
+    req.name = _career_trim(req.name, "氏名", 120, required=True)
+    req.email = _career_trim(req.email, "メールアドレス", 254, required=True)
+    if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", req.email):
+        raise HTTPException(status_code=422, detail="メールアドレスの形式が正しくありません")
+    req.phone = _career_trim(req.phone, "電話番号", 40)
+    if req.phone and len(re.sub(r"[^0-9]", "", req.phone)) < 7:
+        raise HTTPException(status_code=422, detail="電話番号の形式を確認してください")
+    if not req.privacy_consent:
+        raise HTTPException(status_code=422, detail="個人情報の取扱いへの同意が必要です")
+    if not req.partner_consent:
+        raise HTTPException(status_code=422, detail="提携先への情報提供に関する同意が必要です")
+
+    for field_name, label, max_length in (
+        ("utm_source", "utm_source", 200),
+        ("utm_medium", "utm_medium", 200),
+        ("utm_campaign", "utm_campaign", 200),
+        ("utm_term", "utm_term", 200),
+        ("utm_content", "utm_content", 200),
+        ("fbclid", "fbclid", 500),
+        ("meta_campaign_id", "MetaキャンペーンID", 200),
+        ("meta_adset_id", "Meta広告セットID", 200),
+        ("meta_ad_id", "Meta広告ID", 200),
+        ("meta_placement", "Meta掲載面", 120),
+        ("landing_page", "ランディングページ", 500),
+        ("first_touch_at", "初回流入日時", 80),
+        ("last_touch_at", "最終流入日時", 80),
+    ):
+        setattr(req, field_name, _career_trim(getattr(req, field_name), label, max_length))
+
+    landing_url = urlparse(req.landing_page)
+    allowed_landing_paths = {"/career-check/", "/career-check", "/ad_creative/symmetrylab-career-quiz-lp.html"}
+    if landing_url.scheme or landing_url.netloc or landing_url.path not in allowed_landing_paths:
+        raise HTTPException(status_code=422, detail="ランディングページが正しくありません")
+    return req
 
 
 @app.post("/api/consulting-career/applications")
@@ -1697,6 +2157,50 @@ async def update_career_application(
     return {"ok": True, "application_id": application_id, "status": payload.status}
 
 
+def _render_recruitment_job_landing(job: dict) -> HTMLResponse:
+    if not RECRUITMENT_LP_PATH.exists():
+        raise HTTPException(status_code=404, detail="求人LPが見つかりません")
+    markup = RECRUITMENT_LP_PATH.read_text(encoding="utf-8")
+    title = html.escape(str(job.get("title") or "求人詳細"), quote=True)
+    description = html.escape(
+        str(job.get("catch_copy") or job.get("summary") or "SYMMETRY Labの求人情報。"),
+        quote=True,
+    )
+    public_id = str(job.get("public_id") or job.get("job_id") or job.get("slug"))
+    canonical = html.escape(f"{BASE_URL.rstrip('/')}/jobs/{public_id}/", quote=True)
+    markup = re.sub(r"<title>.*?</title>", f"<title>{title} | SYMMETRY Lab</title>", markup, count=1)
+    markup = re.sub(r'<meta name="description" content="[^"]*">', f'<meta name="description" content="{description}">', markup, count=1)
+    markup = re.sub(r'<meta property="og:title" content="[^"]*">', f'<meta property="og:title" content="{title} | SYMMETRY Lab">', markup, count=1)
+    markup = re.sub(r'<meta property="og:description" content="[^"]*">', f'<meta property="og:description" content="{description}">', markup, count=1)
+    markup = markup.replace('<meta property="og:type" content="website">', f'<meta property="og:type" content="website">\n  <meta property="og:url" content="{canonical}">', 1)
+    markup = re.sub(r'<link rel="canonical" href="[^"]*">', f'<link rel="canonical" href="{canonical}">', markup, count=1)
+    return HTMLResponse(markup, media_type="text/html")
+
+
+@app.get("/jobs/{public_id}/", include_in_schema=False)
+@app.get("/jobs/{public_id}", include_in_schema=False)
+async def public_recruitment_job_landing(public_id: str):
+    """Serve a job-specific recruitment LP at the public ad URL."""
+    job = get_recruitment_job_by_public_id(public_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="求人が見つかりません")
+    return _render_recruitment_job_landing(job)
+
+
+@app.get("/recruitment/{job_slug}/", include_in_schema=False)
+@app.get("/recruitment/{job_slug}", include_in_schema=False)
+async def recruitment_job_landing(job_slug: str):
+    """Serve the legacy reusable recruitment LP at a job-specific URL."""
+    if job_slug == "index.html":
+        return FileResponse(RECRUITMENT_LP_PATH, media_type="text/html")
+    if job_slug == "jobs.json" and RECRUITMENT_JOBS_PATH.exists():
+        return FileResponse(RECRUITMENT_JOBS_PATH, media_type="application/json")
+    job = get_recruitment_job(job_slug)
+    if not job:
+        raise HTTPException(status_code=404, detail="求人が見つかりません")
+    return _render_recruitment_job_landing(job)
+
+
 @app.get("/api/admin/consulting-career/applications/{application_id}/history")
 async def get_career_application_history(application_id: str, request: Request):
     if not _admin_key_is_valid(request):
@@ -2207,6 +2711,374 @@ async def tracking_config():
         "google_ads_conversion_id": os.getenv("SYMMETRY_GOOGLE_ADS_CONVERSION_ID", "").strip(),
         "google_ads_conversion_label": os.getenv("SYMMETRY_GOOGLE_ADS_CONVERSION_LABEL", "").strip(),
     }
+
+
+@app.get("/api/recruitment/tracking-config", include_in_schema=False)
+async def recruitment_tracking_config():
+    """Expose only the opt-in Meta config for the separate Instagram funnel."""
+    pixel_id = os.getenv("SYMMETRY_META_PIXEL_ID", "").strip()
+    enabled = os.getenv("SYMMETRY_META_TRACKING_ENABLED", "false").strip().lower() in {
+        "1", "true", "yes", "on"
+    }
+    if not re.fullmatch(r"\d{5,20}", pixel_id):
+        pixel_id = ""
+    return {
+        "meta_pixel_id": pixel_id,
+        "enabled": bool(pixel_id and enabled),
+        "privacy_policy_version": os.getenv("PRIVACY_POLICY_VERSION", "current").strip() or "current",
+    }
+
+
+@app.get("/api/ad-creative/tracking-config", include_in_schema=False)
+async def ad_creative_tracking_config():
+    """Expose only the opt-in Meta config for the isolated ad creative funnel."""
+    pixel_id = os.getenv("SYMMETRY_META_PIXEL_ID", "").strip()
+    enabled = os.getenv("SYMMETRY_META_TRACKING_ENABLED", "false").strip().lower() in {
+        "1", "true", "yes", "on"
+    }
+    if not re.fullmatch(r"\d{5,20}", pixel_id):
+        pixel_id = ""
+    return {
+        "meta_pixel_id": pixel_id,
+        "enabled": bool(pixel_id and enabled),
+        "consent_version": os.getenv("AD_CREATIVE_CONSENT_VERSION", os.getenv("PRIVACY_POLICY_VERSION", "current")).strip() or "current",
+    }
+
+
+@app.get("/career-check", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/career-check/", response_class=HTMLResponse, include_in_schema=False)
+async def ad_creative_career_check():
+    """広告専用の汎用キャリア診断LP。既存HP/LPからはリンクしない。"""
+    return FileResponse(
+        AD_CREATIVE_LP_PATH,
+        media_type="text/html",
+        headers={"X-Robots-Tag": "noindex, nofollow"},
+    )
+
+
+@app.get("/api/ad-creative/jobs/{public_id}", include_in_schema=False)
+async def ad_creative_job(public_id: str):
+    job = get_ad_creative_job(public_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="広告用求人が見つかりません")
+    return _public_ad_creative_job(job)
+
+
+@app.post("/api/ad-creative/applications")
+async def create_ad_creative_application(request: Request, req: AdCreativeApplicationRequest):
+    """広告専用の12ステップ登録を保存する。既存の採用APIとは分離する。"""
+    if not _career_origin_allowed(request):
+        raise HTTPException(status_code=403, detail="許可されていない送信元です")
+    req = _validate_ad_creative_application(req)
+    job = get_ad_creative_job(req.job_public_id, require_application=True) if req.job_public_id else None
+    if req.job_public_id and not job:
+        raise HTTPException(status_code=422, detail="広告用求人が現在受付していません")
+
+    conn = get_db()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        existing = conn.execute(
+            "SELECT application_id, created_at FROM ad_creative_applications WHERE client_submission_id = ?",
+            (req.client_submission_id,),
+        ).fetchone()
+        if existing:
+            conn.rollback()
+            return {
+                "ok": True,
+                "duplicate": True,
+                "application_id": existing["application_id"],
+                "lead_id": existing["application_id"],
+                "created_at": existing["created_at"],
+            }
+
+        application_id = str(uuid4())
+        now = datetime.now(JST).isoformat(timespec="seconds")
+        consent_version = os.getenv("AD_CREATIVE_CONSENT_VERSION", os.getenv("PRIVACY_POLICY_VERSION", "current")).strip() or "current"
+        job_snapshot = _public_ad_creative_job(job) if job else {}
+        answers = {
+            "q1_company_count": req.q1_company_count,
+            "q2_timing": req.q2_timing,
+            "q3_income": req.q3_income,
+            "q4_location": req.q4_location,
+            "q5_education": req.q5_education,
+            "q6_career": req.q6_career,
+            "q7_industry": req.q7_industry,
+            "q8_priority": req.q8_priority,
+            "q9_role": req.q9_role,
+            "q10_age_band": req.q10_age_band,
+        }
+        conn.execute("""
+            INSERT INTO ad_creative_applications (
+                application_id, client_submission_id, created_at, updated_at,
+                application_status, job_public_id, job_version, job_snapshot_json,
+                intention, answers_json, name, email, phone, age_band,
+                privacy_consent_at, partner_consent_at, consent_version,
+                utm_source, utm_medium, utm_campaign, utm_term, utm_content,
+                fbclid, meta_campaign_id, meta_adset_id, meta_ad_id, meta_placement,
+                landing_page, first_touch_at, last_touch_at, source
+            ) VALUES (?, ?, ?, ?, 'new', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'instagram_meta')
+        """, (
+            application_id, req.client_submission_id, now, now,
+            req.job_public_id, str(job.get("version", "")) if job else "", json.dumps(job_snapshot, ensure_ascii=False),
+            req.intention, json.dumps(answers, ensure_ascii=False), req.name, req.email, req.phone, req.q10_age_band,
+            now, now, consent_version,
+            req.utm_source, req.utm_medium, req.utm_campaign, req.utm_term, req.utm_content,
+            req.fbclid, req.meta_campaign_id, req.meta_adset_id, req.meta_ad_id, req.meta_placement,
+            req.landing_page, req.first_touch_at, req.last_touch_at,
+        ))
+        conn.execute(
+            "INSERT INTO ad_creative_application_status_history (application_id, status, changed_at, admin_notes) VALUES (?, 'new', ?, '')",
+            (application_id, now),
+        )
+        conn.commit()
+        return {"ok": True, "duplicate": False, "application_id": application_id, "lead_id": application_id, "created_at": now}
+    except sqlite3.IntegrityError:
+        conn.rollback()
+        existing = conn.execute(
+            "SELECT application_id, created_at FROM ad_creative_applications WHERE client_submission_id = ?",
+            (req.client_submission_id,),
+        ).fetchone()
+        if existing:
+            return {
+                "ok": True,
+                "duplicate": True,
+                "application_id": existing["application_id"],
+                "lead_id": existing["application_id"],
+                "created_at": existing["created_at"],
+            }
+        raise HTTPException(status_code=500, detail="登録情報を保存できませんでした")
+    finally:
+        conn.close()
+
+
+def _serialize_ad_creative_application(row) -> dict:
+    data = dict(row)
+    for field_name in ("job_snapshot_json", "answers_json"):
+        try:
+            data[field_name[:-5]] = json.loads(data.pop(field_name) or "{}")
+        except (TypeError, json.JSONDecodeError):
+            data[field_name[:-5]] = {}
+    return data
+
+
+@app.get("/api/admin/ad-creative/applications")
+async def list_ad_creative_applications(request: Request, status: str = "", limit: int = 100):
+    if not _admin_key_is_valid(request):
+        raise HTTPException(status_code=403, detail="認証が必要です")
+    limit = min(max(limit, 1), 500)
+    if status and status not in AD_CREATIVE_APPLICATION_STATUSES:
+        raise HTTPException(status_code=400, detail="無効なステータスです")
+    conn = get_db()
+    try:
+        if status:
+            rows = conn.execute(
+                "SELECT * FROM ad_creative_applications WHERE application_status = ? ORDER BY id DESC LIMIT ?",
+                (status, limit),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM ad_creative_applications ORDER BY id DESC LIMIT ?",
+                (limit,),
+            ).fetchall()
+        return [_serialize_ad_creative_application(row) for row in rows]
+    finally:
+        conn.close()
+
+
+@app.patch("/api/admin/ad-creative/applications/{application_id}")
+async def update_ad_creative_application(
+    application_id: str,
+    request: Request,
+    payload: RecruitmentApplicationStatusRequest,
+):
+    if not _admin_key_is_valid(request):
+        raise HTTPException(status_code=403, detail="認証が必要です")
+    if payload.status not in AD_CREATIVE_APPLICATION_STATUSES:
+        raise HTTPException(status_code=400, detail="無効なステータスです")
+    if len(payload.admin_notes) > 5000:
+        raise HTTPException(status_code=422, detail="管理メモが長すぎます")
+    conn = get_db()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        current = conn.execute(
+            "SELECT application_status FROM ad_creative_applications WHERE application_id = ?",
+            (application_id,),
+        ).fetchone()
+        if not current:
+            conn.rollback()
+            raise HTTPException(status_code=404, detail="登録情報が見つかりません")
+        now = datetime.now(JST).isoformat(timespec="seconds")
+        notes = payload.admin_notes.strip()
+        conn.execute(
+            "UPDATE ad_creative_applications SET application_status = ?, admin_notes = ?, updated_at = ? WHERE application_id = ?",
+            (payload.status, notes, now, application_id),
+        )
+        if current["application_status"] != payload.status:
+            conn.execute(
+                "INSERT INTO ad_creative_application_status_history (application_id, status, changed_at, admin_notes) VALUES (?, ?, ?, ?)",
+                (application_id, payload.status, now, notes),
+            )
+        conn.commit()
+        return {"ok": True, "application_id": application_id, "status": payload.status}
+    finally:
+        conn.close()
+
+
+@app.get("/api/recruitment/jobs", include_in_schema=False)
+async def list_recruitment_jobs():
+    """Return public, published/sample job fixtures for the recruitment LP."""
+    return [
+        job for job in load_recruitment_jobs().values()
+        if not job.get("_invalid_public_id")
+        and job.get("status") in {"published", "sample"}
+    ]
+
+
+@app.get("/api/recruitment/jobs/{job_slug}", include_in_schema=False)
+async def recruitment_job(job_slug: str):
+    job = get_recruitment_job(job_slug)
+    if not job:
+        raise HTTPException(status_code=404, detail="求人が見つかりません")
+    return job
+
+
+@app.post("/api/recruitment/applications")
+async def create_recruitment_application(request: Request, req: RecruitmentApplicationRequest):
+    """Persist an Instagram/Meta recruitment lead independently from Google Ads leads."""
+    if not _career_origin_allowed(request):
+        raise HTTPException(status_code=403, detail="許可されていない送信元です")
+    req = _validate_recruitment_application(req)
+    conn = get_db()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        existing = conn.execute(
+            "SELECT application_id, created_at FROM recruitment_applications WHERE client_submission_id = ?",
+            (req.client_submission_id,),
+        ).fetchone()
+        if existing:
+            conn.rollback()
+            return {
+                "ok": True,
+                "duplicate": True,
+                "application_id": existing["application_id"],
+                "lead_id": existing["application_id"],
+                "created_at": existing["created_at"],
+            }
+
+        application_id = str(uuid4())
+        now = datetime.now().isoformat(timespec="seconds")
+        privacy_policy_version = os.getenv("PRIVACY_POLICY_VERSION", "current").strip() or "current"
+        conn.execute("""
+            INSERT INTO recruitment_applications (
+                application_id, client_submission_id, created_at, updated_at,
+                application_status, job_slug, name, email, phone, age,
+                current_job, experience_years, preferred_location, timing, motivation,
+                privacy_consent_at, partner_consent_at, privacy_policy_version,
+                utm_source, utm_medium, utm_campaign, utm_term, utm_content,
+                fbclid, meta_campaign_id, meta_adset_id, meta_ad_id, meta_placement,
+                landing_page, first_touch_at, last_touch_at, source
+            ) VALUES (?, ?, ?, ?, 'new', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'instagram_meta')
+        """, (
+            application_id, req.client_submission_id, now, now,
+            req.job_slug, req.name, req.email, req.phone, req.age,
+            req.current_job, req.experience_years, req.preferred_location, req.timing, req.motivation,
+            now, now, privacy_policy_version,
+            req.utm_source, req.utm_medium, req.utm_campaign, req.utm_term, req.utm_content,
+            req.fbclid, req.meta_campaign_id, req.meta_adset_id, req.meta_ad_id, req.meta_placement,
+            req.landing_page, req.first_touch_at, req.last_touch_at,
+        ))
+        conn.execute(
+            "INSERT INTO recruitment_application_status_history (application_id, status, changed_at, admin_notes) VALUES (?, 'new', ?, '')",
+            (application_id, now),
+        )
+        conn.commit()
+        return {
+            "ok": True,
+            "duplicate": False,
+            "application_id": application_id,
+            "lead_id": application_id,
+            "created_at": now,
+        }
+    except sqlite3.IntegrityError:
+        conn.rollback()
+        existing = conn.execute(
+            "SELECT application_id, created_at FROM recruitment_applications WHERE client_submission_id = ?",
+            (req.client_submission_id,),
+        ).fetchone()
+        if existing:
+            return {
+                "ok": True,
+                "duplicate": True,
+                "application_id": existing["application_id"],
+                "lead_id": existing["application_id"],
+                "created_at": existing["created_at"],
+            }
+        raise HTTPException(status_code=500, detail="候補者情報を保存できませんでした")
+    finally:
+        conn.close()
+
+
+@app.get("/api/admin/recruitment/applications")
+async def list_recruitment_applications(request: Request, status: str = "", limit: int = 100):
+    if not _admin_key_is_valid(request):
+        raise HTTPException(status_code=403, detail="認証が必要です")
+    limit = min(max(limit, 1), 500)
+    conn = get_db()
+    try:
+        if status:
+            if status not in RECRUITMENT_APPLICATION_STATUSES:
+                raise HTTPException(status_code=400, detail="無効なステータスです")
+            rows = conn.execute(
+                "SELECT * FROM recruitment_applications WHERE application_status = ? ORDER BY id DESC LIMIT ?",
+                (status, limit),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM recruitment_applications ORDER BY id DESC LIMIT ?",
+                (limit,),
+            ).fetchall()
+    finally:
+        conn.close()
+    return [dict(row) for row in rows]
+
+
+@app.patch("/api/admin/recruitment/applications/{application_id}")
+async def update_recruitment_application(
+    application_id: str,
+    request: Request,
+    payload: RecruitmentApplicationStatusRequest,
+):
+    if not _admin_key_is_valid(request):
+        raise HTTPException(status_code=403, detail="認証が必要です")
+    if payload.status not in RECRUITMENT_APPLICATION_STATUSES:
+        raise HTTPException(status_code=400, detail="無効なステータスです")
+    if len(payload.admin_notes) > 5000:
+        raise HTTPException(status_code=422, detail="管理メモが長すぎます")
+    conn = get_db()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        current = conn.execute(
+            "SELECT application_status FROM recruitment_applications WHERE application_id = ?",
+            (application_id,),
+        ).fetchone()
+        if not current:
+            conn.rollback()
+            raise HTTPException(status_code=404, detail="候補者情報が見つかりません")
+        now = datetime.now().isoformat(timespec="seconds")
+        notes = payload.admin_notes.strip()
+        conn.execute(
+            "UPDATE recruitment_applications SET application_status = ?, admin_notes = ?, updated_at = ? WHERE application_id = ?",
+            (payload.status, notes, now, application_id),
+        )
+        if current["application_status"] != payload.status:
+            conn.execute(
+                "INSERT INTO recruitment_application_status_history (application_id, status, changed_at, admin_notes) VALUES (?, ?, ?, ?)",
+                (application_id, payload.status, now, notes),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+    return {"ok": True, "application_id": application_id, "status": payload.status}
 
 
 @app.on_event("startup")

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SymmetryLab Instagram Ad Preview</title>
+  <style>
+    :root {
+      --navy: #1f2937;
+      --navy-deep: #111827;
+      --cyan: #36c9e6;
+      --cyan-dark: #1fa8c4;
+      --mist: #ebf9fc;
+      --paper: #f9fafb;
+      --muted: #6b7280;
+      --line: #dbe3e8;
+      --font: Inter, "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #e9edf0;
+      color: var(--navy);
+      font-family: var(--font);
+    }
+    .preview-header {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 24px 12px;
+    }
+    .preview-header h1 { margin: 0 0 8px; font-size: 20px; }
+    .preview-header p { margin: 0; color: var(--muted); font-size: 13px; }
+    .deck {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 20px 24px 48px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(240px, 1fr));
+      gap: 24px;
+    }
+    .slide {
+      position: relative;
+      aspect-ratio: 4 / 5;
+      overflow: hidden;
+      border-radius: 16px;
+      background: white;
+      box-shadow: 0 16px 36px rgba(17, 24, 39, .16);
+      isolation: isolate;
+    }
+    .slide::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgba(255, 255, 255, .18);
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .slide-one {
+      color: white;
+      background:
+        linear-gradient(180deg, rgba(17, 24, 39, .18) 0%, rgba(17, 24, 39, .42) 38%, rgba(17, 24, 39, .9) 100%),
+        url("../images/hero-consulting.jpg") center / cover;
+    }
+    .slide-one .brand { position: absolute; top: 7%; left: 8%; width: 62%; filter: brightness(0) invert(1); opacity: .95; }
+    .eyebrow { letter-spacing: .18em; font-size: 10px; font-weight: 700; }
+    .slide-one .eyebrow { position: absolute; top: 27%; left: 8%; color: var(--cyan); }
+    .slide-one h2 {
+      position: absolute; left: 8%; right: 8%; top: 35%; margin: 0;
+      font-size: clamp(22px, 3vw, 36px); line-height: 1.42; letter-spacing: .02em;
+    }
+    .slide-one .lead { position: absolute; left: 8%; right: 10%; bottom: 19%; font-size: 13px; line-height: 1.9; color: #eef4f6; }
+    .slide-one .tag { position: absolute; left: 8%; bottom: 7%; font-size: 11px; color: #b2c4cd; }
+    .slide-two { background: var(--paper); padding: 10% 9%; }
+    .slide-two .accent-line { width: 44px; height: 4px; background: var(--cyan); margin-bottom: 12%; }
+    .slide-two .eyebrow { color: var(--cyan-dark); }
+    .slide-two h2 { margin: 9% 0 12%; font-size: clamp(23px, 3vw, 36px); line-height: 1.38; }
+    .slide-two .intro { margin: 0 0 9%; color: var(--muted); font-size: 12px; line-height: 1.8; }
+    .points { display: grid; gap: 10px; }
+    .point { display: grid; grid-template-columns: 30px 1fr; align-items: center; min-height: 44px; border-top: 1px solid var(--line); font-size: 12px; }
+    .point:last-child { border-bottom: 1px solid var(--line); }
+    .point b { color: var(--cyan-dark); font-size: 11px; }
+    .slide-two .footer { position: absolute; left: 9%; right: 9%; bottom: 7%; display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 9px; letter-spacing: .05em; }
+    .slide-two .mark { width: 27px; height: 27px; object-fit: contain; }
+    .slide-three { background: var(--navy-deep); color: white; padding: 10% 9%; }
+    .slide-three .brand { width: 70%; filter: brightness(0) invert(1); opacity: .96; }
+    .slide-three .eyebrow { margin-top: 18%; color: var(--cyan); }
+    .slide-three h2 { margin: 12% 0 8%; font-size: clamp(24px, 3vw, 38px); line-height: 1.42; }
+    .slide-three p { margin: 0; color: #cbd5dc; font-size: 12px; line-height: 1.9; }
+    .cta { position: absolute; left: 9%; right: 9%; bottom: 15%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 16px; background: var(--cyan); color: var(--navy-deep); font-weight: 800; font-size: 12px; }
+    .cta::after { content: "→"; font-size: 18px; line-height: 1; }
+    .slide-three .small { position: absolute; left: 9%; bottom: 7%; color: #9aaab5; font-size: 9px; letter-spacing: .08em; }
+    @media (max-width: 880px) {
+      .deck { grid-template-columns: 1fr; max-width: 480px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="preview-header">
+    <h1>SymmetryLab / Instagram広告クリエイティブ案</h1>
+    <p>Wius型の3段構成：課題提起 → 支援内容 → CTA。これは広告準備用の別ファイルで、既存HP・LPは変更していません。</p>
+  </header>
+  <main class="deck" aria-label="Instagram広告カルーセル案">
+    <article class="slide slide-one">
+      <img class="brand" src="../images/logo_full.png" alt="SYMMETRY Lab">
+      <div class="eyebrow">CAREER / STRATEGY</div>
+      <h2>戦略コンサルへの転職を、<br>実力で勝ち取る。</h2>
+      <p class="lead">外資系戦略コンサル出身者が、経験の棚卸しから選考準備まで、思考の質を一段引き上げます。</p>
+      <div class="tag">SymmetryLab Career</div>
+    </article>
+    <article class="slide slide-two">
+      <div class="accent-line"></div>
+      <div class="eyebrow">SYMMETRYLAB CAREER SUPPORT</div>
+      <h2>経験を、<br>市場価値へ。</h2>
+      <p class="intro">答えを急がず、いまのキャリアを構造化する。次の選択肢を、納得感のある形に整えます。</p>
+      <div class="points">
+        <div class="point"><b>01</b><span>職務経歴の棚卸し</span></div>
+        <div class="point"><b>02</b><span>志望領域・キャリアの整理</span></div>
+        <div class="point"><b>03</b><span>面接・ケース対策</span></div>
+        <div class="point"><b>04</b><span>内定後の意思決定支援</span></div>
+      </div>
+      <div class="footer"><span>Practical / Personal / Strategic</span><img class="mark" src="../images/logo_mark.jpg" alt=""></div>
+    </article>
+    <article class="slide slide-three">
+      <img class="brand" src="../images/logo_full.png" alt="SYMMETRY Lab">
+      <div class="eyebrow">START WITH CLARITY</div>
+      <h2>まずは、<br>キャリアの現在地を整理する。</h2>
+      <p>あなたの経験を、次の選択肢につながる言葉へ。SymmetryLab Careerの無料相談から始められます。</p>
+      <div class="cta">無料相談を予約する</div>
+      <div class="small">SYMMETRY LAB / CAREER SUPPORT</div>
+    </article>
+  </main>
+</body>
+</html>

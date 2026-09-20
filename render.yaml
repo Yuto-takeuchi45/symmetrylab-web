@@ -43,3 +43,11 @@ services:
         value: AW-18344529693
       - key: SYMMETRY_GOOGLE_ADS_CONVERSION_LABEL
         value: bIkKCK27_uAcEJ2eratE
+      - key: SYMMETRY_META_PIXEL_ID
+        sync: false
+      - key: SYMMETRY_META_TRACKING_ENABLED
+        value: "false"
+      - key: AD_CREATIVE_CONSENT_VERSION
+        value: ad-privacy-v1
+      - key: AD_CREATIVE_JOBS_PATH
+        sync: false

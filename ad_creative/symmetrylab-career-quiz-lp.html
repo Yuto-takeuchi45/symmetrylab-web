@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <title>SymmetryLab Career｜キャリア相談</title>
+  <style>
+    :root {
+      --navy: #1f2937;
+      --navy-deep: #17212c;
+      --cyan: #36c9e6;
+      --cyan-deep: #1fa8c4;
+      --cyan-pale: #ebf9fc;
+      --paper: #f7fafb;
+      --white: #fff;
+      --text: #1f2937;
+      --text-sub: #566773;
+      --muted: #8b9aa2;
+      --line: #dbe4e8;
+      --danger: #c44d4d;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-xl: 26px;
+      --shadow: 0 18px 60px rgba(25, 42, 52, .16);
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: #dcebee; }
+    body {
+      min-height: 100%;
+      margin: 0;
+      color: var(--text);
+      background: var(--paper);
+      font-family: Inter, "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    img { max-width: 100%; display: block; }
+    button, input, select { font: inherit; }
+    a { color: inherit; }
+    button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
+      outline: 3px solid rgba(54, 201, 230, .52);
+      outline-offset: 3px;
+    }
+
+    .page-hero {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      background: #dcebee;
+    }
+    .page-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(236, 249, 252, .72), rgba(236, 249, 252, .92)),
+        url("../images/hero-consulting.jpg") center / cover;
+      filter: saturate(.78);
+    }
+    .page-hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 11% 22%, rgba(54, 201, 230, .16) 0 2px, transparent 3px),
+        radial-gradient(circle at 83% 78%, rgba(31, 41, 55, .10) 0 2px, transparent 3px);
+      background-size: 28px 28px, 34px 34px;
+      opacity: .64;
+    }
+
+    .page-scroll {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      padding-bottom: 42px;
+    }
+    .top-nav {
+      width: min(100%, 580px);
+      margin: 0 auto;
+      padding: 16px 20px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo { width: 160px; height: auto; }
+    .hero-copy {
+      width: min(100%, 560px);
+      margin: 0 auto;
+      padding: 22px 20px 12px;
+      text-align: center;
+    }
+    .hero-headline {
+      margin: 0;
+      color: var(--navy);
+      font-size: clamp(22px, 6.4vw, 31px);
+      font-weight: 900;
+      line-height: 1.42;
+      letter-spacing: -.045em;
+    }
+    .hero-sub {
+      max-width: 450px;
+      margin: 10px auto 0;
+      color: rgba(31, 41, 55, .70);
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.7;
+    }
+    .form-outer {
+      width: min(100%, 500px);
+      margin: 0 auto;
+      padding: 12px 16px 0;
+    }
+    .prog-bar {
+      display: flex;
+      gap: 4px;
+      margin: 0 2px 9px;
+    }
+    .prog-seg {
+      height: 3px;
+      flex: 1;
+      overflow: hidden;
+      background: rgba(31, 41, 55, .11);
+      border-radius: 4px;
+    }
+    .prog-seg.done { background: var(--navy); }
+    .prog-seg.active { background: var(--cyan); }
+    .prog-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 2px 10px;
+    }
+    .prog-step {
+      color: rgba(31, 41, 55, .64);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .05em;
+    }
+    .prog-step strong { color: var(--cyan-deep); font-size: 13px; }
+    .prog-name {
+      color: rgba(31, 41, 55, .58);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .form-card {
+      overflow: hidden;
+      background: rgba(255, 255, 255, .95);
+      border: 1px solid rgba(31, 41, 55, .08);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(28px);
+    }
+    .form-step {
+      display: none;
+      padding: 26px 24px 20px;
+      animation: step-in .26s ease both;
+    }
+    .form-step.active { display: block; }
+    @keyframes step-in {
+      from { opacity: 0; transform: translateX(10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .step-q {
+      margin-bottom: 6px;
+      color: var(--cyan-deep);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .14em;
+    }
+    .step-title {
+      margin: 0 0 20px;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1.5;
+    }
+    .multi-hint {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 8px;
+      color: var(--cyan-deep);
+      background: var(--cyan-pale);
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      vertical-align: middle;
+    }
+    .multi-note {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .choice-grid { display: grid; gap: 8px; }
+    .cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .choice-btn {
+      width: 100%;
+      min-height: 48px;
+      padding: 11px 13px;
+      color: var(--text-sub);
+      background: #fbfcfc;
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.45;
+      text-align: left;
+      transition: border-color .18s ease, background .18s ease, color .18s ease, transform .18s ease;
+    }
+    .choice-btn:hover {
+      color: var(--navy);
+      background: var(--cyan-pale);
+      border-color: var(--cyan);
+      transform: translateY(-1px);
+    }
+    .choice-btn.selected {
+      color: var(--cyan-deep);
+      background: rgba(54, 201, 230, .10);
+      border-color: var(--cyan-deep);
+      font-weight: 800;
+    }
+    .choice-btn.selected::after { content: " ✓"; color: var(--cyan-deep); }
+    .form-foot {
+      display: flex;
+      gap: 10px;
+      padding: 14px 24px 22px;
+      border-top: 1px solid var(--line);
+    }
+    .btn-back, .btn-next {
+      min-height: 48px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .btn-back {
+      padding: 0 18px;
+      color: var(--muted);
+      background: transparent;
+      border: 1.5px solid var(--line);
+    }
+    .btn-next {
+      flex: 1;
+      color: var(--white);
+      background: var(--navy);
+      border: 1px solid var(--navy);
+      transition: background .2s ease, transform .2s ease;
+    }
+    .btn-next:hover {
+      background: var(--cyan-deep);
+      border-color: var(--cyan-deep);
+      transform: translateY(-1px);
+    }
+    .form-field { margin-bottom: 14px; }
+    .form-label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--text-sub);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 14px;
+      color: var(--text);
+      background: #fbfcfc;
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius-md);
+      font-size: 15px;
+    }
+    .form-input::placeholder { color: #a5b1b7; }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--cyan-deep);
+      box-shadow: 0 0 0 3px rgba(54, 201, 230, .13);
+      outline: none;
+    }
+    .field-error {
+      display: none;
+      margin-top: 5px;
+      color: var(--danger);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .field-error.show { display: block; }
+    .consent {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.7;
+      text-align: center;
+    }
+    .consent a { color: var(--navy); text-decoration: underline; cursor: pointer; }
+    .consent-check {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      margin: 10px 0 0;
+      color: var(--text-sub);
+      font-size: 11px;
+      line-height: 1.6;
+      text-align: left;
+    }
+    .consent-check input { flex: 0 0 auto; margin-top: 3px; accent-color: var(--cyan-deep); }
+    .submit-status {
+      display: none;
+      margin: 10px 0 0;
+      padding: 10px 12px;
+      color: var(--text-sub);
+      background: var(--cyan-pale);
+      border-radius: 10px;
+      font-size: 12px;
+      line-height: 1.6;
+      text-align: center;
+    }
+    .submit-status.show { display: block; }
+    .submit-status.error { color: var(--danger); background: #fff3f3; }
+    .success-panel { display: none; padding: 28px 22px 30px; text-align: center; }
+    .success-panel.show { display: block; }
+    .success-panel h2 { margin: 0 0 10px; font-size: 21px; }
+    .success-panel p { margin: 0; color: var(--text-sub); font-size: 13px; line-height: 1.8; }
+    .btn-submit {
+      width: 100%;
+      min-height: 54px;
+      margin-top: 2px;
+      padding: 12px 20px;
+      color: var(--white);
+      background: var(--cyan-deep);
+      border: 0;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 5px 0 #137d96, 0 10px 24px rgba(31, 168, 196, .25);
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: .03em;
+    }
+    .btn-submit:active { transform: translateY(3px); box-shadow: 0 2px 0 #137d96; }
+    .submit-sub { display: block; margin-top: 2px; font-size: 10px; font-weight: 500; opacity: .82; }
+    .trust-footer {
+      width: min(100%, 500px);
+      margin: 12px auto 0;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      color: rgba(31, 41, 55, .58);
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .trust-footer a { text-decoration: none; }
+    .prequiz-overlay, .exit-overlay, .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(25, 42, 52, .68);
+      backdrop-filter: blur(6px);
+    }
+    .prequiz-sheet, .exit-sheet, .modal-box {
+      width: min(100%, 430px);
+      overflow: hidden;
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 24px 70px rgba(10, 26, 36, .28);
+    }
+    .prequiz-license {
+      padding: 10px 16px;
+      color: rgba(31, 41, 55, .66);
+      background: #f2f7f8;
+      border-bottom: 1px solid var(--line);
+      font-size: 10px;
+      text-align: center;
+    }
+    .prequiz-body { padding: 28px 20px 24px; }
+    .prequiz-title {
+      margin: 0 0 20px;
+      color: var(--navy);
+      font-size: 18px;
+      font-weight: 900;
+      text-align: center;
+    }
+    .prequiz-choices { display: grid; gap: 10px; }
+    .prequiz-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 58px;
+      padding: 0 18px;
+      color: var(--white);
+      background: var(--navy);
+      border: 0;
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 0 var(--navy-deep);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 900;
+      text-align: left;
+      transition: transform .15s ease, background .15s ease;
+    }
+    .prequiz-btn:first-child { background: var(--cyan-deep); box-shadow: 0 4px 0 #137d96; }
+    .prequiz-btn:hover { transform: translateY(-2px); }
+    .prequiz-arrow { font-size: 21px; font-weight: 400; }
+    .exit-overlay { display: none; }
+    .exit-overlay.show { display: flex; }
+    .exit-sheet { padding: 30px 22px 22px; text-align: center; }
+    .exit-title { margin: 0 0 9px; font-size: 19px; font-weight: 900; }
+    .exit-copy { margin: 0 0 20px; color: var(--text-sub); font-size: 13px; line-height: 1.7; }
+    .exit-stay, .exit-leave {
+      width: 100%;
+      min-height: 48px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .exit-stay { color: var(--white); background: var(--cyan-deep); border: 1px solid var(--cyan-deep); }
+    .exit-leave { margin-top: 10px; color: var(--muted); background: transparent; border: 1px solid var(--line); }
+    .modal-overlay { display: none; align-items: flex-end; }
+    .modal-overlay.show { display: flex; }
+    .modal-box { max-height: 78vh; padding: 24px; overflow: auto; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+    .modal-close {
+      float: right;
+      min-width: 34px;
+      min-height: 30px;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .modal-title { margin: 2px 0 18px; font-size: 17px; font-weight: 900; }
+    .modal-content { clear: both; color: var(--text-sub); font-size: 12px; line-height: 1.9; }
+
+    @media (max-width: 520px) {
+      .top-nav { padding-top: 12px; }
+      .nav-logo { width: 142px; }
+      .hero-copy { padding-top: 18px; }
+      .form-outer { padding-top: 8px; }
+      .form-step { padding: 23px 18px 17px; }
+      .form-foot { padding: 12px 18px 18px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-hero" aria-hidden="true"></div>
+  <main class="page-scroll">
+    <nav class="top-nav">
+      <img class="nav-logo" src="../images/logo_full.png" alt="SYMMETRY Lab">
+    </nav>
+
+    <section class="hero-copy">
+      <h1 class="hero-headline">経験を整理して、<br>次のキャリアを選ぶ。</h1>
+      <p class="hero-sub">12の質問に答えるだけで、いま整理すべきキャリアテーマが見えてきます。</p>
+    </section>
+
+    <section class="form-outer" aria-label="キャリア相談フォーム">
+      <div class="prog-bar" id="progBar" aria-hidden="true"></div>
+      <div class="prog-label-row">
+        <span class="prog-step">STEP <strong id="stepNo">1</strong> / 12</span>
+        <span class="prog-name" id="stepName">就業経験</span>
+      </div>
+
+      <div class="form-card">
+        <section class="form-step active" id="step1">
+          <p class="step-q">Q1 / 12</p><h2 class="step-title">正社員・契約社員として経験した会社数は？</h2>
+          <div class="choice-grid cols-2">
+            <button class="choice-btn" type="button">経験なし（アルバイト等のみ）</button><button class="choice-btn" type="button">1社</button>
+            <button class="choice-btn" type="button">2社</button><button class="choice-btn" type="button">3社</button>
+            <button class="choice-btn" type="button">4社以上</button>
+          </div>
+        </section>
+        <section class="form-step" id="step2">
+          <p class="step-q">Q2 / 12</p><h2 class="step-title">転職・キャリア相談の時期は？</h2>
+          <div class="choice-grid cols-2">
+            <button class="choice-btn" type="button">1か月以内</button><button class="choice-btn" type="button">2〜3か月以内</button>
+            <button class="choice-btn" type="button">4〜6か月以内</button><button class="choice-btn" type="button">7か月以降</button>
+            <button class="choice-btn" type="button">時期未定・情報収集中</button>
+          </div>
+        </section>
+        <section class="form-step" id="step3">
+          <p class="step-q">Q3 / 12</p><h2 class="step-title">現在のおおよその年収は？</h2>
+          <div class="choice-grid cols-2">
+            <button class="choice-btn" type="button">〜399万円</button><button class="choice-btn" type="button">400〜599万円</button>
+            <button class="choice-btn" type="button">600〜799万円</button><button class="choice-btn" type="button">800〜999万円</button>
+            <button class="choice-btn" type="button">1,000〜1,499万円</button><button class="choice-btn" type="button">1,500〜1,999万円</button>
+            <button class="choice-btn" type="button">2,000万円以上</button>
+          </div>
+        </section>
+        <section class="form-step" id="step4">
+          <p class="step-q">Q4 / 12</p><h2 class="step-title">希望する勤務地は？</h2>
+          <div class="choice-grid cols-2">
+            <button class="choice-btn" type="button">東京・都内</button><button class="choice-btn" type="button">首都圏（神奈川・千葉・埼玉）</button>
+            <button class="choice-btn" type="button">関西</button><button class="choice-btn" type="button">その他の国内</button>
+            <button class="choice-btn" type="button">海外も検討</button><button class="choice-btn" type="button">特にこだわらない</button>
+          </div>
+        </section>
+        <section class="form-step" id="step5">
+          <p class="step-q">Q5 / 12</p><h2 class="step-title">最終学歴を教えてください</h2>
+          <div class="choice-grid cols-2">
+            <button class="choice-btn" type="button">大学院</button><button class="choice-btn" type="button">大学</button>
+            <button class="choice-btn" type="button">高専</button><button class="choice-btn" type="button">短大・専門学校</button>
+            <button class="choice-btn" type="button">高校</button><button class="choice-btn" type="button">その他・回答しない</button>
+          </div>
+        </section>
+        <section class="form-step" id="step6">
+          <p class="step-q">Q6 / 12</p><h2 class="step-title">今後興味のあるキャリアは？ <span class="multi-hint">複数選択可</span></h2>
+          <div class="choice-grid cols-2 multi">
+            <button class="choice-btn" type="button">営業・事業開発</button><button class="choice-btn" type="button">企画・経営企画</button>
+            <button class="choice-btn" type="button">IT・エンジニア</button><button class="choice-btn" type="button">コンサルタント</button>
+            <button class="choice-btn" type="button">マーケティング</button><button class="choice-btn" type="button">事務・管理</button>
+            <button class="choice-btn" type="button">販売・サービス</button><button class="choice-btn" type="button">専門職・技術職</button>
+            <button class="choice-btn" type="button">その他</button>
+            <button class="choice-btn" type="button" data-exclusive="undecided">まだ決めていない</button>
+          </div>
+          <p class="multi-note">「まだ決めていない」は、他の選択肢とは同時に選べません。</p>
+          <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div>
+        </section>
+        <section class="form-step" id="step7">
+          <p class="step-q">Q7 / 12</p><h2 class="step-title">興味のある業界は？ <span class="multi-hint">複数選択可</span></h2>
+          <div class="choice-grid cols-2 multi">
+            <button class="choice-btn" type="button">IT・Web・通信</button><button class="choice-btn" type="button">金融・保険</button>
+            <button class="choice-btn" type="button">メーカー・製造</button><button class="choice-btn" type="button">商社・流通・小売</button>
+            <button class="choice-btn" type="button">不動産・建設</button><button class="choice-btn" type="button">医療・ヘルスケア</button>
+            <button class="choice-btn" type="button">人材・教育</button><button class="choice-btn" type="button">飲食・サービス</button>
+            <button class="choice-btn" type="button">その他</button>
+            <button class="choice-btn" type="button" data-exclusive="undecided">まだ決めていない</button>
+          </div>
+          <p class="multi-note">「まだ決めていない」は、他の選択肢とは同時に選べません。</p>
+          <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div>
+        </section>
+        <section class="form-step" id="step8">
+          <p class="step-q">Q8 / 12</p><h2 class="step-title">次の選択で最も大切にしたいことは？</h2>
+          <div class="choice-grid cols-2">
+            <button class="choice-btn" type="button">仕事内容・ポジション</button><button class="choice-btn" type="button">年収・待遇</button>
+            <button class="choice-btn" type="button">専門性・スキル</button><button class="choice-btn" type="button">成長機会・裁量</button>
+            <button class="choice-btn" type="button">勤務地・通勤条件</button><button class="choice-btn" type="button">働き方・ワークライフバランス</button>
+            <button class="choice-btn" type="button">まだ決めていない</button>
+          </div>
+        </section>
+        <section class="form-step" id="step9">
+          <p class="step-q">Q9 / 12</p><h2 class="step-title">現在・直近の役割に近いものは？</h2>
+          <div class="choice-grid cols-2">
+            <button class="choice-btn" type="button">コンサルタント</button><button class="choice-btn" type="button">企画・経営企画</button>
+            <button class="choice-btn" type="button">営業・事業開発</button><button class="choice-btn" type="button">マーケティング</button>
+            <button class="choice-btn" type="button">IT・データ・エンジニア</button><button class="choice-btn" type="button">管理・バックオフィス</button>
+            <button class="choice-btn" type="button">専門職・技術職</button><button class="choice-btn" type="button">職歴なし</button>
+            <button class="choice-btn" type="button">その他</button>
+          </div>
+        </section>
+        <section class="form-step" id="step10">
+          <p class="step-q">Q10 / 12</p><h2 class="step-title">年代を教えてください</h2>
+          <select class="form-select" id="ageSelect" aria-label="年代"><option value="">年代を選択してください</option></select>
+          <p class="field-error" id="ageError">年代を選択してください</p>
+          <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div>
+        </section>
+        <section class="form-step" id="step11">
+          <p class="step-q">Q11 / 12</p><h2 class="step-title">お名前を教えてください</h2>
+          <label class="form-field"><span class="form-label">お名前（フルネーム）</span><input class="form-input" id="nameInput" type="text" autocomplete="name" placeholder="例：山田 太郎"><span class="field-error" id="nameError">お名前を入力してください</span></label>
+          <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div>
+        </section>
+        <section class="form-step" id="step12">
+          <p class="step-q">Q12 / 12</p><h2 class="step-title">連絡先を入力してください</h2>
+          <label class="form-field"><span class="form-label">メールアドレス</span><input class="form-input" id="emailInput" type="email" autocomplete="email" placeholder="例：name@example.com"><span class="field-error" id="emailError">メールアドレスを入力してください</span></label>
+          <label class="form-field"><span class="form-label">電話番号（任意）</span><input class="form-input" id="telInput" type="tel" autocomplete="tel" placeholder="例：09012345678"></label>
+          <input id="websiteInput" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+          <label class="consent-check"><input id="privacyConsent" type="checkbox"><span><a href="#" data-modal="privacy">個人情報の取扱い</a>を確認し、登録情報をキャリア情報の案内に利用することに同意します。</span></label>
+          <label class="consent-check"><input id="partnerConsent" type="checkbox"><span>必要に応じて、本人の同意に基づき、提携する職業紹介事業者等へ登録情報を提供することに同意します。</span></label>
+          <button class="btn-submit" type="button" id="submitButton">求人情報・今後の案内を受け取る<span class="submit-sub">登録内容を提携先へ共有する場合があります</span></button>
+          <p class="submit-status" id="submitStatus" role="status"></p>
+          <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button></div>
+        </section>
+      </div>
+      <div class="success-panel" id="successPanel" aria-live="polite">
+        <h2>登録を受け付けました</h2>
+        <p>登録内容を確認のうえ、案内可能な提携先からご連絡します。ご連絡まで少しお待ちください。</p>
+      </div>
+    </section>
+
+    <footer class="trust-footer">
+      <a href="#" data-modal="terms">利用規約</a><a href="#" data-modal="privacy">個人情報の取扱い</a><span>SYMMETRY Lab株式会社</span>
+    </footer>
+  </main>
+
+  <div class="prequiz-overlay" id="prequizOverlay">
+    <div class="prequiz-sheet">
+      <div class="prequiz-license">SymmetryLab Career｜キャリア支援</div>
+      <div class="prequiz-body">
+        <h2 class="prequiz-title">お気持ちはどちらに近いですか？</h2>
+        <div class="prequiz-choices">
+          <button class="prequiz-btn" type="button" data-intention="soon"><span>近いうちに転職したい</span><span class="prequiz-arrow">›</span></button>
+          <button class="prequiz-btn" type="button" data-intention="info"><span>まずは情報収集をしたい</span><span class="prequiz-arrow">›</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="exit-overlay" id="exitOverlay" aria-hidden="true">
+    <div class="exit-sheet">
+      <h2 class="exit-title">回答内容が消えてしまいます</h2>
+      <p class="exit-copy">あと少しで、あなたのキャリアの現在地を整理できます。</p>
+      <button class="exit-stay" type="button" id="stayButton">回答を続ける</button>
+      <button class="exit-leave" type="button" id="leaveButton">このページを離れる</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay" aria-hidden="true">
+    <div class="modal-box">
+      <button class="modal-close" type="button" id="modalClose">閉じる</button>
+      <h2 class="modal-title" id="modalTitle"></h2>
+      <div class="modal-content" id="modalContent"></div>
+    </div>
+  </div>
+
+  <script>
+    var totalSteps = 12;
+    var step = 1;
+    var started = false;
+    var exitArmed = false;
+    var leadTracked = false;
+    var stepNames = ["就業経験", "相談時期", "現在の年収", "希望勤務地", "最終学歴", "興味のあるキャリア", "興味のある業界", "希望条件", "直近の役割", "年代", "お名前", "連絡先"];
+    var answers = {};
+    var params = new URLSearchParams(window.location.search);
+    var jobPublicId = params.get("job") || "";
+    var submissionStorageKey = "symmetrylab_ad_submission_v1:generic";
+    var submissionId = null;
+    var jobData = null;
+    var attributionKey = "symmetrylab_ad_attribution_v1";
+    var pendingMetaEvents = [];
+    var attribution = readAttribution();
+    var progBar = document.getElementById("progBar");
+    for (var i = 1; i <= totalSteps; i++) {
+      var segment = document.createElement("span");
+      segment.className = "prog-seg";
+      segment.dataset.step = String(i);
+      progBar.appendChild(segment);
+    }
+    var ageSelect = document.getElementById("ageSelect");
+    ["18〜24歳", "25〜29歳", "30〜34歳", "35〜39歳", "40〜44歳", "45〜49歳", "50〜59歳", "60歳以上"].forEach(function(ageBand) {
+      var option = document.createElement("option");
+      option.value = ageBand;
+      option.textContent = ageBand;
+      ageSelect.appendChild(option);
+    });
+
+    function readAttribution() {
+      var saved = {};
+      try { saved = JSON.parse(localStorage.getItem(attributionKey) || "{}"); } catch (error) { saved = {}; }
+      var now = new Date().toISOString();
+      var current = {
+        utm_source: params.get("utm_source") || saved.utm_source || "",
+        utm_medium: params.get("utm_medium") || saved.utm_medium || "",
+        utm_campaign: params.get("utm_campaign") || saved.utm_campaign || "",
+        utm_term: params.get("utm_term") || saved.utm_term || "",
+        utm_content: params.get("utm_content") || saved.utm_content || "",
+        fbclid: params.get("fbclid") || saved.fbclid || "",
+        meta_campaign_id: params.get("meta_campaign_id") || saved.meta_campaign_id || "",
+        meta_adset_id: params.get("meta_adset_id") || saved.meta_adset_id || "",
+        meta_ad_id: params.get("meta_ad_id") || saved.meta_ad_id || "",
+        meta_placement: params.get("meta_placement") || saved.meta_placement || "",
+        landing_page: window.location.pathname + window.location.search,
+        first_touch_at: saved.first_touch_at || now,
+        last_touch_at: now
+      };
+      try { localStorage.setItem(attributionKey, JSON.stringify(current)); } catch (error) {}
+      return current;
+    }
+    function clientSubmissionId() {
+      if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
+      return "ad-" + Date.now() + "-" + Math.random().toString(36).slice(2, 12);
+    }
+    function getSubmissionId() {
+      if (submissionId) return submissionId;
+      try { submissionId = sessionStorage.getItem(submissionStorageKey) || ""; } catch (error) { submissionId = ""; }
+      if (!submissionId) {
+        submissionId = clientSubmissionId();
+        try { sessionStorage.setItem(submissionStorageKey, submissionId); } catch (error) {}
+      }
+      return submissionId;
+    }
+    function clearSubmissionId() {
+      submissionId = null;
+      try { sessionStorage.removeItem(submissionStorageKey); } catch (error) {}
+    }
+    function leadEventWasTracked(eventId) {
+      try { return sessionStorage.getItem("symmetrylab_ad_lead_v1:" + eventId) === "1"; } catch (error) { return false; }
+    }
+    function rememberLeadEvent(eventId) {
+      try { sessionStorage.setItem("symmetrylab_ad_lead_v1:" + eventId, "1"); } catch (error) {}
+    }
+    function currentStepEl() { return document.getElementById("step" + step); }
+    function setStep(nextStep) {
+      step = Math.max(1, Math.min(totalSteps, nextStep));
+      document.querySelectorAll(".form-step").forEach(function(el) { el.classList.toggle("active", el.id === "step" + step); });
+      document.querySelectorAll(".prog-seg").forEach(function(el) {
+        var segmentStep = Number(el.dataset.step);
+        el.classList.toggle("done", segmentStep < step);
+        el.classList.toggle("active", segmentStep === step);
+      });
+      document.getElementById("stepNo").textContent = String(step);
+      document.getElementById("stepName").textContent = stepNames[step - 1];
+      exitArmed = step >= 2;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    function selectedValues(group) {
+      return Array.prototype.map.call(group.querySelectorAll(".choice-btn.selected"), function(el) { return el.textContent.trim(); });
+    }
+    function rememberStep(group) {
+      var stepNumber = Number(group.id.replace("step", ""));
+      var values = selectedValues(group);
+      if (stepNumber === 6) answers.q6_career = values;
+      else if (stepNumber === 7) answers.q7_industry = values;
+      else if (values[0]) answers["q" + stepNumber] = values[0];
+    }
+    function selectButton(button) {
+      var group = button.closest(".form-step");
+      if (group && group.querySelector(".multi")) {
+        var isUndecided = button.dataset.exclusive === "undecided";
+        if (isUndecided) {
+          var wasSelected = button.classList.contains("selected");
+          group.querySelectorAll(".choice-btn").forEach(function(el) { el.classList.remove("selected"); });
+          if (!wasSelected) button.classList.add("selected");
+        } else {
+          var undecided = group.querySelector('[data-exclusive="undecided"]');
+          if (undecided) undecided.classList.remove("selected");
+          button.classList.toggle("selected");
+        }
+        rememberStep(group);
+        return;
+      }
+      group.querySelectorAll(".choice-btn").forEach(function(el) { el.classList.remove("selected"); });
+      button.classList.add("selected");
+      rememberStep(group);
+      window.setTimeout(function() { setStep(step + 1); }, 180);
+    }
+    function statusMessage(message, isError) {
+      var status = document.getElementById("submitStatus");
+      status.textContent = message;
+      status.classList.toggle("show", Boolean(message));
+      status.classList.toggle("error", Boolean(isError));
+    }
+    function fbTrack(name, params, eventId) {
+      if (typeof window.fbq !== "function") {
+        pendingMetaEvents.push({ name: name, params: params || {}, eventId: eventId || "" });
+        return true;
+      }
+      if (eventId) window.fbq("track", name, params || {}, { eventID: eventId });
+      else window.fbq("track", name, params || {});
+      return true;
+    }
+    function flushPendingMetaEvents() {
+      if (typeof window.fbq !== "function") return;
+      var queued = pendingMetaEvents.splice(0);
+      queued.forEach(function(event) {
+        if (event.eventId) window.fbq("track", event.name, event.params, { eventID: event.eventId });
+        else window.fbq("track", event.name, event.params);
+      });
+    }
+    function loadMetaTracking() {
+      if (window.location.protocol === "file:") return;
+      fetch("/api/ad-creative/tracking-config", { headers: { "Accept": "application/json" } }).then(function(response) {
+        return response.ok ? response.json() : null;
+      }).then(function(config) {
+        if (!config || !config.enabled || !config.meta_pixel_id) return;
+        !(function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)})(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
+        window.fbq("init", config.meta_pixel_id);
+        fbTrack("PageView");
+        flushPendingMetaEvents();
+      }).catch(function() {});
+    }
+    function renderJob(job) {
+      jobData = job;
+      if (job.public_id && job.status !== "preview") {
+        fbTrack("ViewContent", { content_name: job.anonymous_title || job.title || "キャリア情報", content_type: "product", content_ids: [job.public_id] });
+      }
+    }
+    function loadJob() {
+      var fallback = { public_id: "", status: "generic", application_enabled: true };
+      if (window.location.protocol === "file:") { renderJob(fallback); return; }
+      if (!jobPublicId) { renderJob(fallback); return; }
+      fetch("/api/ad-creative/jobs/" + encodeURIComponent(jobPublicId), { headers: { "Accept": "application/json" } }).then(function(response) {
+        return response.ok ? response.json() : fallback;
+      }).catch(function() { return fallback; }).then(renderJob);
+    }
+    document.querySelectorAll(".choice-btn").forEach(function(button) { button.addEventListener("click", function() { selectButton(button); }); });
+    document.querySelectorAll("[data-next]").forEach(function(button) {
+      button.addEventListener("click", function() {
+        var current = currentStepEl();
+        if (step === 10 && !ageSelect.value) { document.getElementById("ageError").classList.add("show"); return; }
+        if (step === 11 && !document.getElementById("nameInput").value.trim()) { document.getElementById("nameError").classList.add("show"); return; }
+        if (current.querySelector(".multi") && !current.querySelector(".selected")) { statusMessage("少なくとも1つ選択してください。", true); return; }
+        setStep(step + 1);
+      });
+    });
+    document.querySelectorAll("[data-back]").forEach(function(button) { button.addEventListener("click", function() { setStep(step - 1); }); });
+    document.querySelectorAll("[data-intention]").forEach(function(button) {
+      button.addEventListener("click", function() {
+        started = true;
+        answers.intention = button.dataset.intention;
+        document.getElementById("prequizOverlay").style.display = "none";
+        setStep(1);
+        fbTrack("StartRegistration");
+      });
+    });
+    ageSelect.addEventListener("change", function() { document.getElementById("ageError").classList.remove("show"); answers.q10_age_band = ageSelect.value; });
+    document.getElementById("nameInput").addEventListener("input", function() { document.getElementById("nameError").classList.remove("show"); });
+    document.getElementById("submitButton").addEventListener("click", function() {
+      var email = document.getElementById("emailInput").value.trim();
+      var emailError = document.getElementById("emailError");
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { emailError.textContent = "有効なメールアドレスを入力してください"; emailError.classList.add("show"); return; }
+      emailError.classList.remove("show");
+      if (!document.getElementById("privacyConsent").checked || !document.getElementById("partnerConsent").checked) { statusMessage("2つの同意項目を確認してください。", true); return; }
+      if (!jobData || jobData.application_enabled !== true) { statusMessage("現在は受付準備中です。受付開始後に送信できます。", true); return; }
+      var payload = {
+        client_submission_id: getSubmissionId(), website: document.getElementById("websiteInput").value, job_public_id: jobPublicId,
+        intention: answers.intention || "info", q1_company_count: answers.q1 || "", q2_timing: answers.q2 || "", q3_income: answers.q3 || "",
+        q4_location: answers.q4 || "", q5_education: answers.q5 || "", q6_career: answers.q6_career || [], q7_industry: answers.q7_industry || [],
+        q8_priority: answers.q8 || "", q9_role: answers.q9 || "", q10_age_band: answers.q10_age_band || ageSelect.value,
+        name: document.getElementById("nameInput").value.trim(), email: email, phone: document.getElementById("telInput").value.trim(),
+        privacy_consent: document.getElementById("privacyConsent").checked, partner_consent: document.getElementById("partnerConsent").checked,
+        utm_source: attribution.utm_source, utm_medium: attribution.utm_medium, utm_campaign: attribution.utm_campaign, utm_term: attribution.utm_term,
+        utm_content: attribution.utm_content, fbclid: attribution.fbclid, meta_campaign_id: attribution.meta_campaign_id,
+        meta_adset_id: attribution.meta_adset_id, meta_ad_id: attribution.meta_ad_id, meta_placement: attribution.meta_placement,
+        landing_page: attribution.landing_page, first_touch_at: attribution.first_touch_at, last_touch_at: attribution.last_touch_at
+      };
+      var button = document.getElementById("submitButton");
+      button.disabled = true;
+      statusMessage("登録内容を送信しています。", false);
+      fetch("/api/ad-creative/applications", { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(payload) }).then(function(response) {
+        return response.json().then(function(data) { return { ok: response.ok, data: data }; });
+      }).then(function(result) {
+        if (!result.ok || !result.data.ok) throw new Error(result.data.detail || "送信できませんでした");
+        document.querySelector(".form-card").style.display = "none";
+        document.getElementById("successPanel").classList.add("show");
+        statusMessage("", false);
+        var leadEventId = String(result.data.application_id || getSubmissionId());
+        if (!leadTracked && !result.data.duplicate && !leadEventWasTracked(leadEventId) && fbTrack("Lead", {}, leadEventId)) {
+          rememberLeadEvent(leadEventId);
+          leadTracked = true;
+        }
+        clearSubmissionId();
+      }).catch(function(error) {
+        button.disabled = false;
+        statusMessage(error.message || "送信できませんでした。時間をおいて再度お試しください。", true);
+      });
+    });
+    var modalTexts = {
+      terms: "<p>本ページは、キャリア情報を受け取るための広告導線です。SymmetryLabが採否判断や面接調整を行うものではありません。実際の求人説明・応募受付・選考は、提携先または求人者が行います。</p>",
+      privacy: "<p>入力いただいた情報は、求人・キャリア情報の案内、登録内容の確認、提携先からの連絡のために利用します。本人の同意を得た場合に限り、提携する職業紹介事業者等へ情報提供することがあります。取得項目、利用目的、保管期間、問い合わせ先の確定版は、公開前にSymmetryLabの承認済みプライバシー文面へ差し替えます。</p>"
+    };
+    document.querySelectorAll("[data-modal]").forEach(function(link) {
+      link.addEventListener("click", function(event) {
+        event.preventDefault();
+        document.getElementById("modalTitle").textContent = link.dataset.modal === "terms" ? "利用規約" : "個人情報の取扱い";
+        document.getElementById("modalContent").innerHTML = modalTexts[link.dataset.modal];
+        document.getElementById("modalOverlay").classList.add("show");
+      });
+    });
+    document.getElementById("modalClose").addEventListener("click", function() { document.getElementById("modalOverlay").classList.remove("show"); });
+    history.pushState(null, "", location.href);
+    window.addEventListener("popstate", function() {
+      if (started && exitArmed) { document.getElementById("exitOverlay").classList.add("show"); history.pushState(null, "", location.href); }
+    });
+    document.getElementById("stayButton").addEventListener("click", function() { document.getElementById("exitOverlay").classList.remove("show"); });
+    document.getElementById("leaveButton").addEventListener("click", function() { exitArmed = false; history.back(); });
+    loadJob();
+    loadMetaTracking();
+  </script>
+</body>
+</html>
