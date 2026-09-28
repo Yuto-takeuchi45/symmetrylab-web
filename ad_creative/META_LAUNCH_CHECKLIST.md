@@ -4,10 +4,10 @@
 
 ## 現在実装済み
 
-- `symmetrylab-career-quiz-lp.html`：Wius型の冒頭二択＋12ステップUI
+- `symmetrylab-career-quiz-lp.html`：Wius型の冒頭二択＋7ステップUI
 - `jobs.json`：任意で求人情報を紐づける場合のデータファイル
 - `/api/ad-creative/jobs/<public_id>`：広告用求人表示API
-- `/api/ad-creative/applications`：12ステップ回答・同意・流入情報の保存API
+- `/api/ad-creative/applications`：7ステップ回答・同意・流入情報の保存API
 - `/api/admin/ad-creative/applications`：登録情報の確認・ステータス更新API
 - Meta Pixel：Pixel IDと有効化フラグが揃った場合だけ読み込み
 - `Lead`：DB保存成功後、重複でない登録に限り発火

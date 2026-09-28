@@ -230,15 +230,10 @@ class AdCreativeApplicationRequest(BaseModel):
     website: str = ""
     job_public_id: str = ""
     intention: str
-    q1_company_count: str
     q2_timing: str
     q3_income: str
-    q4_location: str
     q5_education: str
-    q6_career: list[str] = Field(default_factory=list)
-    q7_industry: list[str] = Field(default_factory=list)
     q8_priority: str
-    q9_role: str
     q10_age_band: str
     name: str
     email: str
@@ -1161,18 +1156,11 @@ AD_CREATIVE_APPLICATION_STATUSES = {
 
 AD_CREATIVE_CHOICES = {
     "intention": {"soon", "info"},
-    "q1_company_count": {"経験なし（アルバイト等のみ）", "1社", "2社", "3社", "4社以上"},
     "q2_timing": {"1か月以内", "2〜3か月以内", "4〜6か月以内", "7か月以降", "時期未定・情報収集中"},
     "q3_income": {"〜399万円", "400〜599万円", "600〜799万円", "800〜999万円", "1,000〜1,499万円", "1,500〜1,999万円", "2,000万円以上"},
-    "q4_location": {"東京・都内", "首都圏（神奈川・千葉・埼玉）", "関西", "その他の国内", "海外も検討", "特にこだわらない"},
     "q5_education": {"大学院", "大学", "高専", "短大・専門学校", "高校", "その他・回答しない"},
     "q8_priority": {"仕事内容・ポジション", "年収・待遇", "専門性・スキル", "成長機会・裁量", "勤務地・通勤条件", "働き方・ワークライフバランス", "まだ決めていない"},
-    "q9_role": {"コンサルタント", "企画・経営企画", "営業・事業開発", "マーケティング", "IT・データ・エンジニア", "管理・バックオフィス", "専門職・技術職", "職歴なし", "その他"},
     "q10_age_band": {"18〜24歳", "25〜29歳", "30〜34歳", "35〜39歳", "40〜44歳", "45〜49歳", "50〜59歳", "60歳以上"},
-}
-AD_CREATIVE_MULTI_CHOICES = {
-    "q6_career": {"営業・事業開発", "企画・経営企画", "IT・エンジニア", "コンサルタント", "マーケティング", "事務・管理", "販売・サービス", "専門職・技術職", "その他", "まだ決めていない"},
-    "q7_industry": {"IT・Web・通信", "金融・保険", "メーカー・製造", "商社・流通・小売", "不動産・建設", "医療・ヘルスケア", "人材・教育", "飲食・サービス", "その他", "まだ決めていない"},
 }
 
 
@@ -1491,13 +1479,10 @@ def _validate_ad_creative_application(req: AdCreativeApplicationRequest) -> AdCr
 
     for field_name, label in (
         ("intention", "事前意向"),
-        ("q1_company_count", "会社数"),
         ("q2_timing", "相談時期"),
         ("q3_income", "現在の年収帯"),
-        ("q4_location", "希望勤務地"),
         ("q5_education", "最終学歴"),
         ("q8_priority", "重視条件"),
-        ("q9_role", "直近の役割"),
         ("q10_age_band", "年代"),
     ):
         value = _career_trim(getattr(req, field_name), label, 120, required=True)
@@ -1505,17 +1490,6 @@ def _validate_ad_creative_application(req: AdCreativeApplicationRequest) -> AdCr
         allowed = AD_CREATIVE_CHOICES[field_name]
         if value not in allowed:
             raise HTTPException(status_code=422, detail=f"{label}の選択肢が正しくありません")
-
-    for field_name, label in (("q6_career", "希望キャリア"), ("q7_industry", "興味のある業界")):
-        values = getattr(req, field_name)
-        if not isinstance(values, list) or not values or len(values) > 10:
-            raise HTTPException(status_code=422, detail=f"{label}を1つ以上選択してください")
-        values = [_career_trim(str(value), label, 120, required=True) for value in values]
-        if len(set(values)) != len(values) or any(value not in AD_CREATIVE_MULTI_CHOICES[field_name] for value in values):
-            raise HTTPException(status_code=422, detail=f"{label}の選択肢が正しくありません")
-        if "まだ決めていない" in values and len(values) != 1:
-            raise HTTPException(status_code=422, detail=f"{label}の未定は他の選択肢と併用できません")
-        setattr(req, field_name, values)
 
     req.name = _career_trim(req.name, "氏名", 120, required=True)
     req.email = _career_trim(req.email, "メールアドレス", 254, required=True)
@@ -2766,7 +2740,7 @@ async def ad_creative_job(public_id: str):
 
 @app.post("/api/ad-creative/applications")
 async def create_ad_creative_application(request: Request, req: AdCreativeApplicationRequest):
-    """広告専用の12ステップ登録を保存する。既存の採用APIとは分離する。"""
+    """広告専用の7ステップ登録を保存する。既存の採用APIとは分離する。"""
     if not _career_origin_allowed(request):
         raise HTTPException(status_code=403, detail="許可されていない送信元です")
     req = _validate_ad_creative_application(req)
@@ -2796,15 +2770,10 @@ async def create_ad_creative_application(request: Request, req: AdCreativeApplic
         consent_version = os.getenv("AD_CREATIVE_CONSENT_VERSION", os.getenv("PRIVACY_POLICY_VERSION", "current")).strip() or "current"
         job_snapshot = _public_ad_creative_job(job) if job else {}
         answers = {
-            "q1_company_count": req.q1_company_count,
             "q2_timing": req.q2_timing,
             "q3_income": req.q3_income,
-            "q4_location": req.q4_location,
             "q5_education": req.q5_education,
-            "q6_career": req.q6_career,
-            "q7_industry": req.q7_industry,
             "q8_priority": req.q8_priority,
-            "q9_role": req.q9_role,
             "q10_age_band": req.q10_age_band,
         }
         conn.execute("""
