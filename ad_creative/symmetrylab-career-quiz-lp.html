@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow">
-  <title>SymmetryLab Career｜キャリア相談</title>
+  <title>SYMMETRY Lab｜キャリア相談</title>
   <style>
     :root {
       --navy: #1f2937;
@@ -85,7 +85,14 @@
       align-items: center;
       justify-content: space-between;
     }
-    .nav-logo { width: 160px; height: auto; }
+    .nav-logo {
+      width: 160px;
+      height: auto;
+      padding: 4px 10px;
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 4px 16px rgba(31, 41, 55, .08);
+    }
     .hero-copy {
       width: min(100%, 560px);
       margin: 0 auto;
@@ -459,7 +466,7 @@
   <div class="page-hero" aria-hidden="true"></div>
   <main class="page-scroll">
     <nav class="top-nav">
-      <img class="nav-logo" src="../images/logo_full.png" alt="SYMMETRY Lab">
+      <img class="nav-logo" src="../images/logo.jpg" alt="SYMMETRY Lab">
     </nav>
 
     <section class="hero-copy">
@@ -497,7 +504,7 @@
           <div class="choice-grid cols-2">
             <button class="choice-btn" type="button">大学院</button><button class="choice-btn" type="button">大学</button>
             <button class="choice-btn" type="button">高専</button><button class="choice-btn" type="button">短大・専門学校</button>
-            <button class="choice-btn" type="button">高校</button><button class="choice-btn" type="button">その他・回答しない</button>
+            <button class="choice-btn" type="button">高校</button><button class="choice-btn" type="button">その他</button>
           </div>
         </section>
         <section class="form-step" id="step4">
@@ -510,9 +517,8 @@
           </div>
         </section>
         <section class="form-step" id="step5">
-          <p class="step-q">Q5 / 7</p><h2 class="step-title">年代を教えてください</h2>
-          <select class="form-select" id="ageSelect" aria-label="年代"><option value="">年代を選択してください</option></select>
-          <p class="field-error" id="ageError">年代を選択してください</p>
+          <p class="step-q">Q5 / 7</p><h2 class="step-title">年齢を教えてください</h2>
+          <label class="form-field"><span class="form-label">現在の年齢（必須）</span><input class="form-input" id="ageInput" type="number" inputmode="numeric" min="18" max="80" autocomplete="off" placeholder="例：24" required><span class="field-error" id="ageError">年齢を入力してください（18〜80歳）</span></label>
           <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div>
         </section>
         <section class="form-step" id="step6">
@@ -523,7 +529,7 @@
         <section class="form-step" id="step7">
           <p class="step-q">Q7 / 7</p><h2 class="step-title">連絡先を入力してください</h2>
           <label class="form-field"><span class="form-label">メールアドレス</span><input class="form-input" id="emailInput" type="email" autocomplete="email" placeholder="例：name@example.com"><span class="field-error" id="emailError">メールアドレスを入力してください</span></label>
-          <label class="form-field"><span class="form-label">電話番号（任意）</span><input class="form-input" id="telInput" type="tel" autocomplete="tel" placeholder="例：09012345678"></label>
+          <label class="form-field"><span class="form-label">電話番号（必須）</span><input class="form-input" id="telInput" type="tel" autocomplete="tel" placeholder="例：09012345678" required><span class="field-error" id="telError">電話番号を入力してください</span></label>
           <input id="websiteInput" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
           <label class="consent-check"><input id="privacyConsent" type="checkbox"><span><a href="#" data-modal="privacy">個人情報の取扱い</a>を確認し、登録情報をキャリア情報の案内に利用することに同意します。</span></label>
           <label class="consent-check"><input id="partnerConsent" type="checkbox"><span>必要に応じて、本人の同意に基づき、提携する職業紹介事業者等へ登録情報を提供することに同意します。</span></label>
@@ -545,7 +551,7 @@
 
   <div class="prequiz-overlay" id="prequizOverlay">
     <div class="prequiz-sheet">
-      <div class="prequiz-license">SymmetryLab Career｜キャリア支援</div>
+      <div class="prequiz-license">SYMMETRY Lab｜キャリア支援</div>
       <div class="prequiz-body">
         <h2 class="prequiz-title">お気持ちはどちらに近いですか？</h2>
         <div class="prequiz-choices">
@@ -579,7 +585,7 @@
     var started = false;
     var exitArmed = false;
     var leadTracked = false;
-    var stepNames = ["相談時期", "現在の年収", "最終学歴", "希望条件", "年代", "お名前", "連絡先"];
+    var stepNames = ["相談時期", "現在の年収", "最終学歴", "希望条件", "年齢", "お名前", "連絡先"];
     var answers = {};
     var params = new URLSearchParams(window.location.search);
     var jobPublicId = params.get("job") || "";
@@ -596,13 +602,7 @@
       segment.dataset.step = String(i);
       progBar.appendChild(segment);
     }
-    var ageSelect = document.getElementById("ageSelect");
-    ["18〜24歳", "25〜29歳", "30〜34歳", "35〜39歳", "40〜44歳", "45〜49歳", "50〜59歳", "60歳以上"].forEach(function(ageBand) {
-      var option = document.createElement("option");
-      option.value = ageBand;
-      option.textContent = ageBand;
-      ageSelect.appendChild(option);
-    });
+    var ageInput = document.getElementById("ageInput");
 
     function readAttribution() {
       var saved = {};
@@ -746,7 +746,7 @@
     document.querySelectorAll("[data-next]").forEach(function(button) {
       button.addEventListener("click", function() {
         var current = currentStepEl();
-        if (step === 5 && !ageSelect.value) { document.getElementById("ageError").classList.add("show"); return; }
+        if (step === 5 && (!ageInput.value || Number(ageInput.value) < 18 || Number(ageInput.value) > 80)) { document.getElementById("ageError").classList.add("show"); return; }
         if (step === 6 && !document.getElementById("nameInput").value.trim()) { document.getElementById("nameError").classList.add("show"); return; }
         if (current.querySelector(".multi") && !current.querySelector(".selected")) { statusMessage("少なくとも1つ選択してください。", true); return; }
         setStep(step + 1);
@@ -762,20 +762,28 @@
         fbTrack("StartRegistration");
       });
     });
-    ageSelect.addEventListener("change", function() { document.getElementById("ageError").classList.remove("show"); answers.q10_age_band = ageSelect.value; });
+    ageInput.addEventListener("input", function() {
+      document.getElementById("ageError").classList.remove("show");
+      answers.q10_age = ageInput.value;
+    });
     document.getElementById("nameInput").addEventListener("input", function() { document.getElementById("nameError").classList.remove("show"); });
+    document.getElementById("telInput").addEventListener("input", function() { document.getElementById("telError").classList.remove("show"); });
     document.getElementById("submitButton").addEventListener("click", function() {
       var email = document.getElementById("emailInput").value.trim();
       var emailError = document.getElementById("emailError");
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { emailError.textContent = "有効なメールアドレスを入力してください"; emailError.classList.add("show"); return; }
       emailError.classList.remove("show");
+      var phone = document.getElementById("telInput").value.trim();
+      var telError = document.getElementById("telError");
+      if (!phone || phone.replace(/[^0-9]/g, "").length < 7) { telError.textContent = "電話番号を入力してください"; telError.classList.add("show"); return; }
+      telError.classList.remove("show");
       if (!document.getElementById("privacyConsent").checked || !document.getElementById("partnerConsent").checked) { statusMessage("2つの同意項目を確認してください。", true); return; }
       if (!jobData || jobData.application_enabled !== true) { statusMessage("現在は受付準備中です。受付開始後に送信できます。", true); return; }
       var payload = {
         client_submission_id: getSubmissionId(), website: document.getElementById("websiteInput").value, job_public_id: jobPublicId,
         intention: answers.intention || "info", q2_timing: answers.q2_timing || "", q3_income: answers.q3_income || "",
-        q5_education: answers.q5_education || "", q8_priority: answers.q8_priority || "", q10_age_band: answers.q10_age_band || ageSelect.value,
-        name: document.getElementById("nameInput").value.trim(), email: email, phone: document.getElementById("telInput").value.trim(),
+        q5_education: answers.q5_education || "", q8_priority: answers.q8_priority || "", q10_age: answers.q10_age || ageInput.value,
+        name: document.getElementById("nameInput").value.trim(), email: email, phone: phone,
         privacy_consent: document.getElementById("privacyConsent").checked, partner_consent: document.getElementById("partnerConsent").checked,
         utm_source: attribution.utm_source, utm_medium: attribution.utm_medium, utm_campaign: attribution.utm_campaign, utm_term: attribution.utm_term,
         utm_content: attribution.utm_content, fbclid: attribution.fbclid, meta_campaign_id: attribution.meta_campaign_id,

@@ -234,10 +234,10 @@ class AdCreativeApplicationRequest(BaseModel):
     q3_income: str
     q5_education: str
     q8_priority: str
-    q10_age_band: str
+    q10_age: str
     name: str
     email: str
-    phone: str = ""
+    phone: str
     privacy_consent: bool
     partner_consent: bool
     utm_source: str = ""
@@ -1158,9 +1158,8 @@ AD_CREATIVE_CHOICES = {
     "intention": {"soon", "info"},
     "q2_timing": {"1か月以内", "2〜3か月以内", "4〜6か月以内", "7か月以降", "時期未定・情報収集中"},
     "q3_income": {"〜399万円", "400〜599万円", "600〜799万円", "800〜999万円", "1,000〜1,499万円", "1,500〜1,999万円", "2,000万円以上"},
-    "q5_education": {"大学院", "大学", "高専", "短大・専門学校", "高校", "その他・回答しない"},
+    "q5_education": {"大学院", "大学", "高専", "短大・専門学校", "高校", "その他"},
     "q8_priority": {"仕事内容・ポジション", "年収・待遇", "専門性・スキル", "成長機会・裁量", "勤務地・通勤条件", "働き方・ワークライフバランス", "まだ決めていない"},
-    "q10_age_band": {"18〜24歳", "25〜29歳", "30〜34歳", "35〜39歳", "40〜44歳", "45〜49歳", "50〜59歳", "60歳以上"},
 }
 
 
@@ -1483,20 +1482,23 @@ def _validate_ad_creative_application(req: AdCreativeApplicationRequest) -> AdCr
         ("q3_income", "現在の年収帯"),
         ("q5_education", "最終学歴"),
         ("q8_priority", "重視条件"),
-        ("q10_age_band", "年代"),
+        ("q10_age", "年齢"),
     ):
         value = _career_trim(getattr(req, field_name), label, 120, required=True)
         setattr(req, field_name, value)
-        allowed = AD_CREATIVE_CHOICES[field_name]
-        if value not in allowed:
+        allowed = AD_CREATIVE_CHOICES.get(field_name)
+        if allowed is not None and value not in allowed:
             raise HTTPException(status_code=422, detail=f"{label}の選択肢が正しくありません")
+
+    if not re.fullmatch(r"\d{1,2}", req.q10_age) or not 18 <= int(req.q10_age) <= 80:
+        raise HTTPException(status_code=422, detail="年齢は18〜80の数字で入力してください")
 
     req.name = _career_trim(req.name, "氏名", 120, required=True)
     req.email = _career_trim(req.email, "メールアドレス", 254, required=True)
     if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", req.email):
         raise HTTPException(status_code=422, detail="メールアドレスの形式が正しくありません")
-    req.phone = _career_trim(req.phone, "電話番号", 40)
-    if req.phone and len(re.sub(r"[^0-9]", "", req.phone)) < 7:
+    req.phone = _career_trim(req.phone, "電話番号", 40, required=True)
+    if len(re.sub(r"[^0-9]", "", req.phone)) < 7:
         raise HTTPException(status_code=422, detail="電話番号の形式を確認してください")
     if not req.privacy_consent:
         raise HTTPException(status_code=422, detail="個人情報の取扱いへの同意が必要です")
@@ -2774,7 +2776,7 @@ async def create_ad_creative_application(request: Request, req: AdCreativeApplic
             "q3_income": req.q3_income,
             "q5_education": req.q5_education,
             "q8_priority": req.q8_priority,
-            "q10_age_band": req.q10_age_band,
+            "q10_age": req.q10_age,
         }
         conn.execute("""
             INSERT INTO ad_creative_applications (
@@ -2789,7 +2791,7 @@ async def create_ad_creative_application(request: Request, req: AdCreativeApplic
         """, (
             application_id, req.client_submission_id, now, now,
             req.job_public_id, str(job.get("version", "")) if job else "", json.dumps(job_snapshot, ensure_ascii=False),
-            req.intention, json.dumps(answers, ensure_ascii=False), req.name, req.email, req.phone, req.q10_age_band,
+            req.intention, json.dumps(answers, ensure_ascii=False), req.name, req.email, req.phone, req.q10_age,
             now, now, consent_version,
             req.utm_source, req.utm_medium, req.utm_campaign, req.utm_term, req.utm_content,
             req.fbclid, req.meta_campaign_id, req.meta_adset_id, req.meta_ad_id, req.meta_placement,
