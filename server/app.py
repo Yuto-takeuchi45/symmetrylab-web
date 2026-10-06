@@ -239,7 +239,6 @@ class AdCreativeApplicationRequest(BaseModel):
     email: str
     phone: str
     privacy_consent: bool
-    partner_consent: bool
     utm_source: str = ""
     utm_medium: str = ""
     utm_campaign: str = ""
@@ -1151,8 +1150,10 @@ RECRUITMENT_APPLICATION_STATUSES = {
 }
 
 AD_CREATIVE_APPLICATION_STATUSES = {
-    "new", "contacted", "sent_to_partner", "closed", "rejected",
+    "new", "contacted", "closed", "rejected",
 }
+
+AD_CREATIVE_CONSENT_VERSION = "career-check-privacy-2026-10-06-v2"
 
 AD_CREATIVE_CHOICES = {
     "intention": {"soon", "info"},
@@ -1502,8 +1503,6 @@ def _validate_ad_creative_application(req: AdCreativeApplicationRequest) -> AdCr
         raise HTTPException(status_code=422, detail="電話番号の形式を確認してください")
     if not req.privacy_consent:
         raise HTTPException(status_code=422, detail="個人情報の取扱いへの同意が必要です")
-    if not req.partner_consent:
-        raise HTTPException(status_code=422, detail="提携先への情報提供に関する同意が必要です")
 
     for field_name, label, max_length in (
         ("utm_source", "utm_source", 200),
@@ -2707,17 +2706,11 @@ async def recruitment_tracking_config():
 
 @app.get("/api/ad-creative/tracking-config", include_in_schema=False)
 async def ad_creative_tracking_config():
-    """Expose only the opt-in Meta config for the isolated ad creative funnel."""
-    pixel_id = os.getenv("SYMMETRY_META_PIXEL_ID", "").strip()
-    enabled = os.getenv("SYMMETRY_META_TRACKING_ENABLED", "false").strip().lower() in {
-        "1", "true", "yes", "on"
-    }
-    if not re.fullmatch(r"\d{5,20}", pixel_id):
-        pixel_id = ""
+    """Keep Meta Pixel off on this ad LP until an explicit tracking-consent flow exists."""
     return {
-        "meta_pixel_id": pixel_id,
-        "enabled": bool(pixel_id and enabled),
-        "consent_version": os.getenv("AD_CREATIVE_CONSENT_VERSION", os.getenv("PRIVACY_POLICY_VERSION", "current")).strip() or "current",
+        "meta_pixel_id": "",
+        "enabled": False,
+        "consent_version": AD_CREATIVE_CONSENT_VERSION,
     }
 
 
@@ -2769,7 +2762,7 @@ async def create_ad_creative_application(request: Request, req: AdCreativeApplic
 
         application_id = str(uuid4())
         now = datetime.now(JST).isoformat(timespec="seconds")
-        consent_version = os.getenv("AD_CREATIVE_CONSENT_VERSION", os.getenv("PRIVACY_POLICY_VERSION", "current")).strip() or "current"
+        consent_version = AD_CREATIVE_CONSENT_VERSION
         job_snapshot = _public_ad_creative_job(job) if job else {}
         answers = {
             "q2_timing": req.q2_timing,
@@ -2792,7 +2785,7 @@ async def create_ad_creative_application(request: Request, req: AdCreativeApplic
             application_id, req.client_submission_id, now, now,
             req.job_public_id, str(job.get("version", "")) if job else "", json.dumps(job_snapshot, ensure_ascii=False),
             req.intention, json.dumps(answers, ensure_ascii=False), req.name, req.email, req.phone, req.q10_age,
-            now, now, consent_version,
+            now, "", consent_version,
             req.utm_source, req.utm_medium, req.utm_campaign, req.utm_term, req.utm_content,
             req.fbclid, req.meta_campaign_id, req.meta_adset_id, req.meta_ad_id, req.meta_placement,
             req.landing_page, req.first_touch_at, req.last_touch_at,

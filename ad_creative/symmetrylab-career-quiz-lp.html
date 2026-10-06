@@ -448,6 +448,8 @@
     }
     .modal-title { margin: 2px 0 18px; font-size: 17px; font-weight: 900; }
     .modal-content { clear: both; color: var(--text-sub); font-size: 12px; line-height: 1.9; }
+    .modal-content h3 { margin: 16px 0 4px; color: var(--navy); font-size: 12px; font-weight: 900; }
+    .modal-content p { margin: 0 0 8px; }
 
     @media (max-width: 520px) {
       .top-nav { padding-top: 12px; }
@@ -531,16 +533,15 @@
           <label class="form-field"><span class="form-label">メールアドレス</span><input class="form-input" id="emailInput" type="email" autocomplete="email" placeholder="例：name@example.com"><span class="field-error" id="emailError">メールアドレスを入力してください</span></label>
           <label class="form-field"><span class="form-label">電話番号（必須）</span><input class="form-input" id="telInput" type="tel" autocomplete="tel" placeholder="例：09012345678" required><span class="field-error" id="telError">電話番号を入力してください</span></label>
           <input id="websiteInput" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
-          <label class="consent-check"><input id="privacyConsent" type="checkbox"><span><a href="#" data-modal="privacy">個人情報の取扱い</a>を確認し、登録情報をキャリア情報の案内に利用することに同意します。</span></label>
-          <label class="consent-check"><input id="partnerConsent" type="checkbox"><span>必要に応じて、本人の同意に基づき、提携する職業紹介事業者等へ登録情報を提供することに同意します。</span></label>
-          <button class="btn-submit" type="button" id="submitButton">求人情報・今後の案内を受け取る<span class="submit-sub">登録内容を提携先へ共有する場合があります</span></button>
+          <label class="consent-check"><input id="privacyConsent" type="checkbox"><span><a href="#" data-modal="privacy">個人情報の取扱い</a>を確認し、登録情報をキャリア・求人情報の案内等に利用することに同意します。</span></label>
+          <button class="btn-submit" type="button" id="submitButton">求人情報・今後の案内を受け取る<span class="submit-sub">このフォームは求人への応募ではありません</span></button>
           <p class="submit-status" id="submitStatus" role="status"></p>
           <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button></div>
         </section>
       </div>
       <div class="success-panel" id="successPanel" aria-live="polite">
         <h2>登録を受け付けました</h2>
-        <p>登録内容を確認のうえ、案内可能な提携先からご連絡します。ご連絡まで少しお待ちください。</p>
+        <p>登録を受け付けました。登録情報はSYMMETRY Lab内で確認し、キャリア・求人情報のご案内等に利用します。このフォームから求人企業等へ登録情報を送ったり、求人への応募を取り次いだりすることはありません。</p>
       </div>
     </section>
 
@@ -584,7 +585,6 @@
     var step = 1;
     var started = false;
     var exitArmed = false;
-    var leadTracked = false;
     var stepNames = ["相談時期", "現在の年収", "最終学歴", "希望条件", "年齢", "お名前", "連絡先"];
     var answers = {};
     var params = new URLSearchParams(window.location.search);
@@ -593,7 +593,6 @@
     var submissionId = null;
     var jobData = null;
     var attributionKey = "symmetrylab_ad_attribution_v1";
-    var pendingMetaEvents = [];
     var attribution = readAttribution();
     var progBar = document.getElementById("progBar");
     for (var i = 1; i <= totalSteps; i++) {
@@ -642,12 +641,6 @@
     function clearSubmissionId() {
       submissionId = null;
       try { sessionStorage.removeItem(submissionStorageKey); } catch (error) {}
-    }
-    function leadEventWasTracked(eventId) {
-      try { return sessionStorage.getItem("symmetrylab_ad_lead_v1:" + eventId) === "1"; } catch (error) { return false; }
-    }
-    function rememberLeadEvent(eventId) {
-      try { sessionStorage.setItem("symmetrylab_ad_lead_v1:" + eventId, "1"); } catch (error) {}
     }
     function currentStepEl() { return document.getElementById("step" + step); }
     function setStep(nextStep) {
@@ -699,40 +692,8 @@
       status.classList.toggle("show", Boolean(message));
       status.classList.toggle("error", Boolean(isError));
     }
-    function fbTrack(name, params, eventId) {
-      if (typeof window.fbq !== "function") {
-        pendingMetaEvents.push({ name: name, params: params || {}, eventId: eventId || "" });
-        return true;
-      }
-      if (eventId) window.fbq("track", name, params || {}, { eventID: eventId });
-      else window.fbq("track", name, params || {});
-      return true;
-    }
-    function flushPendingMetaEvents() {
-      if (typeof window.fbq !== "function") return;
-      var queued = pendingMetaEvents.splice(0);
-      queued.forEach(function(event) {
-        if (event.eventId) window.fbq("track", event.name, event.params, { eventID: event.eventId });
-        else window.fbq("track", event.name, event.params);
-      });
-    }
-    function loadMetaTracking() {
-      if (window.location.protocol === "file:") return;
-      fetch("/api/ad-creative/tracking-config", { headers: { "Accept": "application/json" } }).then(function(response) {
-        return response.ok ? response.json() : null;
-      }).then(function(config) {
-        if (!config || !config.enabled || !config.meta_pixel_id) return;
-        !(function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)})(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
-        window.fbq("init", config.meta_pixel_id);
-        fbTrack("PageView");
-        flushPendingMetaEvents();
-      }).catch(function() {});
-    }
     function renderJob(job) {
       jobData = job;
-      if (job.public_id && job.status !== "preview") {
-        fbTrack("ViewContent", { content_name: job.anonymous_title || job.title || "キャリア情報", content_type: "product", content_ids: [job.public_id] });
-      }
     }
     function loadJob() {
       var fallback = { public_id: "", status: "generic", application_enabled: true };
@@ -759,7 +720,6 @@
         answers.intention = button.dataset.intention;
         document.getElementById("prequizOverlay").style.display = "none";
         setStep(1);
-        fbTrack("StartRegistration");
       });
     });
     ageInput.addEventListener("input", function() {
@@ -777,14 +737,14 @@
       var telError = document.getElementById("telError");
       if (!phone || phone.replace(/[^0-9]/g, "").length < 7) { telError.textContent = "電話番号を入力してください"; telError.classList.add("show"); return; }
       telError.classList.remove("show");
-      if (!document.getElementById("privacyConsent").checked || !document.getElementById("partnerConsent").checked) { statusMessage("2つの同意項目を確認してください。", true); return; }
+      if (!document.getElementById("privacyConsent").checked) { statusMessage("個人情報の取扱いを確認し、同意してください。", true); return; }
       if (!jobData || jobData.application_enabled !== true) { statusMessage("現在は受付準備中です。受付開始後に送信できます。", true); return; }
       var payload = {
         client_submission_id: getSubmissionId(), website: document.getElementById("websiteInput").value, job_public_id: jobPublicId,
         intention: answers.intention || "info", q2_timing: answers.q2_timing || "", q3_income: answers.q3_income || "",
         q5_education: answers.q5_education || "", q8_priority: answers.q8_priority || "", q10_age: answers.q10_age || ageInput.value,
         name: document.getElementById("nameInput").value.trim(), email: email, phone: phone,
-        privacy_consent: document.getElementById("privacyConsent").checked, partner_consent: document.getElementById("partnerConsent").checked,
+        privacy_consent: document.getElementById("privacyConsent").checked,
         utm_source: attribution.utm_source, utm_medium: attribution.utm_medium, utm_campaign: attribution.utm_campaign, utm_term: attribution.utm_term,
         utm_content: attribution.utm_content, fbclid: attribution.fbclid, meta_campaign_id: attribution.meta_campaign_id,
         meta_adset_id: attribution.meta_adset_id, meta_ad_id: attribution.meta_ad_id, meta_placement: attribution.meta_placement,
@@ -800,11 +760,6 @@
         document.querySelector(".form-card").style.display = "none";
         document.getElementById("successPanel").classList.add("show");
         statusMessage("", false);
-        var leadEventId = String(result.data.application_id || getSubmissionId());
-        if (!leadTracked && !result.data.duplicate && !leadEventWasTracked(leadEventId) && fbTrack("Lead", {}, leadEventId)) {
-          rememberLeadEvent(leadEventId);
-          leadTracked = true;
-        }
         clearSubmissionId();
       }).catch(function(error) {
         button.disabled = false;
@@ -812,8 +767,23 @@
       });
     });
     var modalTexts = {
-      terms: "<p>本ページは、キャリア情報を受け取るための広告導線です。SymmetryLabが採否判断や面接調整を行うものではありません。実際の求人説明・応募受付・選考は、提携先または求人者が行います。</p>",
-      privacy: "<p>入力いただいた情報は、求人・キャリア情報の案内、登録内容の確認、提携先からの連絡のために利用します。本人の同意を得た場合に限り、提携する職業紹介事業者等へ情報提供することがあります。取得項目、利用目的、保管期間、問い合わせ先の確定版は、公開前にSymmetryLabの承認済みプライバシー文面へ差し替えます。</p>"
+      terms: `<p>本ページはSYMMETRY Lab株式会社が運営するキャリア情報の登録ページです。フォーム送信は求人への応募ではありません。当社は、このフォームで受け付けた登録情報を求人企業や職業紹介事業者等へ提供せず、求人への応募取次や選考調整も行いません。</p>`,
+      privacy: `
+        <h3>事業者</h3>
+        <p>SYMMETRY Lab株式会社（代表者：竹内 悠人）<br>所在地：〒107-0061 東京都港区北青山1-3-3 三橋ビル 3階</p>
+        <h3>取得する情報</h3>
+        <p>氏名、メールアドレス、電話番号、年齢、キャリア・登録意向に関する回答（相談時期、年収帯、最終学歴、希望条件など）を取得します。広告URLで求人識別子が指定されている場合はその識別子も取得します。フォーム送信時には、流入元、閲覧ページ、UTMパラメータ、Meta広告のクリックID（fbclid）・キャンペーン／広告セット／広告ID・掲載面、初回および最終アクセス日時を登録情報と関連付けて当社サーバーに保存します。ページの閲覧・送信に伴い、IPアドレス、ブラウザー情報、アクセス日時等が通信ログとして記録される場合があります。広告流入情報はブラウザーのlocalStorageに保存し、次回アクセス時に更新され、ブラウザーから削除されるまで保持します。重複送信防止用IDはsessionStorageに保存し、閲覧中のタブセッション終了時に削除されます。</p>
+        <h3>利用目的</h3>
+        <p>登録の受付・内容確認、キャリア・求人情報のご案内、問い合わせへの回答、広告効果の社内測定・改善、重複送信や不正利用の防止に利用します。</p>
+        <h3>第三者提供・取扱いの委託</h3>
+        <p>このフォームで取得した登録情報を、求人企業や職業紹介事業者等へ提供したり、求人への応募を取り次いだりすることはありません。サーバーの運用・保管のため、Render Services, Inc. に情報の取扱いを委託しています。送信された登録情報は同社が提供する米国バージニア州（US East）リージョンのサーバーで処理・保管されます。Renderの<a href="https://render.com/privacy" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>をご確認ください。法令に基づく場合等を除き、登録情報を第三者に提供しません。</p>
+        <h3>保管期間</h3>
+        <p>登録情報は利用目的の達成に必要な期間保有します。利用目的の達成後または法定の保存期間経過後は、遅滞なく適切な方法で消去または匿名化します。法令に基づき保存が義務付けられている情報は、その期間保存します。</p>
+        <h3>広告計測について</h3>
+        <p>このページからMeta Pixelその他の広告イベント計測コードは読み込まず、ページ閲覧・登録開始・登録完了などのイベントをMetaへ送信しません。広告流入時のクリックID等はフォーム送信時に当社へ保存し、Metaへ返送しません。広告配信に伴うMeta上での情報の取扱いは、Metaの<a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>をご確認ください。</p>
+        <h3>お問い合わせ</h3>
+        <p>個人情報の開示・訂正・利用停止等に関するお問い合わせは、SYMMETRY Lab株式会社（<a href="mailto:info@symmetrylab.jp">info@symmetrylab.jp</a>）までご連絡ください。</p>
+        <p><a href="/privacy.html" target="_blank" rel="noopener noreferrer">当社プライバシーポリシー</a>もあわせてご確認ください。</p>`
     };
     document.querySelectorAll("[data-modal]").forEach(function(link) {
       link.addEventListener("click", function(event) {
@@ -831,7 +801,6 @@
     document.getElementById("stayButton").addEventListener("click", function() { document.getElementById("exitOverlay").classList.remove("show"); });
     document.getElementById("leaveButton").addEventListener("click", function() { exitArmed = false; history.back(); });
     loadJob();
-    loadMetaTracking();
   </script>
 </body>
 </html>
