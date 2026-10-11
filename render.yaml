@@ -46,8 +46,8 @@ services:
       - key: SYMMETRY_META_PIXEL_ID
         sync: false
       - key: SYMMETRY_META_TRACKING_ENABLED
-        value: "false"
+        value: "true"
       - key: AD_CREATIVE_CONSENT_VERSION
-        value: ad-privacy-v1
+        value: career-check-privacy-2026-10-11-v1
       - key: AD_CREATIVE_JOBS_PATH
         sync: false

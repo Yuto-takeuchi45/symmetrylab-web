@@ -328,6 +328,37 @@
     }
     .submit-status.show { display: block; }
     .submit-status.error { color: var(--danger); background: #fff3f3; }
+    .tracking-consent {
+      display: none;
+      position: fixed;
+      inset: auto 0 0;
+      z-index: 60;
+      padding: 12px max(16px, env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+      background: rgba(255, 255, 255, .98);
+      border-top: 1px solid var(--line);
+      box-shadow: 0 -8px 28px rgba(25, 42, 52, .16);
+    }
+    .tracking-consent.show { display: block; }
+    .tracking-consent-inner { width: min(100%, 560px); margin: 0 auto; }
+    .tracking-consent-copy { margin: 0; color: var(--text-sub); font-size: 11px; line-height: 1.6; }
+    .tracking-consent-actions { display: flex; gap: 8px; margin-top: 9px; }
+    .tracking-consent-actions button {
+      min-height: 40px;
+      flex: 1;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--white);
+      color: var(--navy);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .tracking-consent-actions #trackingAccept {
+      border-color: var(--cyan-deep);
+      background: var(--cyan-deep);
+      color: var(--white);
+    }
+    .tracking-settings-link { color: var(--navy); text-decoration: underline; cursor: pointer; }
     .success-panel { display: none; padding: 28px 22px 30px; text-align: center; }
     .success-panel.show { display: block; }
     .success-panel h2 { margin: 0 0 10px; font-size: 21px; }
@@ -546,7 +577,7 @@
     </section>
 
     <footer class="trust-footer">
-      <a href="#" data-modal="terms">利用規約</a><a href="#" data-modal="privacy">個人情報の取扱い</a><span>SYMMETRY Lab株式会社</span>
+      <a href="#" data-modal="terms">利用規約</a><a href="#" data-modal="privacy">個人情報の取扱い</a><a href="#" class="tracking-settings-link" id="trackingSettings">広告計測の設定</a><span>SYMMETRY Lab株式会社</span>
     </footer>
   </main>
 
@@ -580,6 +611,13 @@
     </div>
   </div>
 
+  <section class="tracking-consent" id="trackingConsent" role="dialog" aria-label="Meta広告計測の設定" aria-live="polite">
+    <div class="tracking-consent-inner">
+      <p class="tracking-consent-copy">任意の広告計測です。同意するとMeta Pixelがページ閲覧・診断開始・登録完了をMetaへ送信し、広告効果の測定と最適化に利用します。氏名・連絡先・年齢・回答内容は送信しません。詳細は<a href="#" data-modal="privacy">個人情報の取扱い</a>をご確認ください。</p>
+      <div class="tracking-consent-actions"><button type="button" id="trackingReject">同意しない</button><button type="button" id="trackingAccept">同意する</button></div>
+    </div>
+  </section>
+
   <script>
     var totalSteps = 7;
     var step = 1;
@@ -593,6 +631,13 @@
     var submissionId = null;
     var jobData = null;
     var attributionKey = "symmetrylab_ad_attribution_v1";
+    var metaConsentKey = "symmetrylab_ad_meta_consent_v1";
+    var metaConsentVersion = "career-check-privacy-2026-10-11-v1";
+    var metaPixelId = "";
+    var metaPixelReady = false;
+    var metaPixelLoading = false;
+    var metaPendingEvents = [];
+    var metaConsentState = readMetaConsent();
     var attribution = readAttribution();
     var progBar = document.getElementById("progBar");
     for (var i = 1; i <= totalSteps; i++) {
@@ -624,6 +669,73 @@
       };
       try { localStorage.setItem(attributionKey, JSON.stringify(current)); } catch (error) {}
       return current;
+    }
+    function readMetaConsent() {
+      try {
+        var consent = JSON.parse(localStorage.getItem(metaConsentKey) || "null");
+        if (consent && consent.version === metaConsentVersion && (consent.status === "granted" || consent.status === "denied")) return consent.status;
+      } catch (error) {}
+      return "undecided";
+    }
+    function saveMetaConsent(status) {
+      var previousStatus = metaConsentState;
+      metaConsentState = status;
+      try { localStorage.setItem(metaConsentKey, JSON.stringify({ status: status, version: metaConsentVersion, updated_at: new Date().toISOString() })); } catch (error) {}
+      document.getElementById("trackingConsent").classList.remove("show");
+      if (status === "granted") {
+        if (previousStatus !== "granted" && metaPixelReady) {
+          sendMetaEvent("PageView");
+          sendMetaEvent("ViewContent", { content_name: "career-check" });
+          if (started) sendMetaEvent("StartRegistration");
+        } else {
+          if (previousStatus !== "granted" && started) metaPendingEvents.push({ name: "StartRegistration", parameters: {} });
+          loadMetaPixel();
+        }
+      }
+      else {
+        document.cookie = "_fbp=; Max-Age=0; path=/; SameSite=Lax";
+        document.cookie = "_fbp=; Max-Age=0; path=/; domain=.symmetrylab.jp; SameSite=Lax";
+        metaPendingEvents = [];
+      }
+    }
+    function showTrackingConsent() {
+      document.getElementById("trackingConsent").classList.add("show");
+    }
+    function sendMetaEvent(eventName, parameters) {
+      if (metaConsentState !== "granted") return;
+      if (!metaPixelReady) {
+        metaPendingEvents.push({ name: eventName, parameters: parameters || {} });
+        loadMetaPixel();
+        return;
+      }
+      window.fbq("trackSingle", metaPixelId, eventName, parameters || {});
+    }
+    function loadMetaPixel() {
+      if (metaConsentState !== "granted" || metaPixelReady || metaPixelLoading || window.location.protocol === "file:") return;
+      metaPixelLoading = true;
+      fetch("/api/ad-creative/tracking-config", { headers: { "Accept": "application/json" }, cache: "no-store" }).then(function(response) {
+        return response.ok ? response.json() : null;
+      }).then(function(config) {
+        var id = config && config.enabled && /^\d{5,20}$/.test(String(config.meta_pixel_id || "")) ? String(config.meta_pixel_id) : "";
+        if (!id || metaConsentState !== "granted") return;
+        metaPixelId = id;
+        var f = window.fbq = function() { f.callMethod ? f.callMethod.apply(f, arguments) : f.queue.push(arguments); };
+        if (!window._fbq) window._fbq = f;
+        f.push = f; f.loaded = true; f.version = "2.0"; f.queue = [];
+        f("set", "autoConfig", false, id);
+        f("init", id);
+        f("trackSingle", id, "PageView");
+        f("trackSingle", id, "ViewContent", { content_name: "career-check" });
+        metaPixelReady = true;
+        metaPendingEvents.splice(0).forEach(function(event) {
+          if (metaConsentState === "granted") f("trackSingle", id, event.name, event.parameters);
+        });
+        var script = document.createElement("script");
+        script.async = true;
+        script.src = "https://connect.facebook.net/en_US/fbevents.js";
+        script.onerror = function() { metaPixelReady = false; metaPixelId = ""; };
+        document.head.appendChild(script);
+      }).catch(function() {}).finally(function() { metaPixelLoading = false; });
     }
     function clientSubmissionId() {
       if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
@@ -720,8 +832,14 @@
         answers.intention = button.dataset.intention;
         document.getElementById("prequizOverlay").style.display = "none";
         setStep(1);
+        if (metaConsentState === "undecided") showTrackingConsent();
+        sendMetaEvent("StartRegistration");
       });
     });
+    document.getElementById("trackingAccept").addEventListener("click", function() { saveMetaConsent("granted"); });
+    document.getElementById("trackingReject").addEventListener("click", function() { saveMetaConsent("denied"); });
+    document.getElementById("trackingSettings").addEventListener("click", function(event) { event.preventDefault(); showTrackingConsent(); });
+    if (metaConsentState === "granted") loadMetaPixel();
     ageInput.addEventListener("input", function() {
       document.getElementById("ageError").classList.remove("show");
       answers.q10_age = ageInput.value;
@@ -757,6 +875,7 @@
         return response.json().then(function(data) { return { ok: response.ok, data: data }; });
       }).then(function(result) {
         if (!result.ok || !result.data.ok) throw new Error(result.data.detail || "送信できませんでした");
+        if (!result.data.duplicate) sendMetaEvent("Lead");
         document.querySelector(".form-card").style.display = "none";
         document.getElementById("successPanel").classList.add("show");
         statusMessage("", false);
@@ -780,7 +899,7 @@
         <h3>保管期間</h3>
         <p>登録情報は利用目的の達成に必要な期間保有します。利用目的の達成後または法定の保存期間経過後は、遅滞なく適切な方法で消去または匿名化します。法令に基づき保存が義務付けられている情報は、その期間保存します。</p>
         <h3>広告計測について</h3>
-        <p>このページからMeta Pixelその他の広告イベント計測コードは読み込まず、ページ閲覧・登録開始・登録完了などのイベントをMetaへ送信しません。広告流入時のクリックID等はフォーム送信時に当社へ保存し、Metaへ返送しません。広告配信に伴うMeta上での情報の取扱いは、Metaの<a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>をご確認ください。</p>
+        <p>Meta広告計測は任意です。ページ下部の「広告計測の設定」で同意した場合に限り、Meta Pixelを読み込み、ページ閲覧（PageView）、キャリア情報ページ閲覧（ViewContent）、登録開始（StartRegistration）、登録完了（Lead）のイベントをMeta Platforms, Inc.へ送信し、広告効果の測定・広告配信の最適化に利用します。送信される情報には閲覧ページのURL・広告流入情報、IPアドレス、ブラウザー・端末情報およびMeta Pixelの識別子等が含まれる場合があります。氏名、メールアドレス、電話番号、年齢および質問への回答内容はMetaへ送信しません。計測への同意は任意で、同意しない場合もフォームを利用できます。後から同意を撤回する場合は、ページ下部の「広告計測の設定」から「同意しない」を選択してください。広告配信に伴うMeta上での情報の取扱いは、Metaの<a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>をご確認ください。</p>
         <h3>お問い合わせ</h3>
         <p>個人情報の開示・訂正・利用停止等に関するお問い合わせは、SYMMETRY Lab株式会社（<a href="mailto:info@symmetrylab.jp">info@symmetrylab.jp</a>）までご連絡ください。</p>
         <p><a href="/privacy.html" target="_blank" rel="noopener noreferrer">当社プライバシーポリシー</a>もあわせてご確認ください。</p>`

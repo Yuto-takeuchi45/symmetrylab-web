@@ -1153,7 +1153,9 @@ AD_CREATIVE_APPLICATION_STATUSES = {
     "new", "contacted", "closed", "rejected",
 }
 
-AD_CREATIVE_CONSENT_VERSION = "career-check-privacy-2026-10-06-v2"
+AD_CREATIVE_CONSENT_VERSION = os.getenv(
+    "AD_CREATIVE_CONSENT_VERSION", "career-check-privacy-2026-10-11-v1"
+).strip() or "career-check-privacy-2026-10-11-v1"
 
 AD_CREATIVE_CHOICES = {
     "intention": {"soon", "info"},
@@ -2706,10 +2708,16 @@ async def recruitment_tracking_config():
 
 @app.get("/api/ad-creative/tracking-config", include_in_schema=False)
 async def ad_creative_tracking_config():
-    """Keep Meta Pixel off on this ad LP until an explicit tracking-consent flow exists."""
+    """Expose Meta Pixel settings; the browser loads it only after explicit opt-in."""
+    pixel_id = os.getenv("SYMMETRY_META_PIXEL_ID", "").strip()
+    enabled = os.getenv("SYMMETRY_META_TRACKING_ENABLED", "false").strip().lower() in {
+        "1", "true", "yes", "on"
+    }
+    if not re.fullmatch(r"\d{5,20}", pixel_id):
+        pixel_id = ""
     return {
-        "meta_pixel_id": "",
-        "enabled": False,
+        "meta_pixel_id": pixel_id,
+        "enabled": bool(pixel_id and enabled),
         "consent_version": AD_CREATIVE_CONSENT_VERSION,
     }
 
