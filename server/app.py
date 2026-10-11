@@ -2075,21 +2075,25 @@ def _admin_key_is_valid(request: Request) -> bool:
 
 
 @app.get("/api/admin/consulting-career/applications")
-async def list_career_applications(request: Request, status: str = "", limit: int = 100):
+async def list_career_applications(request: Request, status: str = "", limit: int = 100, offset: int = 0):
     if not _admin_key_is_valid(request):
         raise HTTPException(status_code=403, detail="認証が必要です")
     limit = min(max(limit, 1), 500)
+    offset = max(offset, 0)
     conn = get_db()
     try:
         if status:
             if status not in CAREER_APPLICATION_STATUSES:
                 raise HTTPException(status_code=400, detail="無効なステータスです")
             rows = conn.execute(
-                "SELECT * FROM career_applications WHERE application_status = ? ORDER BY id DESC LIMIT ?",
-                (status, limit),
+                "SELECT * FROM career_applications WHERE application_status = ? ORDER BY id DESC LIMIT ? OFFSET ?",
+                (status, limit, offset),
             ).fetchall()
         else:
-            rows = conn.execute("SELECT * FROM career_applications ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
+            rows = conn.execute(
+                "SELECT * FROM career_applications ORDER BY id DESC LIMIT ? OFFSET ?",
+                (limit, offset),
+            ).fetchall()
     finally:
         conn.close()
     return [dict(row) for row in rows]
@@ -2834,23 +2838,24 @@ def _serialize_ad_creative_application(row) -> dict:
 
 
 @app.get("/api/admin/ad-creative/applications")
-async def list_ad_creative_applications(request: Request, status: str = "", limit: int = 100):
+async def list_ad_creative_applications(request: Request, status: str = "", limit: int = 100, offset: int = 0):
     if not _admin_key_is_valid(request):
         raise HTTPException(status_code=403, detail="認証が必要です")
     limit = min(max(limit, 1), 500)
+    offset = max(offset, 0)
     if status and status not in AD_CREATIVE_APPLICATION_STATUSES:
         raise HTTPException(status_code=400, detail="無効なステータスです")
     conn = get_db()
     try:
         if status:
             rows = conn.execute(
-                "SELECT * FROM ad_creative_applications WHERE application_status = ? ORDER BY id DESC LIMIT ?",
-                (status, limit),
+                "SELECT * FROM ad_creative_applications WHERE application_status = ? ORDER BY id DESC LIMIT ? OFFSET ?",
+                (status, limit, offset),
             ).fetchall()
         else:
             rows = conn.execute(
-                "SELECT * FROM ad_creative_applications ORDER BY id DESC LIMIT ?",
-                (limit,),
+                "SELECT * FROM ad_creative_applications ORDER BY id DESC LIMIT ? OFFSET ?",
+                (limit, offset),
             ).fetchall()
         return [_serialize_ad_creative_application(row) for row in rows]
     finally:

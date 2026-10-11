@@ -37,9 +37,9 @@ http://127.0.0.1:8012/consulting-career/
 
 | 画面 | URL | 見られる内容・用途 |
 | --- | --- | --- |
-| コンサル転職相談 申込管理 | `/consulting-career-admin.html` | 申込者情報、希望日時、広告流入情報、対応ステータス、管理メモ |
+| キャリア相談・広告リード（統合管理画面） | `/manage-7f3a9c2d4e8b.html#marketing-leads` | Instagram LPとGoogle広告の申込者情報、流入元・キャンペーン、対応状況、管理メモ |
 
-この画面は一般ユーザー向けではありません。広告やLPからリンクせず、管理者だけがURLを知っている状態で運用します。
+この画面は一般ユーザー向けではありません。広告やLPからリンクせず、管理者だけがアクセスしてください。旧URL `/consulting-career-admin.html` は統合管理画面へ転送します。
 
 申込者の氏名・メールアドレス・電話番号を表示するため、HTTPS、アクセス制限、強い管理キーを必須にします。
 
@@ -51,8 +51,10 @@ http://127.0.0.1:8012/consulting-career/
 | `GET /api/available-dates?training_type=case_interview` | ケース面接と共通の空き日程を取得 | LPの日時選択UI |
 | `GET /api/available-dates?training_type=case_interview&date=YYYY-MM-DD` | 指定日の空き時間と残席数を取得 | LPの日時選択UI |
 | `POST /api/consulting-career/applications` | 無料相談申込を保存 | LPのフォーム |
-| `GET /api/admin/consulting-career/applications` | 申込一覧を取得 | 管理画面 |
-| `PATCH /api/admin/consulting-career/applications/{application_id}` | 対応ステータス・管理メモを更新 | 管理画面 |
+| `GET /api/admin/consulting-career/applications` | Google広告LPの申込一覧を取得 | 統合管理画面 |
+| `PATCH /api/admin/consulting-career/applications/{application_id}` | Google広告LPの対応ステータス・管理メモを更新 | 統合管理画面 |
+| `GET /api/admin/ad-creative/applications` | Instagram career-check LPの申込一覧を取得 | 統合管理画面 |
+| `PATCH /api/admin/ad-creative/applications/{application_id}` | Instagram LPの対応ステータス・管理メモを更新 | 統合管理画面 |
 | `GET /api/admin/consulting-career/applications/{application_id}/history` | ステータス変更履歴を取得 | 管理・将来のCRM連携 |
 | `GET /api/admin/consulting-career/applications/export` | 申込をCSVで出力 | 管理画面・社内集計 |
 
@@ -321,20 +323,21 @@ Google広告タグを主要コンバージョンにする場合、同じ`generat
 
 ### 申込を確認する
 
-1. `/consulting-career-admin.html`を開く
+1. `/manage-7f3a9c2d4e8b.html#marketing-leads`を開く
 2. 管理キーを入力
-3. 「申込を読み込む」を押す
-4. 一覧で申込者、希望日時、流入元を確認
-5. 必要に応じてステータスを更新
-6. 対応内容を管理メモへ入力
-7. 「更新」を押す
+3. 「キャリア相談・広告リード」タブを開く（旧URLから来た場合は自動で開きます）
+4. Instagram LPとGoogle広告の申込が受付日時順に並んでいることを確認
+5. 流入元・キャンペーン・LPを見て対象の申込を絞り込む
+6. 必要に応じてステータスを更新
+7. 対応内容を管理メモへ入力
+8. 「保存」を押す
 
 一覧には次の情報が表示されます。
 
 - 受付日時
 - 氏名、メールアドレス、電話番号
-- 希望日時
-- 流入元、キャンペーン、GCLIDの有無
+- Instagram LPまたはGoogle広告の流入元、source/medium、キャンペーン、広告識別情報、LP
+- Google広告LPの場合は希望日時・希望職種、Instagram LPの場合はフォーム回答概要
 - 対応ステータス
 - 管理メモ
 
@@ -369,11 +372,13 @@ joined
 
 ### CSVを出力する
 
-管理画面の「CSV出力」を押すと、次のファイル名で保存されます。
+Google広告LPの申込をCSV出力する場合は、管理キーを`X-Admin-Key`ヘッダーに指定して次のAPIを使用します。統合画面にはCSV出力ボタンを設けていません。
 
 ```text
-consulting-career-applications.csv
+GET /api/admin/consulting-career/applications/export
 ```
+
+ダウンロードされるファイル名は`consulting-career-applications.csv`です。
 
 CSVには個人情報が含まれるため、共有先・保存場所・保存期間を管理してください。
 
@@ -384,7 +389,7 @@ CSVには個人情報が含まれるため、共有先・保存場所・保存�
 管理画面で確認します。
 
 ```text
-/consulting-career-admin.html
+/manage-7f3a9c2d4e8b.html#marketing-leads
 ```
 
 Google AnalyticsやGoogle広告では、氏名やメールアドレスを確認しません。

@@ -72,9 +72,9 @@ URL全体やフォームの個人情報をGA4イベントパラメータへ渡�
 
 ## 申込データの確認
 
-申込者情報はGA4やGoogle広告ではなく、専用の管理画面で確認します。
+申込者情報はGA4やGoogle広告ではなく、既存のSYMMETRY Lab管理画面にある「キャリア相談・広告リード」タブで確認します。Instagram career-check LPの申込も同じ一覧に表示されます。
 
-- 管理画面: `/consulting-career-admin.html`
+- 管理画面: `/manage-7f3a9c2d4e8b.html#marketing-leads`
 - API: `/api/admin/consulting-career/applications`
 - CSV: `/api/admin/consulting-career/applications/export`
 - 認証: `ADMIN_KEY`。管理画面は `X-Admin-Key` ヘッダーを使用（URLの `?key=` は使用しません）

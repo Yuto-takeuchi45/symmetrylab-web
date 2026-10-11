@@ -193,6 +193,28 @@
     .article-form-actions .secondary { background:#fff; color:var(--primary); border:1px solid var(--border); }
     .article-status { font-size:.8rem; font-weight:700; }
     .article-status.published { color:var(--success); }.article-status.draft { color:var(--warning); }
+    .lead-intro { color:var(--text-light); margin:0 0 1.25rem; line-height:1.7; }
+    .lead-toolbar { display:flex; flex-wrap:wrap; gap:.65rem; align-items:center; }
+    .lead-toolbar select, .lead-toolbar input, .lead-toolbar button { min-height:40px; }
+    .lead-toolbar button { padding:.5rem .9rem; border:0; border-radius:6px; background:var(--primary); color:#fff; cursor:pointer; font:inherit; }
+    .lead-status { min-height:1.5rem; padding:.25rem 1rem; color:var(--text-light); }
+    .lead-status.is-error { color:var(--danger); }
+    .lead-table-wrap { overflow:auto; }
+    .lead-table { min-width:1120px; }
+    .lead-table td { vertical-align:top; }
+    .lead-table small { display:block; margin-top:.3rem; color:var(--text-light); line-height:1.5; }
+    .lead-source { display:inline-block; padding:.2rem .5rem; border-radius:999px; background:#e8f8fc; color:#006b82; font-size:.78rem; font-weight:700; white-space:nowrap; }
+    .lead-source.google { background:#edf1f7; color:#28364a; }
+    .lead-source.other { background:#f2f4f7; color:#667085; }
+    .lead-details { margin-top:.45rem; }
+    .lead-details summary { color:#007f9d; cursor:pointer; font-size:.8rem; }
+    .lead-details ul { margin:.4rem 0 0 1rem; padding:0; color:#555; line-height:1.6; }
+    .lead-table select, .lead-table textarea { width:100%; min-width:130px; padding:.45rem; border:1px solid var(--border); border-radius:5px; font:inherit; }
+    .lead-table textarea { min-width:180px; min-height:4.5rem; resize:vertical; }
+    .lead-save { padding:.45rem .7rem; border:0; border-radius:5px; background:var(--accent); color:#102a43; cursor:pointer; font:inherit; font-weight:700; }
+    .lead-save:disabled { opacity:.6; cursor:wait; }
+    .lead-stats { grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); }
+    .lead-empty { text-align:center; padding:2.5rem; color:var(--text-light); }
     @media (max-width:700px) { .column-grid { grid-template-columns:1fr; }.column-field.full { grid-column:auto; }.tabs { overflow-x:auto; }.tab { white-space:nowrap; padding:.75rem 1rem; } }
   </style>
   <!-- Google tag (gtag.js) -->
@@ -241,6 +263,7 @@
     <button class="tab" onclick="switchTab('blocked')">予約対応可能日設定</button>
     <button class="tab" onclick="switchTab('referrals')">紹介コード管理</button>
     <button class="tab" onclick="switchTab('articles')">コラム</button>
+    <button class="tab" onclick="switchTab('marketing-leads')">キャリア相談・広告リード</button>
   </div>
 
   <!-- ダッシュボード -->
@@ -272,6 +295,47 @@
         </thead>
         <tbody id="recent-bookings"></tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- 広告・キャリア相談リード -->
+  <div class="tab-content" id="tab-marketing-leads">
+    <h2 style="margin-bottom:.5rem;">キャリア相談・広告リード</h2>
+    <p class="lead-intro">Instagramのcareer-check LPと、Google広告経由の申込を受付日時順にまとめています。流入元・キャンペーン・LPを確認し、対応状況とメモを更新できます。</p>
+    <div class="stats-grid lead-stats">
+      <div class="stat-card"><div class="label">読み込み件数</div><div class="value accent" id="lead-count-total">-</div></div>
+      <div class="stat-card"><div class="label">Instagram LP</div><div class="value" id="lead-count-instagram">-</div></div>
+      <div class="stat-card"><div class="label">Google広告</div><div class="value" id="lead-count-google">-</div></div>
+    </div>
+    <div class="table-container">
+      <div class="table-toolbar lead-toolbar">
+        <select id="lead-source-filter" aria-label="流入元で絞り込み">
+          <option value="">すべての流入元</option>
+          <option value="instagram">Instagram LP</option>
+          <option value="google">Google広告</option>
+          <option value="other">その他・不明</option>
+        </select>
+        <select id="lead-status-filter" aria-label="対応状況で絞り込み">
+          <option value="">すべての対応状況</option>
+          <option value="new">新規</option>
+          <option value="contacted">連絡済み</option>
+          <option value="qualified_candidate">有効候補者</option>
+          <option value="agent_referral">紹介済み</option>
+          <option value="interview">選考中</option>
+          <option value="joined">入社</option>
+          <option value="closed">終了</option>
+          <option value="rejected">対象外</option>
+        </select>
+        <input type="search" id="lead-search" placeholder="氏名・メール・キャンペーンで検索" aria-label="申込を検索">
+        <button type="button" onclick="window.loadMarketingLeads && window.loadMarketingLeads()">再読込</button>
+      </div>
+      <p class="lead-status" id="lead-status-message" role="status" aria-live="polite">管理画面にログインしてから読み込んでください。</p>
+      <div class="lead-table-wrap">
+        <table class="lead-table">
+          <thead><tr><th>受付日時</th><th>流入元・キャンペーン</th><th>申込者</th><th>申込概要</th><th>対応状況</th><th>管理メモ</th><th>更新</th></tr></thead>
+          <tbody id="marketing-leads-list"><tr><td class="lead-empty" colspan="7">申込データはまだ読み込まれていません。</td></tr></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -410,6 +474,7 @@
         document.getElementById('login-overlay').classList.add('hidden');
         sessionStorage.setItem('adminKey', adminKey);
         loadDashboard();
+        if (window.location.hash === '#marketing-leads') switchTab('marketing-leads');
       })
       .catch(() => {
         document.getElementById('login-error').style.display = 'block';
@@ -434,6 +499,7 @@
         .then(() => {
           document.getElementById('login-overlay').classList.add('hidden');
           loadDashboard();
+          if (window.location.hash === '#marketing-leads') switchTab('marketing-leads');
         })
         .catch(() => { sessionStorage.removeItem('adminKey'); });
     }
@@ -456,6 +522,7 @@
     }
     if (name === 'referrals') loadReferralCodes();
     if (name === 'articles') loadArticles();
+    if (name === 'marketing-leads' && window.loadMarketingLeads) window.loadMarketingLeads();
   }
 
   // --- ダッシュボード ---
@@ -1009,5 +1076,6 @@
     return dt.replace('T', ' ').substring(0, 16);
   }
 </script>
+<script src="js/marketing-leads-admin.js"></script>
 </body>
 </html>
