@@ -37,6 +37,8 @@ services:
         sync: false
       - key: RESEND_FROM_NAME
         value: SYMMETRY Lab
+      - key: AD_CREATIVE_NOTIFICATION_EMAIL
+        value: info@symmetrylab.jp
       - key: LINE_CHANNEL_ACCESS_TOKEN
         sync: false
       - key: SYMMETRY_GOOGLE_ADS_CONVERSION_ID
@@ -48,6 +50,6 @@ services:
       - key: SYMMETRY_META_TRACKING_ENABLED
         value: "true"
       - key: AD_CREATIVE_CONSENT_VERSION
-        value: career-check-privacy-2026-10-11-v1
+        value: career-check-privacy-2026-10-12-v2
       - key: AD_CREATIVE_JOBS_PATH
         sync: false

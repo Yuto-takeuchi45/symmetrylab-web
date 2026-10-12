@@ -131,6 +131,9 @@ RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
 # （SMTP_EMAIL に Gmail 等を設定していても流用しない。Gmail は Resend で認証不可）
 RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "onboarding@resend.dev")
 RESEND_FROM_NAME = os.getenv("RESEND_FROM_NAME", "SYMMETRY Lab")
+AD_CREATIVE_NOTIFICATION_EMAIL = os.getenv(
+    "AD_CREATIVE_NOTIFICATION_EMAIL", "info@symmetrylab.jp"
+).strip()
 
 
 def get_admin_emails() -> list:
@@ -937,6 +940,69 @@ def send_career_application_notifications(application: dict) -> None:
             print(f"[コンサル転職相談] 申込者通知に失敗 ({applicant_email}): {exc}")
 
 
+def _ad_creative_application_email_html(application: dict, audience: str) -> str:
+    """Instagram広告LPの登録通知メールを生成する。"""
+    name = html.escape(application.get("name", ""))
+    application_id = html.escape(application.get("application_id", ""))
+    if audience == "admin":
+        return f"""
+        <div style="font-family:Arial,'Noto Sans JP',sans-serif;line-height:1.8;color:#1f2937;max-width:680px;">
+          <h1 style="font-size:20px;border-bottom:3px solid #36c9e6;padding-bottom:12px;">Instagram LPから新しい登録がありました</h1>
+          <table style="border-collapse:collapse;width:100%;">
+            <tr><th style="text-align:left;padding:8px;background:#f3f4f6;">申込ID</th><td style="padding:8px;">{application_id}</td></tr>
+            <tr><th style="text-align:left;padding:8px;background:#f3f4f6;">氏名</th><td style="padding:8px;">{name}</td></tr>
+            <tr><th style="text-align:left;padding:8px;background:#f3f4f6;">メールアドレス</th><td style="padding:8px;">{html.escape(application.get("email", ""))}</td></tr>
+            <tr><th style="text-align:left;padding:8px;background:#f3f4f6;">電話番号</th><td style="padding:8px;">{html.escape(application.get("phone", ""))}</td></tr>
+            <tr><th style="text-align:left;padding:8px;background:#f3f4f6;">流入元</th><td style="padding:8px;">{html.escape(application.get("utm_source", "") or "instagram_meta")}</td></tr>
+            <tr><th style="text-align:left;padding:8px;background:#f3f4f6;">広告キャンペーン</th><td style="padding:8px;">{html.escape(application.get("utm_campaign", "") or "未設定")}</td></tr>
+          </table>
+          <p>詳しい回答と流入情報は、申込IDを使って管理画面で確認してください。</p>
+        </div>
+        """
+
+    return f"""
+    <div style="font-family:Arial,'Noto Sans JP',sans-serif;line-height:1.8;color:#1f2937;max-width:680px;">
+      <h1 style="font-size:20px;border-bottom:3px solid #36c9e6;padding-bottom:12px;">キャリア情報の登録を受け付けました</h1>
+      <p>{name} 様</p>
+      <p>SYMMETRY Labのキャリア情報ページをご利用いただきありがとうございます。登録を受け付けました。</p>
+      <p>受付ID：{application_id}</p>
+      <p>このフォームは求人への応募ではありません。登録情報はSYMMETRY Lab内で確認し、キャリア・求人情報のご案内等に利用します。求人企業等への情報提供や応募の取次は行いません。</p>
+      <p style="font-size:13px;color:#667085;">このメールに心当たりがない場合は、<a href="mailto:info@symmetrylab.jp">info@symmetrylab.jp</a>までご連絡ください。</p>
+    </div>
+    """
+
+
+def send_ad_creative_application_notifications(application: dict) -> None:
+    """保存済みのInstagram広告LP登録について、社内と申込者へ受付通知を送る。"""
+    admin_recipients = [
+        recipient.strip()
+        for recipient in AD_CREATIVE_NOTIFICATION_EMAIL.split(",")
+        if recipient.strip()
+    ]
+    admin_subject = "【SYMMETRY Lab】Instagram LPの新規登録"
+    admin_html = _ad_creative_application_email_html(application, "admin")
+    if not admin_recipients:
+        print("[Instagram LP] AD_CREATIVE_NOTIFICATION_EMAIL未設定のため社内通知をスキップ")
+    for recipient in admin_recipients:
+        try:
+            if not send_email(recipient, admin_subject, admin_html):
+                print(f"[Instagram LP] 社内通知メールを送信できませんでした ({recipient})")
+        except Exception as exc:
+            print(f"[Instagram LP] 社内通知に失敗 ({recipient}): {exc}")
+
+    applicant_email = application.get("email", "")
+    if applicant_email:
+        try:
+            if not send_email(
+                applicant_email,
+                "【SYMMETRY Lab】キャリア情報の登録を受け付けました",
+                _ad_creative_application_email_html(application, "applicant"),
+            ):
+                print(f"[Instagram LP] 申込者への受付メールを送信できませんでした (ID={application.get('application_id', '')})")
+        except Exception as exc:
+            print(f"[Instagram LP] 申込者への受付メールに失敗 (ID={application.get('application_id', '')}): {exc}")
+
+
 def send_booking_confirmation(metadata: dict, amount: int):
     """予約確認メールを顧客に送信"""
     customer_name = metadata.get("customer_name", "")
@@ -1154,8 +1220,8 @@ AD_CREATIVE_APPLICATION_STATUSES = {
 }
 
 AD_CREATIVE_CONSENT_VERSION = os.getenv(
-    "AD_CREATIVE_CONSENT_VERSION", "career-check-privacy-2026-10-11-v1"
-).strip() or "career-check-privacy-2026-10-11-v1"
+    "AD_CREATIVE_CONSENT_VERSION", "career-check-privacy-2026-10-12-v2"
+).strip() or "career-check-privacy-2026-10-12-v2"
 
 AD_CREATIVE_CHOICES = {
     "intention": {"soon", "info"},
@@ -2746,7 +2812,11 @@ async def ad_creative_job(public_id: str):
 
 
 @app.post("/api/ad-creative/applications")
-async def create_ad_creative_application(request: Request, req: AdCreativeApplicationRequest):
+async def create_ad_creative_application(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    req: AdCreativeApplicationRequest,
+):
     """広告専用の7ステップ登録を保存する。既存の採用APIとは分離する。"""
     if not _career_origin_allowed(request):
         raise HTTPException(status_code=403, detail="許可されていない送信元です")
@@ -2807,6 +2877,17 @@ async def create_ad_creative_application(request: Request, req: AdCreativeApplic
             (application_id, now),
         )
         conn.commit()
+        background_tasks.add_task(
+            send_ad_creative_application_notifications,
+            {
+                "application_id": application_id,
+                "name": req.name,
+                "email": req.email,
+                "phone": req.phone,
+                "utm_source": req.utm_source,
+                "utm_campaign": req.utm_campaign,
+            },
+        )
         return {"ok": True, "duplicate": False, "application_id": application_id, "lead_id": application_id, "created_at": now}
     except sqlite3.IntegrityError:
         conn.rollback()

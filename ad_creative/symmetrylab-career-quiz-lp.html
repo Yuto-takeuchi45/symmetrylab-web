@@ -315,6 +315,7 @@
       text-align: left;
     }
     .consent-check input { flex: 0 0 auto; margin-top: 3px; accent-color: var(--cyan-deep); }
+    .email-confirmation-note { margin: 8px 0 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
     .submit-status {
       display: none;
       margin: 10px 0 0;
@@ -566,6 +567,7 @@
           <input id="websiteInput" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
           <label class="consent-check"><input id="privacyConsent" type="checkbox"><span><a href="#" data-modal="privacy">個人情報の取扱い</a>を確認し、登録情報をキャリア・求人情報の案内等に利用することに同意します。</span></label>
           <button class="btn-submit" type="button" id="submitButton">求人情報・今後の案内を受け取る<span class="submit-sub">このフォームは求人への応募ではありません</span></button>
+          <p class="email-confirmation-note">登録完了後、入力したメールアドレスへ受付確認メールを送信します。届かない場合は迷惑メールフォルダもご確認ください。</p>
           <p class="submit-status" id="submitStatus" role="status"></p>
           <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button></div>
         </section>
@@ -895,7 +897,7 @@
         <h3>利用目的</h3>
         <p>登録の受付・内容確認、キャリア・求人情報のご案内、問い合わせへの回答、広告効果の社内測定・改善、重複送信や不正利用の防止に利用します。</p>
         <h3>第三者提供・取扱いの委託</h3>
-        <p>このフォームで取得した登録情報を、求人企業や職業紹介事業者等へ提供したり、求人への応募を取り次いだりすることはありません。サーバーの運用・保管のため、Render Services, Inc. に情報の取扱いを委託しています。送信された登録情報は同社が提供する米国バージニア州（US East）リージョンのサーバーで処理・保管されます。Renderの<a href="https://render.com/privacy" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>をご確認ください。法令に基づく場合等を除き、登録情報を第三者に提供しません。</p>
+        <p>このフォームで取得した登録情報を、求人企業や職業紹介事業者等へ提供したり、求人への応募を取り次いだりすることはありません。サーバーの運用・保管のため、Render Services, Inc. に情報の取扱いを委託しています。送信された登録情報は同社が提供する米国バージニア州（US East）リージョンのサーバーで処理・保管されます。Renderの<a href="https://render.com/privacy" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>をご確認ください。登録受付メールおよび社内通知メールの送信にあたり、送信に必要な氏名・メールアドレス・電話番号・申込ID等を、当社が利用するメール配信事業者（Resendまたは設定中のSMTP事業者）へ委託して処理します。Resend利用時は、送信に必要なメールデータが米国で処理されることがあります。Resendの<a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>をご確認ください。法令に基づく場合等を除き、登録情報を求人企業や職業紹介事業者等へ提供しません。</p>
         <h3>保管期間</h3>
         <p>登録情報は利用目的の達成に必要な期間保有します。利用目的の達成後または法定の保存期間経過後は、遅滞なく適切な方法で消去または匿名化します。法令に基づき保存が義務付けられている情報は、その期間保存します。</p>
         <h3>広告計測について</h3>

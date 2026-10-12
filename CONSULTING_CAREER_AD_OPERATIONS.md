@@ -370,6 +370,8 @@ joined
 
 送信サービスはRenderではResendを推奨します。`RESEND_API_KEY`と、Resendで認証済みの`RESEND_FROM_EMAIL`を設定してください。Resend未設定時は既存のSMTP設定（`SMTP_EMAIL`、`SMTP_PASSWORD`など）を使用します。`ADMIN_EMAIL`はカンマ区切りで複数指定できます。
 
+Instagram広告専用LP（`/career-check/`）の登録では、新規保存時のみ`AD_CREATIVE_NOTIFICATION_EMAIL`宛てに社内通知し、登録者のメールアドレスへ受付確認を送信します。重複送信は再通知しません。社内通知先の初期値は`info@symmetrylab.jp`です。送信失敗時も登録データは管理画面に保存され、結果はRenderログに記録されます。
+
 ### CSVを出力する
 
 Google広告LPの申込をCSV出力する場合は、管理キーを`X-Admin-Key`ヘッダーに指定して次のAPIを使用します。統合画面にはCSV出力ボタンを設けていません。
@@ -426,10 +428,12 @@ Google広告で確認します。
 | `SYMMETRY_GOOGLE_ADS_CONVERSION_LABEL` | 直接タグ用のGoogle広告コンバージョンラベル |
 | `ADMIN_KEY` | 管理APIの認証キー。強い秘密値を設定 |
 | `ADMIN_EMAIL` | 新規申込通知の宛先。カンマ区切りで複数指定可能 |
+| `AD_CREATIVE_NOTIFICATION_EMAIL` | Instagram広告LPの社内通知先。カンマ区切りで複数指定可能。未設定時は`info@symmetrylab.jp` |
 | `RESEND_API_KEY` | Resendの送信用APIキー。Renderでは推奨 |
 | `RESEND_FROM_EMAIL` | Resendで認証済みの送信元メールアドレス |
 | `RESEND_FROM_NAME` | 送信元表示名 |
 | `PRIVACY_POLICY_VERSION` | 申込時に保存する同意文面のバージョン |
+| `AD_CREATIVE_CONSENT_VERSION` | Instagram広告LPの個人情報取扱い文面バージョン |
 
 ### サーバー運用
 
