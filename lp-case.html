@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="戦略コンサルへの就職・転職を目指す方のためのケース面接対策。外資系戦略コンサル出身者が1対1で指導、独学の壁を突破。1時間¥7,000〜／受講生リピート率100%／お申込み受付中。">
+  <meta name="description" content="戦略コンサルへの就職・転職を目指す方のためのケース面接対策。外資系戦略コンサル出身者が1対1で指導、独学の壁を突破。1時間¥9,000〜／受講生リピート率100%／お申込み受付中。">
   <meta property="og:title" content="戦略コンサル志望者向けケース面接対策・転職対策 | SYMMETRY Lab">
   <meta property="og:description" content="戦略コンサルへの就職・転職を本気で目指す方のためのマンツーマンケース面接対策。独学では到達できない思考プロセスを、外資系戦略コンサル出身者が直接指導します。">
   <meta property="og:type" content="website">
@@ -118,7 +118,7 @@
         "offers": {
           "@type": "Offer",
           "url": "https://symmetrylab.jp/lp-case.html",
-          "price": "7000",
+          "price": "9000",
           "priceCurrency": "JPY",
           "availability": "https://schema.org/InStock",
           "category": "ケース面接対策"
@@ -135,7 +135,7 @@
         "offers": {
           "@type": "Offer",
           "url": "https://symmetrylab.jp/lp-case.html",
-          "price": "7000",
+          "price": "9000",
           "priceCurrency": "JPY",
           "availability": "https://schema.org/InStock"
         }
@@ -238,7 +238,7 @@
           <div class="lp-hero-form-header">
             <span class="lp-hero-form-badge">Apply Now</span>
             <h2 style="white-space:nowrap;">ケース面接対策を申し込む</h2>
-            <p class="lp-hero-form-price">¥7,000 <span>／ 60分・1セッション</span></p>
+            <p class="lp-hero-form-price">¥9,000 <span>／ 60分・1セッション</span></p>
           </div>
 
           <form action="contact.html" method="POST" id="lpCaseHeroForm">
@@ -275,11 +275,11 @@
               <label class="lp-form-label">ご希望セッション数 <span class="required">必須</span></label>
               <select class="lp-form-select lp-form-input--boxed" name="sessions" required>
                 <option value="">選択してください</option>
-                <option value="1">1セッション（¥7,000）</option>
-                <option value="2">2セッション（¥13,580）</option>
-                <option value="3">3セッション（¥19,950）</option>
-                <option value="5">5セッション（¥32,200）</option>
-                <option value="10">10セッション（¥63,000）</option>
+                <option value="1">1セッション（¥9,000）</option>
+                <option value="2">2セッション（¥17,460）</option>
+                <option value="3">3セッション（¥25,650）</option>
+                <option value="5">5セッション（¥41,400）</option>
+                <option value="10">10セッション（¥81,000）</option>
                 <option value="未定">未定・相談しながら決めたい</option>
               </select>
             </div>
@@ -453,7 +453,7 @@
             </div>
             <div class="lp-modal-summary-row lp-modal-summary-total">
               <span class="lp-modal-summary-label">合計金額</span>
-              <span class="lp-modal-summary-value" id="modalTotalPrice">¥7,000</span>
+              <span class="lp-modal-summary-value" id="modalTotalPrice">¥9,000</span>
             </div>
           </div>
 
@@ -526,7 +526,8 @@
     // ============================================
     const API_BASE = window.location.origin;
     const TRAINING_TYPE = 'case_interview';
-    const SESSION_PRICE = 7000;
+    const SESSION_PRICE = 9000;
+    const CASE_PACKAGE_PRICES = { 1: 9000, 2: 17460, 3: 25650, 5: 41400, 10: 81000 };
 
     let selectedDate = null;
     let picks = []; // max 3: [{date, time}]
@@ -584,8 +585,8 @@
       picks = [];
 
       // セッション数に応じた金額表示
-      const totalPrice = SESSION_PRICE * sessions;
-      document.getElementById('modalSessions').textContent = `${sessions}セッション × ¥${SESSION_PRICE.toLocaleString()}`;
+      const totalPrice = CASE_PACKAGE_PRICES[sessions] || SESSION_PRICE * sessions;
+      document.getElementById('modalSessions').textContent = `${sessions}セッション`;
       document.getElementById('modalTotalPrice').textContent = `¥${totalPrice.toLocaleString()}`;
       renderPicksList();
       updateSubmitButton();

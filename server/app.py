@@ -1761,7 +1761,7 @@ async def create_checkout_session(req: CheckoutRequest):
     qty = max(1, int(req.sessions))
 
     # ケース面接対策はパッケージ価格（割引適用）。それ以外は単価×数量
-    CASE_PACKAGE_PRICES = {1: 7000, 2: 13580, 3: 19950, 5: 32200, 10: 63000}
+    CASE_PACKAGE_PRICES = {1: 9000, 2: 17460, 3: 25650, 5: 41400, 10: 81000}
     if req.training_type in ("case_interview", "case_interview_new", "case_interview_mid") and qty in CASE_PACKAGE_PRICES:
         original_total = CASE_PACKAGE_PRICES[qty]
     else:

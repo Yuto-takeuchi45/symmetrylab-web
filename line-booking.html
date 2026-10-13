@@ -274,11 +274,11 @@
       <div class="type-selector">
         <button type="button" class="type-btn active" data-type="case_interview" onclick="selectType(this)">
           <div class="type-btn-name">ケース面接対策</div>
-          <div class="type-btn-price">¥7,000 / 60min</div>
+          <div class="type-btn-price">¥9,000 / 60min</div>
         </button>
         <button type="button" class="type-btn" data-type="practical_skills" onclick="selectType(this)">
           <div class="type-btn-name">実践スキル研修</div>
-          <div class="type-btn-price">¥7,000 / 各日</div>
+          <div class="type-btn-price">¥9,000 / 各日</div>
         </button>
       </div>
     </div>
@@ -311,11 +311,11 @@
     <div class="card" id="sessionCard">
       <label class="section-label">ご希望セッション数<span class="required">必須</span></label>
       <select class="form-select" id="sessions" onchange="updateSummary()">
-        <option value="1">1セッション（¥7,000）</option>
-        <option value="2">2セッション（¥13,580）</option>
-        <option value="3">3セッション（¥19,950）</option>
-        <option value="5">5セッション（¥32,200）</option>
-        <option value="10">10セッション（¥63,000）</option>
+        <option value="1">1セッション（¥9,000）</option>
+        <option value="2">2セッション（¥17,460）</option>
+        <option value="3">3セッション（¥25,650）</option>
+        <option value="5">5セッション（¥41,400）</option>
+        <option value="10">10セッション（¥81,000）</option>
       </select>
     </div>
 
@@ -361,7 +361,7 @@
         </div>
         <div class="summary-row total">
           <span style="color:var(--gray-500);">合計金額</span>
-          <span class="summary-total-value" id="summaryTotal">¥7,000</span>
+          <span class="summary-total-value" id="summaryTotal">¥9,000</span>
         </div>
       </div>
 
@@ -403,16 +403,16 @@
   let liffProfile = null;
   let currentType = 'case_interview';
   let trainingInfo = {
-    case_interview: { price: 7000, name: 'ケース面接対策' },
-    practical_skills: { price: 7000, name: '実践スキル研修' }
+    case_interview: { price: 9000, name: 'ケース面接対策' },
+    practical_skills: { price: 9000, name: '実践スキル研修' }
   };
   // ケース面接対策のセッション数別パッケージ価格（割引適用）
   const CASE_PACKAGE_PRICES = {
-    1: 7000,
-    2: 13580,
-    3: 19950,
-    5: 32200,
-    10: 63000
+    1: 9000,
+    2: 17460,
+    3: 25650,
+    5: 41400,
+    10: 81000
   };
   let selectedDate = null;
   let picks = []; // [{date, time}] max 3
