@@ -2734,7 +2734,7 @@ async def public_article(slug: str):
 
 @app.get("/sitemap.xml", response_class=HTMLResponse, include_in_schema=False)
 async def dynamic_sitemap():
-    static_urls = ["/", "/lp-case.html", "/lp-training.html", "/services.html", "/booking.html", "/blog/", "/faq.html", "/company.html", "/contact.html", "/privacy.html", "/tokushoho.html"]
+    static_urls = ["/", "/lp-case.html", "/lp-training.html", "/services.html", "/booking.html", "/blog/", "/faq.html", "/company.html", "/works.html", "/contact.html", "/privacy.html", "/tokushoho.html"]
     conn = get_db()
     articles = conn.execute("SELECT slug, updated_at FROM articles WHERE status = 'published' ORDER BY published_at DESC").fetchall()
     conn.close()
