@@ -2,33 +2,6 @@
    SYMMETRY Lab - Works (実績)
    ============================================ */
 
-.works-filter {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem;
-  margin: 1.5rem 0 2.5rem;
-}
-
-.works-filter-btn {
-  padding: 0.5rem 1.25rem;
-  border: 1px solid var(--color-accent);
-  border-radius: 999px;
-  background: var(--color-white);
-  color: var(--color-accent-hover);
-  font-family: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.works-filter-btn:hover,
-.works-filter-btn.is-active {
-  background: var(--color-accent);
-  color: var(--color-white);
-}
-
 .works-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -49,10 +22,6 @@
 .works-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-}
-
-.works-card[hidden] {
-  display: none;
 }
 
 .works-card-header {
