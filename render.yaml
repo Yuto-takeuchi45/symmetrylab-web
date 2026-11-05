@@ -41,6 +41,14 @@ services:
         value: info@symmetrylab.jp
       - key: LINE_CHANNEL_ACCESS_TOKEN
         sync: false
+      - key: AD_CREATIVE_LINE_ENABLED
+        sync: false
+      - key: AD_CREATIVE_LINE_ID
+        value: "@226qiliz"
+      - key: AD_CREATIVE_LINE_CHANNEL_SECRET
+        sync: false
+      - key: AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN
+        sync: false
       - key: SYMMETRY_GOOGLE_ADS_CONVERSION_ID
         value: AW-18344529693
       - key: SYMMETRY_GOOGLE_ADS_CONVERSION_LABEL

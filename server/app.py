@@ -9,19 +9,22 @@ import html
 import re
 import csv
 import hmac
+import hashlib
+import base64
+import secrets
 import smtplib
 import sqlite3
 import traceback
 import urllib.request
 import urllib.error
-from datetime import datetime
+from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from io import BytesIO, StringIO
 from pathlib import Path
 from typing import Optional
 from uuid import uuid4
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlparse, quote
 from zoneinfo import ZoneInfo
 
 from .article_seed_data import SEED_ARTICLES
@@ -144,6 +147,12 @@ def get_admin_emails() -> list:
 
 # --- LINE設定 ---
 LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN", "")
+# The career funnel uses separate credentials so an existing LINE integration
+# is never silently redirected to another official account.
+AD_CREATIVE_LINE_ENABLED = os.getenv("AD_CREATIVE_LINE_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
+AD_CREATIVE_LINE_ID = os.getenv("AD_CREATIVE_LINE_ID", "@226qiliz").strip()
+AD_CREATIVE_LINE_CHANNEL_SECRET = os.getenv("AD_CREATIVE_LINE_CHANNEL_SECRET", "").strip()
+AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN = os.getenv("AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN", "").strip()
 
 app = FastAPI(title="SYMMETRY Lab Booking API")
 
@@ -242,6 +251,7 @@ class AdCreativeApplicationRequest(BaseModel):
     email: str
     phone: str
     privacy_consent: bool
+    line_consent: bool = False
     utm_source: str = ""
     utm_medium: str = ""
     utm_campaign: str = ""
@@ -563,6 +573,27 @@ def init_db():
     conn.execute("CREATE INDEX IF NOT EXISTS idx_ad_creative_applications_created ON ad_creative_applications(created_at DESC)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_ad_creative_applications_status ON ad_creative_applications(application_status)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_ad_creative_applications_job ON ad_creative_applications(job_public_id)")
+    existing_columns = {row[1] for row in conn.execute("PRAGMA table_info(ad_creative_applications)")}
+    for name, definition in (
+        ("line_link_status", "TEXT NOT NULL DEFAULT 'not_requested'"),
+        ("line_user_id", "TEXT NOT NULL DEFAULT ''"),
+        ("line_display_name", "TEXT NOT NULL DEFAULT ''"),
+        ("line_linked_at", "TEXT NOT NULL DEFAULT ''"),
+        ("line_reference", "TEXT NOT NULL DEFAULT ''"),
+    ):
+        if name not in existing_columns:
+            conn.execute(f"ALTER TABLE ad_creative_applications ADD COLUMN {name} {definition}")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS ad_creative_line_tokens (
+            token_hash TEXT PRIMARY KEY,
+            application_id TEXT NOT NULL,
+            reference TEXT NOT NULL,
+            expires_at TEXT NOT NULL,
+            used_at TEXT NOT NULL DEFAULT '',
+            FOREIGN KEY (application_id) REFERENCES ad_creative_applications(application_id)
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_ad_creative_line_tokens_application ON ad_creative_line_tokens(application_id)")
     conn.execute("""
         CREATE TABLE IF NOT EXISTS ad_creative_application_status_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -960,12 +991,19 @@ def _ad_creative_application_email_html(application: dict, audience: str) -> str
         </div>
         """
 
+    line_instructions = (
+        "<p>続けて、公式LINEに表示されるメッセージを送信してください。担当者から初回面談についてLINEでご案内します。</p>"
+        if application.get("line_required") else ""
+    )
+    receipt_title = "入力内容を受け付けました" if application.get("line_required") else "キャリア情報の登録を受け付けました"
+    receipt_body = "入力内容を受け付けました。" if application.get("line_required") else "登録を受け付けました。"
     return f"""
     <div style="font-family:Arial,'Noto Sans JP',sans-serif;line-height:1.8;color:#1f2937;max-width:680px;">
-      <h1 style="font-size:20px;border-bottom:3px solid #36c9e6;padding-bottom:12px;">キャリア情報の登録を受け付けました</h1>
+      <h1 style="font-size:20px;border-bottom:3px solid #36c9e6;padding-bottom:12px;">{receipt_title}</h1>
       <p>{name} 様</p>
-      <p>SYMMETRY Labのキャリア情報ページをご利用いただきありがとうございます。登録を受け付けました。</p>
+      <p>SYMMETRY Labのキャリア情報ページをご利用いただきありがとうございます。{receipt_body}</p>
       <p>受付ID：{application_id}</p>
+      {line_instructions}
       <p>このフォームは求人への応募ではありません。登録情報はSYMMETRY Lab内で確認し、キャリア・求人情報のご案内等に利用します。求人企業等への情報提供や応募の取次は行いません。</p>
       <p style="font-size:13px;color:#667085;">このメールに心当たりがない場合は、<a href="mailto:info@symmetrylab.jp">info@symmetrylab.jp</a>までご連絡ください。</p>
     </div>
@@ -995,7 +1033,7 @@ def send_ad_creative_application_notifications(application: dict) -> None:
         try:
             if not send_email(
                 applicant_email,
-                "【SYMMETRY Lab】キャリア情報の登録を受け付けました",
+                "【SYMMETRY Lab】入力内容を受け付けました" if application.get("line_required") else "【SYMMETRY Lab】キャリア情報の登録を受け付けました",
                 _ad_creative_application_email_html(application, "applicant"),
             ):
                 print(f"[Instagram LP] 申込者への受付メールを送信できませんでした (ID={application.get('application_id', '')})")
@@ -1222,6 +1260,7 @@ AD_CREATIVE_APPLICATION_STATUSES = {
 AD_CREATIVE_CONSENT_VERSION = os.getenv(
     "AD_CREATIVE_CONSENT_VERSION", "career-check-privacy-2026-10-12-v2"
 ).strip() or "career-check-privacy-2026-10-12-v2"
+AD_CREATIVE_LINE_CONSENT_VERSION = "career-check-line-2026-11-05-v1"
 
 AD_CREATIVE_CHOICES = {
     "intention": {"soon", "info"},
@@ -1230,6 +1269,109 @@ AD_CREATIVE_CHOICES = {
     "q5_education": {"大学院", "大学", "高専", "短大・専門学校", "高校", "その他"},
     "q8_priority": {"仕事内容・ポジション", "年収・待遇", "専門性・スキル", "成長機会・裁量", "勤務地・通勤条件", "働き方・ワークライフバランス", "まだ決めていない"},
 }
+
+
+def _ad_creative_line_ready() -> bool:
+    return bool(
+        AD_CREATIVE_LINE_ENABLED
+        and re.fullmatch(r"@[A-Za-z0-9._-]{1,100}", AD_CREATIVE_LINE_ID)
+        and AD_CREATIVE_LINE_CHANNEL_SECRET
+        and AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN
+    )
+
+
+def _issue_ad_creative_line_link(conn, application_id: str, now: datetime) -> dict:
+    """Create a short-lived, single-use message code for this saved application."""
+    token = "SL-" + secrets.token_urlsafe(18)
+    reference = token[-8:]
+    conn.execute(
+        "INSERT INTO ad_creative_line_tokens (token_hash, application_id, reference, expires_at) VALUES (?, ?, ?, ?)",
+        (hashlib.sha256(token.encode("ascii")).hexdigest(), application_id, reference,
+         (now + timedelta(days=7)).isoformat(timespec="seconds")),
+    )
+    conn.execute(
+        "UPDATE ad_creative_applications SET line_link_status = 'pending', line_reference = ? "
+        "WHERE application_id = ? AND line_link_status != 'linked'",
+        (reference, application_id),
+    )
+    message = f"面談について相談を希望します。\n受付番号：{token}"
+    return {"message_url": f"https://line.me/R/oaMessage/{quote(AD_CREATIVE_LINE_ID, safe='')}/?{quote(message, safe='')}"}
+
+
+def _finish_ad_creative_line_link(application_id: str, user_id: str, reply_token: str) -> None:
+    """Fetch the chat display name and acknowledge only a successfully linked message."""
+    headers = {"Authorization": f"Bearer {AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN}"}
+    try:
+        req = urllib.request.Request(f"https://api.line.me/v2/bot/profile/{quote(user_id, safe='')}", headers=headers)
+        with urllib.request.urlopen(req, timeout=5) as response:
+            profile = json.load(response)
+        display_name = str(profile.get("displayName") or "")[:200]
+        if display_name:
+            conn = get_db()
+            try:
+                conn.execute("UPDATE ad_creative_applications SET line_display_name = ? WHERE application_id = ? AND line_user_id = ?", (display_name, application_id, user_id))
+                conn.commit()
+            finally:
+                conn.close()
+    except (OSError, ValueError, TypeError):
+        print("[Instagram LP] LINE表示名を取得できませんでした")
+    if not reply_token:
+        return
+    body = json.dumps({"replyToken": reply_token, "messages": [{"type": "text", "text": "ご連絡ありがとうございます。担当者が内容を確認し、初回面談についてこちらのLINEでご案内します。"}]}, ensure_ascii=False).encode("utf-8")
+    try:
+        req = urllib.request.Request("https://api.line.me/v2/bot/message/reply", data=body, headers={**headers, "Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(req, timeout=5):
+            pass
+    except OSError:
+        print("[Instagram LP] LINE受付メッセージを送信できませんでした")
+
+
+@app.post("/api/ad-creative/line-webhook", include_in_schema=False)
+async def ad_creative_line_webhook(request: Request, background_tasks: BackgroundTasks):
+    # Allow LINE's signed webhook verification before enabling the LP funnel.
+    if not AD_CREATIVE_LINE_CHANNEL_SECRET:
+        raise HTTPException(status_code=503, detail="LINE連携の設定が完了していません")
+    body = await request.body()
+    signature = base64.b64encode(hmac.new(AD_CREATIVE_LINE_CHANNEL_SECRET.encode("utf-8"), body, hashlib.sha256).digest()).decode("ascii")
+    if not hmac.compare_digest(signature, request.headers.get("x-line-signature", "")):
+        raise HTTPException(status_code=403, detail="署名が正しくありません")
+    try:
+        payload = json.loads(body)
+        events = payload.get("events", [])
+        if not isinstance(events, list):
+            raise ValueError("invalid events")
+    except (ValueError, TypeError, AttributeError):
+        raise HTTPException(status_code=400, detail="データが正しくありません")
+    if not AD_CREATIVE_LINE_ENABLED:
+        return {"ok": True}
+    if not _ad_creative_line_ready():
+        raise HTTPException(status_code=503, detail="LINE連携の設定が完了していません")
+    for event in events:
+        if not isinstance(event, dict) or event.get("type") != "message":
+            continue
+        source, message = event.get("source") or {}, event.get("message") or {}
+        if not isinstance(source, dict) or not isinstance(message, dict) or source.get("type") != "user" or message.get("type") != "text":
+            continue
+        user_id = source.get("userId", "")
+        match = re.search(r"受付番号[：:]\s*(SL-[A-Za-z0-9_-]{24})(?![A-Za-z0-9_-])", str(message.get("text", "")))
+        if not isinstance(user_id, str) or not re.fullmatch(r"U[0-9a-fA-F]{32}", user_id) or not match:
+            continue
+        token_hash = hashlib.sha256(match.group(1).encode("ascii")).hexdigest()
+        now = datetime.now(JST).isoformat(timespec="seconds")
+        conn = get_db()
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            row = conn.execute("SELECT t.application_id, t.reference, t.expires_at, t.used_at, a.line_link_status, a.line_user_id FROM ad_creative_line_tokens t JOIN ad_creative_applications a ON a.application_id = t.application_id WHERE t.token_hash = ?", (token_hash,)).fetchone()
+            if not row or row["used_at"] or row["expires_at"] <= now or row["line_link_status"] == "linked":
+                conn.rollback()
+                continue
+            conn.execute("UPDATE ad_creative_line_tokens SET used_at = ? WHERE token_hash = ?", (now, token_hash))
+            conn.execute("UPDATE ad_creative_applications SET line_link_status = 'linked', line_user_id = ?, line_linked_at = ?, line_reference = ? WHERE application_id = ?", (user_id, now, row["reference"], row["application_id"]))
+            conn.commit()
+            background_tasks.add_task(_finish_ad_creative_line_link, row["application_id"], user_id, str(event.get("replyToken") or ""))
+        finally:
+            conn.close()
+    return {"ok": True}
 
 
 def load_ad_creative_jobs() -> dict:
@@ -2788,7 +2930,8 @@ async def ad_creative_tracking_config():
     return {
         "meta_pixel_id": pixel_id,
         "enabled": bool(pixel_id and enabled),
-        "consent_version": AD_CREATIVE_CONSENT_VERSION,
+        "consent_version": AD_CREATIVE_LINE_CONSENT_VERSION if AD_CREATIVE_LINE_ENABLED else AD_CREATIVE_CONSENT_VERSION,
+        "line_enabled": AD_CREATIVE_LINE_ENABLED,
     }
 
 
@@ -2820,6 +2963,10 @@ async def create_ad_creative_application(
     """広告専用の7ステップ登録を保存する。既存の採用APIとは分離する。"""
     if not _career_origin_allowed(request):
         raise HTTPException(status_code=403, detail="許可されていない送信元です")
+    if AD_CREATIVE_LINE_ENABLED and not _ad_creative_line_ready():
+        raise HTTPException(status_code=503, detail="現在LINEでの受付を準備しています。時間をおいて再度お試しください。")
+    if AD_CREATIVE_LINE_ENABLED and not req.line_consent:
+        raise HTTPException(status_code=422, detail="画面を再読み込みし、LINEでの連絡について確認のうえお申し込みください。")
     req = _validate_ad_creative_application(req)
     job = get_ad_creative_job(req.job_public_id, require_application=True) if req.job_public_id else None
     if req.job_public_id and not job:
@@ -2829,22 +2976,26 @@ async def create_ad_creative_application(
     try:
         conn.execute("BEGIN IMMEDIATE")
         existing = conn.execute(
-            "SELECT application_id, created_at FROM ad_creative_applications WHERE client_submission_id = ?",
+            "SELECT application_id, created_at, line_link_status FROM ad_creative_applications WHERE client_submission_id = ?",
             (req.client_submission_id,),
         ).fetchone()
         if existing:
-            conn.rollback()
-            return {
+            result = {
                 "ok": True,
                 "duplicate": True,
                 "application_id": existing["application_id"],
                 "lead_id": existing["application_id"],
                 "created_at": existing["created_at"],
             }
+            if AD_CREATIVE_LINE_ENABLED:
+                result["line"] = ({"already_linked": True} if existing["line_link_status"] == "linked" else
+                                  _issue_ad_creative_line_link(conn, existing["application_id"], datetime.now(JST)))
+            conn.commit()
+            return result
 
         application_id = str(uuid4())
         now = datetime.now(JST).isoformat(timespec="seconds")
-        consent_version = AD_CREATIVE_CONSENT_VERSION
+        consent_version = AD_CREATIVE_LINE_CONSENT_VERSION if AD_CREATIVE_LINE_ENABLED else AD_CREATIVE_CONSENT_VERSION
         job_snapshot = _public_ad_creative_job(job) if job else {}
         answers = {
             "q2_timing": req.q2_timing,
@@ -2876,6 +3027,7 @@ async def create_ad_creative_application(
             "INSERT INTO ad_creative_application_status_history (application_id, status, changed_at, admin_notes) VALUES (?, 'new', ?, '')",
             (application_id, now),
         )
+        line = _issue_ad_creative_line_link(conn, application_id, datetime.now(JST)) if AD_CREATIVE_LINE_ENABLED else None
         conn.commit()
         background_tasks.add_task(
             send_ad_creative_application_notifications,
@@ -2886,23 +3038,33 @@ async def create_ad_creative_application(
                 "phone": req.phone,
                 "utm_source": req.utm_source,
                 "utm_campaign": req.utm_campaign,
+                "line_required": AD_CREATIVE_LINE_ENABLED,
             },
         )
-        return {"ok": True, "duplicate": False, "application_id": application_id, "lead_id": application_id, "created_at": now}
+        result = {"ok": True, "duplicate": False, "application_id": application_id, "lead_id": application_id, "created_at": now}
+        if line:
+            result["line"] = line
+        return result
     except sqlite3.IntegrityError:
         conn.rollback()
         existing = conn.execute(
-            "SELECT application_id, created_at FROM ad_creative_applications WHERE client_submission_id = ?",
+            "SELECT application_id, created_at, line_link_status FROM ad_creative_applications WHERE client_submission_id = ?",
             (req.client_submission_id,),
         ).fetchone()
         if existing:
-            return {
+            result = {
                 "ok": True,
                 "duplicate": True,
                 "application_id": existing["application_id"],
                 "lead_id": existing["application_id"],
                 "created_at": existing["created_at"],
             }
+            if AD_CREATIVE_LINE_ENABLED:
+                conn.execute("BEGIN IMMEDIATE")
+                result["line"] = ({"already_linked": True} if existing["line_link_status"] == "linked" else
+                                  _issue_ad_creative_line_link(conn, existing["application_id"], datetime.now(JST)))
+                conn.commit()
+            return result
         raise HTTPException(status_code=500, detail="登録情報を保存できませんでした")
     finally:
         conn.close()

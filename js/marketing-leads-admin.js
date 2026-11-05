@@ -168,6 +168,10 @@
       landingPage: landingPath(application.landing_page),
       status: application.application_status || 'new',
       notes: application.admin_notes || '',
+      lineLinkStatus: application.line_link_status || 'not_requested',
+      lineDisplayName: application.line_display_name || '',
+      lineReference: application.line_reference || '',
+      lineLinkedAt: application.line_linked_at || '',
       details: details
     };
   }
@@ -198,7 +202,7 @@
       if (!query) return true;
       return [lead.name, lead.email, lead.phone, lead.campaign, lead.utmSource,
         lead.utmMedium, lead.term, lead.content, lead.placement, lead.sourceLabel,
-        lead.landingPage, lead.applicationId].join(' ').toLowerCase().includes(query);
+        lead.landingPage, lead.applicationId, lead.lineDisplayName, lead.lineReference].join(' ').toLowerCase().includes(query);
     });
   }
 
@@ -249,6 +253,13 @@
       applicantCell.textContent = lead.name || '—';
       smallText(applicantCell, lead.email);
       smallText(applicantCell, lead.phone);
+      if (lead.kind === 'instagram' && lead.lineLinkStatus === 'pending') {
+        smallText(applicantCell, 'LINE：メッセージ送信待ち');
+      } else if (lead.kind === 'instagram' && lead.lineLinkStatus === 'linked') {
+        smallText(applicantCell, `LINE連携済み${lead.lineDisplayName ? `：${lead.lineDisplayName}` : '（表示名未取得）'}`);
+        smallText(applicantCell, `受付番号末尾：${lead.lineReference}`);
+        smallText(applicantCell, `連携日時：${displayDate(lead.lineLinkedAt)}`);
+      }
       row.appendChild(applicantCell);
 
       const detailCell = document.createElement('td');

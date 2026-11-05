@@ -372,6 +372,15 @@ joined
 
 Instagram広告専用LP（`/career-check/`）の登録では、新規保存時のみ`AD_CREATIVE_NOTIFICATION_EMAIL`宛てに社内通知し、登録者のメールアドレスへ受付確認を送信します。重複送信は再通知しません。社内通知先の初期値は`info@symmetrylab.jp`です。送信失敗時も登録データは管理画面に保存され、結果はRenderログに記録されます。
 
+### Instagram LPからLINEへの連携
+
+- 公式LINEは `@226qiliz`。有効時は最終ボタンで回答を保存し、受付番号入りのメッセージをLINEの入力欄に表示します。本人が友だち追加し、メッセージを送ることで連携します。
+- 一覧の「LINE：メッセージ送信待ち」は入力済み・未連携、「LINE連携済み」は初回メッセージを受信して照合済みです。表示名が取れない場合も、LINE上の受付番号の末尾と一覧を照合できます。
+- 受付番号はランダムな使い捨てコードで、送信から7日間有効です。コードが消された場合や期限切れの場合、自動照合されません。
+- Metaの `Lead` は従来どおりフォームの新規保存時に発火します。LINE連携完了数は管理画面の連携状況で確認します。
+
+本番で有効にするには、対象のLINE公式アカウントに紐づくMessaging APIのチャネルシークレットとアクセストークンを、それぞれRenderの `AD_CREATIVE_LINE_CHANNEL_SECRET` と `AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN` に設定します。秘密値をソースやチャットに記載しないでください。公式アカウント側のチャットをオンにし、Webhook URLを `https://symmetrylab.jp/api/ad-creative/line-webhook` に設定してWebhookを有効にします。LINEのWebhook URLは1チャネルにつき1つなので、既存の外部ツールで使用中なら設定を上書きせず、既存の連携との統合方法を確認します。設定後に `AD_CREATIVE_LINE_ENABLED=true` にし、Instagramアプリ内ブラウザのiOS・Androidで友だち追加、メッセージ入力、送信、管理画面の照合を実機確認します。未設定時の初期値は `false` で、従来の受付を継続します。
+
 ### CSVを出力する
 
 Google広告LPの申込をCSV出力する場合は、管理キーを`X-Admin-Key`ヘッダーに指定して次のAPIを使用します。統合画面にはCSV出力ボタンを設けていません。
