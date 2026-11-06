@@ -20,7 +20,7 @@ class AdCreativeLineLinkTests(unittest.TestCase):
             patch.object(app_module, "DB_PATH", str(Path(self.temp.name) / "test.db")),
             patch.object(app_module, "BASE_URL", "http://localhost:8000"),
             patch.object(app_module, "AD_CREATIVE_LINE_ENABLED", True),
-            patch.object(app_module, "AD_CREATIVE_LINE_ID", "@226qiliz"),
+            patch.object(app_module, "AD_CREATIVE_LINE_ID", "@575jlvap"),
             patch.object(app_module, "AD_CREATIVE_LINE_CHANNEL_SECRET", "test-secret"),
             patch.object(app_module, "AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN", "test-token"),
             patch.object(app_module, "send_ad_creative_application_notifications"),
@@ -65,7 +65,7 @@ class AdCreativeLineLinkTests(unittest.TestCase):
         response = self.submit()
         self.assertEqual(response.status_code, 200)
         line_url = response.json()["line"]["message_url"]
-        self.assertIn("%40226qiliz", line_url)
+        self.assertIn("%40575jlvap", line_url)
         text = unquote(urlsplit(line_url).query)
         self.assertIn("面談について相談", text)
         self.assertNotIn("診断結果", text)
@@ -95,8 +95,7 @@ class AdCreativeLineLinkTests(unittest.TestCase):
             conn.close()
         self.assertTrue(self.submit().json()["line"]["already_linked"])
 
-    def test_expired_code_and_missing_consent_are_rejected(self):
-        self.assertEqual(self.submit({**self.payload, "line_consent": False}).status_code, 422)
+    def test_expired_code_is_rejected(self):
         line_url = self.submit().json()["line"]["message_url"]
         text = unquote(urlsplit(line_url).query)
         self.assertIsNotNone(re.search(r"SL-[A-Za-z0-9_-]{24}", text))
@@ -110,14 +109,35 @@ class AdCreativeLineLinkTests(unittest.TestCase):
         self.assertEqual(self.row()["line_link_status"], "pending")
         app_module._finish_ad_creative_line_link.assert_not_called()
 
-    def test_missing_credentials_does_not_create_application(self):
+    def test_missing_credentials_falls_back_to_normal_application(self):
         with patch.object(app_module, "AD_CREATIVE_LINE_CHANNEL_SECRET", ""):
-            self.assertEqual(self.submit().status_code, 503)
+            response = self.submit()
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["ok"])
+        self.assertNotIn("line", response.json())
+        app_module.send_ad_creative_application_notifications.assert_called_once()
+        self.assertFalse(app_module.send_ad_creative_application_notifications.call_args.args[0]["line_required"])
         conn = app_module.get_db()
         try:
-            self.assertEqual(conn.execute("SELECT COUNT(*) FROM ad_creative_applications").fetchone()[0], 0)
+            self.assertEqual(conn.execute("SELECT COUNT(*) FROM ad_creative_applications").fetchone()[0], 1)
+            self.assertEqual(conn.execute("SELECT line_link_status FROM ad_creative_applications").fetchone()[0], "not_requested")
         finally:
             conn.close()
+
+    def test_missing_line_consent_falls_back_to_normal_application(self):
+        response = self.submit({**self.payload, "line_consent": False})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["ok"])
+        self.assertNotIn("line", response.json())
+        self.assertFalse(app_module.send_ad_creative_application_notifications.call_args.args[0]["line_required"])
+        self.assertEqual(self.row()["line_link_status"], "not_requested")
+
+    def test_tracking_config_does_not_advertise_unready_line(self):
+        with patch.object(app_module, "AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN", ""):
+            response = self.client.get("/api/ad-creative/tracking-config")
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()["line_enabled"])
+        self.assertEqual(response.json()["consent_version"], app_module.AD_CREATIVE_CONSENT_VERSION)
 
     def test_disabled_line_keeps_existing_application_flow(self):
         with patch.object(app_module, "AD_CREATIVE_LINE_ENABLED", False):
