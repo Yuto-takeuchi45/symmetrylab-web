@@ -2927,11 +2927,12 @@ async def ad_creative_tracking_config():
     }
     if not re.fullmatch(r"\d{5,20}", pixel_id):
         pixel_id = ""
+    line_enabled = _ad_creative_line_ready()
     return {
         "meta_pixel_id": pixel_id,
         "enabled": bool(pixel_id and enabled),
-        "consent_version": AD_CREATIVE_LINE_CONSENT_VERSION if AD_CREATIVE_LINE_ENABLED else AD_CREATIVE_CONSENT_VERSION,
-        "line_enabled": AD_CREATIVE_LINE_ENABLED,
+        "consent_version": AD_CREATIVE_LINE_CONSENT_VERSION if line_enabled else AD_CREATIVE_CONSENT_VERSION,
+        "line_enabled": line_enabled,
     }
 
 
@@ -2963,10 +2964,10 @@ async def create_ad_creative_application(
     """広告専用の7ステップ登録を保存する。既存の採用APIとは分離する。"""
     if not _career_origin_allowed(request):
         raise HTTPException(status_code=403, detail="許可されていない送信元です")
-    if AD_CREATIVE_LINE_ENABLED and not _ad_creative_line_ready():
-        raise HTTPException(status_code=503, detail="現在LINEでの受付を準備しています。時間をおいて再度お試しください。")
-    if AD_CREATIVE_LINE_ENABLED and not req.line_consent:
-        raise HTTPException(status_code=422, detail="画面を再読み込みし、LINEでの連絡について確認のうえお申し込みください。")
+    # LINE is an optional handoff. A missing credential or a slow config
+    # request must never prevent the original career application from saving.
+    line_ready = _ad_creative_line_ready()
+    line_requested = line_ready and req.line_consent
     req = _validate_ad_creative_application(req)
     job = get_ad_creative_job(req.job_public_id, require_application=True) if req.job_public_id else None
     if req.job_public_id and not job:
@@ -2987,7 +2988,7 @@ async def create_ad_creative_application(
                 "lead_id": existing["application_id"],
                 "created_at": existing["created_at"],
             }
-            if AD_CREATIVE_LINE_ENABLED:
+            if line_requested:
                 result["line"] = ({"already_linked": True} if existing["line_link_status"] == "linked" else
                                   _issue_ad_creative_line_link(conn, existing["application_id"], datetime.now(JST)))
             conn.commit()
@@ -2995,7 +2996,7 @@ async def create_ad_creative_application(
 
         application_id = str(uuid4())
         now = datetime.now(JST).isoformat(timespec="seconds")
-        consent_version = AD_CREATIVE_LINE_CONSENT_VERSION if AD_CREATIVE_LINE_ENABLED else AD_CREATIVE_CONSENT_VERSION
+        consent_version = AD_CREATIVE_LINE_CONSENT_VERSION if line_requested else AD_CREATIVE_CONSENT_VERSION
         job_snapshot = _public_ad_creative_job(job) if job else {}
         answers = {
             "q2_timing": req.q2_timing,
@@ -3027,7 +3028,7 @@ async def create_ad_creative_application(
             "INSERT INTO ad_creative_application_status_history (application_id, status, changed_at, admin_notes) VALUES (?, 'new', ?, '')",
             (application_id, now),
         )
-        line = _issue_ad_creative_line_link(conn, application_id, datetime.now(JST)) if AD_CREATIVE_LINE_ENABLED else None
+        line = _issue_ad_creative_line_link(conn, application_id, datetime.now(JST)) if line_requested else None
         conn.commit()
         background_tasks.add_task(
             send_ad_creative_application_notifications,
@@ -3038,7 +3039,7 @@ async def create_ad_creative_application(
                 "phone": req.phone,
                 "utm_source": req.utm_source,
                 "utm_campaign": req.utm_campaign,
-                "line_required": AD_CREATIVE_LINE_ENABLED,
+                "line_required": bool(line),
             },
         )
         result = {"ok": True, "duplicate": False, "application_id": application_id, "lead_id": application_id, "created_at": now}
@@ -3059,7 +3060,7 @@ async def create_ad_creative_application(
                 "lead_id": existing["application_id"],
                 "created_at": existing["created_at"],
             }
-            if AD_CREATIVE_LINE_ENABLED:
+            if line_requested:
                 conn.execute("BEGIN IMMEDIATE")
                 result["line"] = ({"already_linked": True} if existing["line_link_status"] == "linked" else
                                   _issue_ad_creative_line_link(conn, existing["application_id"], datetime.now(JST)))
