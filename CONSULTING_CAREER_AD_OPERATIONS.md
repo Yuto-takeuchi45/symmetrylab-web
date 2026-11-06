@@ -381,6 +381,13 @@ Instagram広告専用LP（`/career-check/`）の登録では、新規保存時�
 
 本番で有効にするには、対象のLINE公式アカウントに紐づくMessaging APIのチャネルシークレットとアクセストークンを、それぞれRenderの `AD_CREATIVE_LINE_CHANNEL_SECRET` と `AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN` に設定します。秘密値をソースやチャットに記載しないでください。公式アカウント側のチャットをオンにし、Webhook URLを `https://symmetrylab.jp/api/ad-creative/line-webhook` に設定してWebhookを有効にします。LINEのWebhook URLは1チャネルにつき1つなので、既存の外部ツールで使用中なら設定を上書きせず、既存の連携との統合方法を確認します。設定後に `AD_CREATIVE_LINE_ENABLED=true` にし、Instagramアプリ内ブラウザのiOS・Androidで友だち追加、メッセージ入力、送信、管理画面の照合を実機確認します。未設定時の初期値は `false` で、従来の受付を継続します。
 
+#### 現在のLINE設定状況（2026-11-06）
+
+- 対象は `SYMMETRY Lab｜キャリア相談`（公式アカウントID `@575jlvap`）。Messaging APIは有効で、プロバイダーは `SMMETRY Lab`、チャネルIDは `2012423670` です。旧 `戦コン内定ラボ` のチャネルID `2009829024` は使用しません。
+- プロバイダーのプライバシーポリシーURLには `https://symmetrylab.jp/privacy.html` を登録済みです。会社サイトで独立した利用規約ページを確認できなかったため、任意欄の利用規約URLは空欄です。
+- 今回の作業ではRenderの環境変数を変更せず、本番デプロイもしていません。Webhook URLも未登録です。コードが本番へ反映され、LINEとRender双方の設定が揃うまでは `AD_CREATIVE_LINE_ENABLED` を有効化しないでください。
+- Messaging APIから初回メッセージへ応答するため、LINE DevelopersのMessaging API設定でWebhookをVerifyして有効化します。LINE公式ドキュメント上、Webhook URLは1つだけ登録でき、友だち追加時のあいさつメッセージと自動応答メッセージは初期状態で有効です。APIの応答と重複させないよう自動応答を確認し、必要なら無効化してください。
+
 ### CSVを出力する
 
 Google広告LPの申込をCSV出力する場合は、管理キーを`X-Admin-Key`ヘッダーに指定して次のAPIを使用します。統合画面にはCSV出力ボタンを設けていません。
