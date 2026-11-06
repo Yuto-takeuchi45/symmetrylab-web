@@ -1,0 +1,78 @@
+[
+  {
+    "public_id": "001",
+    "slug": "dx-consultant-sample",
+    "status": "sample",
+    "application_enabled": false,
+    "is_sample": true,
+    "title": "DXコンサルタント（サンプル求人）",
+    "catch_copy": "あなたの経験を、企業の変化を動かす力へ。",
+    "summary": "Instagram広告からの導線確認用サンプルです。公開前に、承認済みの求人情報へ差し替えてください。",
+    "job_type": "DXコンサルタント",
+    "company_features": [
+      "会社特徴を入力してください",
+      "案件・研修環境を入力してください",
+      "キャリア支援内容を入力してください"
+    ],
+    "location": "勤務地を入力してください",
+    "salary": "想定年収を入力してください",
+    "annual_holidays": "年間休日を入力してください",
+    "employment_type": "雇用形態を入力してください",
+    "bonus": "賞与を入力してください",
+    "remote": "リモート可否を入力してください",
+    "relocation": "転勤有無を入力してください",
+    "inexperienced_ok": "未経験可否を入力してください",
+    "requirements": [
+      "必須要件を入力してください"
+    ],
+    "preferred": [
+      "歓迎要件を入力してください"
+    ],
+    "responsibilities": [
+      "仕事内容を入力してください"
+    ],
+    "highlights": [
+      "その他の訴求ポイントを入力してください"
+    ],
+    "company_name": "提携企業名を入力してください",
+    "application_id": "RECRUITMENT-SAMPLE-DX-001"
+  },
+  {
+    "public_id": "002",
+    "slug": "it-strategy-consultant-sample",
+    "status": "sample",
+    "application_enabled": false,
+    "is_sample": true,
+    "title": "IT戦略コンサルタント（サンプル求人）",
+    "catch_copy": "技術とビジネスをつなぐキャリアを、相談から始める。",
+    "summary": "複数求人を同じテンプレートで表示するためのサンプルです。実際の広告配信前に内容を確定してください。",
+    "job_type": "IT戦略コンサルタント",
+    "company_features": [
+      "会社特徴を入力してください",
+      "プロジェクト領域を入力してください",
+      "支援体制を入力してください"
+    ],
+    "location": "勤務地を入力してください",
+    "salary": "想定年収を入力してください",
+    "annual_holidays": "年間休日を入力してください",
+    "employment_type": "雇用形態を入力してください",
+    "bonus": "賞与を入力してください",
+    "remote": "リモート可否を入力してください",
+    "relocation": "転勤有無を入力してください",
+    "inexperienced_ok": "未経験可否を入力してください",
+    "requirements": [
+      "必須要件を入力してください"
+    ],
+    "preferred": [
+      "歓迎要件を入力してください"
+    ],
+    "responsibilities": [
+      "仕事内容を入力してください"
+    ],
+    "highlights": [
+      "その他の訴求ポイントを入力してください"
+    ],
+    "company_name": "提携企業名を入力してください",
+    "application_id": "RECRUITMENT-SAMPLE-IT-001"
+  }
+]

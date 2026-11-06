@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="SYMMETRY Labの求人情報。気になる求人について、応募可能かを確認できます。">
+  <meta property="og:title" content="求人詳細 | SYMMETRY Lab">
+  <meta property="og:description" content="求人の詳細を確認し、キャリア相談に進めます。">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SYMMETRY Lab">
+  <link rel="canonical" href="">
+  <link rel="icon" href="/images/favicon.ico" sizes="any">
+  <link rel="stylesheet" href="/css/recruitment.css?v=20260908-01">
+  <title>求人詳細 | SYMMETRY Lab</title>
+</head>
+<body>
+  <div class="recruitment-page" id="recruitment-app">
+    <header class="recruitment-header">
+      <a class="brand-lockup" href="/" aria-label="SYMMETRY Labトップへ戻る">
+        <img src="/images/logo_mark.jpg" alt="">
+        <span>SYMMETRY LAB</span>
+      </a>
+      <span class="header-label">CAREER</span>
+    </header>
+
+    <main class="recruitment-main">
+      <section class="job-hero" id="job-hero" aria-labelledby="job-title">
+        <span class="eyebrow" id="job-eyebrow">RECRUITMENT</span>
+        <h1 id="job-title">求人情報を読み込んでいます</h1>
+        <p class="job-catch-copy" id="job-catch-copy">求人の詳細を確認しています。</p>
+        <span class="sample-note" id="sample-note" hidden>掲載準備用のサンプル求人です。公開前に承認済みの求人情報へ差し替えてください。</span>
+        <button class="hero-cta" id="start-application" type="button" hidden>この求人について相談する</button>
+      </section>
+
+      <section class="job-list" id="job-list" aria-labelledby="job-list-title" hidden>
+        <h2 id="job-list-title">求人を選ぶ</h2>
+        <p class="section-lead">気になる求人を選ぶと、専用の詳細ページを確認できます。</p>
+        <div class="job-list-grid" id="job-list-grid"></div>
+      </section>
+
+      <section class="job-detail-content" id="job-detail-content" hidden aria-labelledby="job-detail-heading">
+        <h2 class="sr-only" id="job-detail-heading">求人詳細</h2>
+        <div class="detail-grid" id="job-facts"></div>
+
+        <section class="content-section">
+          <h2>この求人の特徴</h2>
+          <ul id="job-features"></ul>
+        </section>
+
+        <section class="content-section">
+          <h2>仕事内容</h2>
+          <ul id="job-responsibilities"></ul>
+        </section>
+
+        <section class="content-section">
+          <h2>必須要件</h2>
+          <ul id="job-requirements"></ul>
+        </section>
+
+        <section class="content-section" id="preferred-section">
+          <h2>歓迎要件</h2>
+          <ul id="job-preferred"></ul>
+        </section>
+
+        <section class="content-section">
+          <h2>その他の訴求ポイント</h2>
+          <ul id="job-highlights"></ul>
+        </section>
+
+        <aside class="trust-panel" aria-label="応募に関する注意事項">
+          <p>本フォームへの登録のみでは求人への応募完了とはなりません。担当者より求人詳細・応募可否・今後の進め方をご案内します。</p>
+        </aside>
+      </section>
+
+      <section class="application-panel" id="application-panel" aria-labelledby="application-title" hidden>
+        <div class="application-intro">
+          <h2 id="application-title">応募可能か確認する</h2>
+          <p>選択式の質問から始まり、最後に連絡先を入力します。所要時間は約2分です。</p>
+        </div>
+
+        <div class="progress-meta" aria-live="polite">
+          <span id="progress-label">プロフィールを確認</span>
+          <span id="step-counter">1 / 8</span>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-value" id="progress-value"></div>
+        </div>
+
+        <form id="recruitment-form" novalidate>
+          <input class="sr-only" tabindex="-1" autocomplete="off" name="website" id="website" type="text" aria-hidden="true">
+          <div id="step-content" aria-live="polite"></div>
+          <div class="step-actions">
+            <button class="secondary-action" id="step-back" type="button">戻る</button>
+            <button class="primary-action" id="step-next" type="button">次へ</button>
+          </div>
+        </form>
+
+        <div class="status-panel" id="status-panel" hidden aria-live="polite">
+          <h2 id="status-title"></h2>
+          <p id="status-message"></p>
+        </div>
+      </section>
+
+      <section class="unavailable-panel" id="unavailable-panel" hidden>
+        <h1>この求人は現在表示できません</h1>
+        <p>URLが正しいか、求人の掲載状態をご確認ください。</p>
+      </section>
+    </main>
+
+    <footer class="recruitment-footer">
+    <p>© SYMMETRY Lab. <a href="/privacy.html">プライバシーポリシー</a></p>
+    </footer>
+  </div>
+
+  <script src="/js/recruitment-tracking.js?v=20260908-01" defer></script>
+  <script src="/js/recruitment.js?v=20260908-01" defer></script>
+</body>
+</html>
