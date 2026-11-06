@@ -382,16 +382,17 @@ Instagram広告専用LP（`/career-check/`）の登録では、新規保存時�
 
 本番で有効にするには、対象のLINE公式アカウントに紐づくMessaging APIのチャネルシークレットとアクセストークンを、それぞれRenderの `AD_CREATIVE_LINE_CHANNEL_SECRET` と `AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN` に設定します。秘密値をソースやチャットに記載しないでください。公式アカウント側のチャットをオンにし、Webhook URLを `https://symmetrylab.jp/api/ad-creative/line-webhook` に設定してWebhookを有効にします。LINEのWebhook URLは1チャネルにつき1つなので、既存の外部ツールで使用中なら設定を上書きせず、既存の連携との統合方法を確認します。設定後に `AD_CREATIVE_LINE_ENABLED=true` にし、Instagramアプリ内ブラウザのiOS・Androidで友だち追加、メッセージ入力、送信、管理画面の照合を実機確認します。未設定時の初期値は `false` で、従来の受付を継続します。
 
-#### 現在のLINE設定状況（2026-11-06）
+#### 現在のLINE設定状況（2026-11-06 更新）
 
 - 対象は `SYMMETRY Lab｜キャリア相談`（公式アカウントID `@575jlvap`）。Messaging APIは有効で、プロバイダーは `SMMETRY Lab`、チャネルIDは `2012423670` です。旧 `戦コン内定ラボ` のチャネルID `2009829024` は使用しません。
 - プロバイダーとチャネル基本設定のプライバシーポリシーURLには `https://symmetrylab.jp/privacy.html` を登録済みです。会社サイトで独立した利用規約ページを確認できなかったため、任意欄の利用規約URLは空欄です。
-- Render本番には `AD_CREATIVE_LINE_CHANNEL_SECRET` と `AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN` を登録済みで、`AD_CREATIVE_LINE_ID=@575jlvap` です。`AD_CREATIVE_LINE_ENABLED=false` のまま保存しており、今回デプロイしていません。秘密値はこの資料やソースコードへ記載しません。
-- Messaging APIのWebhook URLには `https://symmetrylab.jp/api/ad-creative/line-webhook` を登録済みですが、「Webhookの利用」はオフです。コードが本番環境へ反映されるまではWebhookをVerify・有効化せず、機能フラグもオフのままにしてください。
-- Official Account Managerではチャットをオンにし、応答方法は手動チャットです。友だち追加時のあいさつ文は保存済みです。申込APIの保存が成功した後にLINEの受付番号入りメッセージを開くため、フォーム送信前にこのLINE画面へ進む設計ではありません。フォーム送信後にメッセージを送らなかった場合は、申込は保存されますがLINE未連携のままです。
+- Render本番には `AD_CREATIVE_LINE_CHANNEL_SECRET` と `AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN` を登録済みで、`AD_CREATIVE_LINE_ID=@575jlvap`、`AD_CREATIVE_LINE_ENABLED=true` です。秘密値はこの資料やソースコードへ記載しません。
+- Messaging APIのWebhook URLは `https://symmetrylab.jp/api/ad-creative/line-webhook` で、「Webhookの利用」はオンです。LINEのWebhook検証APIは成功し、LINE側からURLへHTTP 200が返ることを確認しました。
+- 本番デプロイはコミット `bd9ac3454ff77cefbf7e816f06f1d0e3badc38fe`（Render deploy `dep-dbmrcd5g1s2s73bn1mq0`、2026-11-06）です。`/career-check/`、`/api/ad-creative/tracking-config`、`/recruitment/`、`/api/recruitment/jobs` はすべてHTTP 200で、tracking configの `line_enabled` は `true` です。
+- Official Account Managerではチャットをオンにし、応答方法は手動チャットです。友だち追加時のあいさつ文は保存済みです。アカウントのアイコンには会社ロゴ（リポジトリの `images/logo_mark.jpg` と同じマーク）が表示されています。申込APIの保存が成功した後にLINEの受付番号入りメッセージを開くため、フォーム送信前にこのLINE画面へ進む設計ではありません。フォーム送信後にメッセージを送らなかった場合は、申込は保存されますがLINE未連携のままです。
 - 保存したあいさつ文は「友だち追加ありがとうございます。SYMMETRY Lab｜キャリア相談です。LPからお申し込みの方は、フォーム送信後にLINEに表示される『面談について相談を希望します。受付番号：…』のメッセージを、そのまま送信してください。確認後、担当者から初回面談についてご連絡します。」です。
-- 長期チャネルアクセストークンを使用しています。LINE Developersはセキュリティ上、長期トークンを推奨していません。連携を有効にする前に、トークンの保管・再発行手順を運用者間で決めてください。
-- 本番コード反映後、Messaging API設定でWebhookをVerifyしてから「Webhookの利用」をオンにし、Renderの `AD_CREATIVE_LINE_ENABLED=true` を保存してデプロイします。最後にInstagramアプリ内ブラウザのiOS・Androidで友だち追加、受付番号付きメッセージ送信、管理画面での紐づけを確認します。
+- 長期チャネルアクセストークンを使用しています。LINE Developersはセキュリティ上、長期トークンを推奨していません。安全な保管と定期的な再発行を運用してください。
+- 実際の申込者としての通し確認は未実施です。実申込を作成して通知を送るため、広告運用中に試す場合は社内テスト用の申込として管理画面で区別してください。確認項目は、申込保存、LINE入力欄への受付番号付き文面表示、本人による送信、管理画面でのLINE紐づけです。
 
 ### CSVを出力する
 
