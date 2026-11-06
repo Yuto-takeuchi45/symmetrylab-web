@@ -385,8 +385,11 @@ Instagram広告専用LP（`/career-check/`）の登録では、新規保存時�
 
 - 対象は `SYMMETRY Lab｜キャリア相談`（公式アカウントID `@575jlvap`）。Messaging APIは有効で、プロバイダーは `SMMETRY Lab`、チャネルIDは `2012423670` です。旧 `戦コン内定ラボ` のチャネルID `2009829024` は使用しません。
 - プロバイダーとチャネル基本設定のプライバシーポリシーURLには `https://symmetrylab.jp/privacy.html` を登録済みです。会社サイトで独立した利用規約ページを確認できなかったため、任意欄の利用規約URLは空欄です。
-- 今回の作業ではRenderの環境変数を変更せず、本番デプロイもしていません。Webhook URLも未登録です。コードが本番へ反映され、LINEとRender双方の設定が揃うまでは `AD_CREATIVE_LINE_ENABLED` を有効化しないでください。
-- Messaging APIから初回メッセージへ応答するため、LINE DevelopersのMessaging API設定でWebhookをVerifyして有効化します。LINE公式ドキュメント上、Webhook URLは1つだけ登録でき、友だち追加時のあいさつメッセージと自動応答メッセージは初期状態で有効です。APIの応答と重複させないよう自動応答を確認し、必要なら無効化してください。
+- Render本番には `AD_CREATIVE_LINE_CHANNEL_SECRET` と `AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN` を登録済みで、`AD_CREATIVE_LINE_ID=@575jlvap` です。`AD_CREATIVE_LINE_ENABLED=false` のまま保存しており、今回デプロイしていません。秘密値はこの資料やソースコードへ記載しません。
+- Messaging APIのWebhook URLには `https://symmetrylab.jp/api/ad-creative/line-webhook` を登録済みですが、「Webhookの利用」はオフです。コードが本番環境へ反映されるまではWebhookをVerify・有効化せず、機能フラグもオフのままにしてください。
+- Official Account Managerではチャットをオンにし、応答方法は手動チャットです。友だち追加時のあいさつ文は、申込フォーム送信後に受付番号入りメッセージを送る案内へ編集しましたが、保存操作は未完了です。画面内に同名の「変更を保存」ボタンが複数あり、アクセシビリティ操作では対象を一意に選べませんでした。保存後、表示内容を再確認してください。
+- 長期チャネルアクセストークンを使用しています。LINE Developersはセキュリティ上、長期トークンを推奨していません。連携を有効にする前に、トークンの保管・再発行手順を運用者間で決めてください。
+- 本番コード反映後、Messaging API設定でWebhookをVerifyしてから「Webhookの利用」をオンにし、Renderの `AD_CREATIVE_LINE_ENABLED=true` を保存してデプロイします。最後にInstagramアプリ内ブラウザのiOS・Androidで友だち追加、受付番号付きメッセージ送信、管理画面での紐づけを確認します。
 
 ### CSVを出力する
 
