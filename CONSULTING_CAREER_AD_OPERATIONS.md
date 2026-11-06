@@ -387,7 +387,8 @@ Instagram広告専用LP（`/career-check/`）の登録では、新規保存時�
 - プロバイダーとチャネル基本設定のプライバシーポリシーURLには `https://symmetrylab.jp/privacy.html` を登録済みです。会社サイトで独立した利用規約ページを確認できなかったため、任意欄の利用規約URLは空欄です。
 - Render本番には `AD_CREATIVE_LINE_CHANNEL_SECRET` と `AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN` を登録済みで、`AD_CREATIVE_LINE_ID=@575jlvap` です。`AD_CREATIVE_LINE_ENABLED=false` のまま保存しており、今回デプロイしていません。秘密値はこの資料やソースコードへ記載しません。
 - Messaging APIのWebhook URLには `https://symmetrylab.jp/api/ad-creative/line-webhook` を登録済みですが、「Webhookの利用」はオフです。コードが本番環境へ反映されるまではWebhookをVerify・有効化せず、機能フラグもオフのままにしてください。
-- Official Account Managerではチャットをオンにし、応答方法は手動チャットです。友だち追加時のあいさつ文は、申込フォーム送信後に受付番号入りメッセージを送る案内へ編集しましたが、保存操作は未完了です。画面内に同名の「変更を保存」ボタンが複数あり、アクセシビリティ操作では対象を一意に選べませんでした。保存後、表示内容を再確認してください。
+- Official Account Managerではチャットをオンにし、応答方法は手動チャットです。友だち追加時のあいさつ文は保存済みです。申込APIの保存が成功した後にLINEの受付番号入りメッセージを開くため、フォーム送信前にこのLINE画面へ進む設計ではありません。フォーム送信後にメッセージを送らなかった場合は、申込は保存されますがLINE未連携のままです。
+- 保存したあいさつ文は「友だち追加ありがとうございます。SYMMETRY Lab｜キャリア相談です。LPからお申し込みの方は、フォーム送信後にLINEに表示される『面談について相談を希望します。受付番号：…』のメッセージを、そのまま送信してください。確認後、担当者から初回面談についてご連絡します。」です。
 - 長期チャネルアクセストークンを使用しています。LINE Developersはセキュリティ上、長期トークンを推奨していません。連携を有効にする前に、トークンの保管・再発行手順を運用者間で決めてください。
 - 本番コード反映後、Messaging API設定でWebhookをVerifyしてから「Webhookの利用」をオンにし、Renderの `AD_CREATIVE_LINE_ENABLED=true` を保存してデプロイします。最後にInstagramアプリ内ブラウザのiOS・Androidで友だち追加、受付番号付きメッセージ送信、管理画面での紐づけを確認します。
 
