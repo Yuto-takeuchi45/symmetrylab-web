@@ -150,7 +150,7 @@ LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN", "")
 # The career funnel uses separate credentials so an existing LINE integration
 # is never silently redirected to another official account.
 AD_CREATIVE_LINE_ENABLED = os.getenv("AD_CREATIVE_LINE_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
-AD_CREATIVE_LINE_ID = os.getenv("AD_CREATIVE_LINE_ID", "@226qiliz").strip()
+AD_CREATIVE_LINE_ID = os.getenv("AD_CREATIVE_LINE_ID", "@575jlvap").strip()
 AD_CREATIVE_LINE_CHANNEL_SECRET = os.getenv("AD_CREATIVE_LINE_CHANNEL_SECRET", "").strip()
 AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN = os.getenv("AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN", "").strip()
 

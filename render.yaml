@@ -44,7 +44,7 @@ services:
       - key: AD_CREATIVE_LINE_ENABLED
         sync: false
       - key: AD_CREATIVE_LINE_ID
-        value: "@226qiliz"
+        value: "@575jlvap"
       - key: AD_CREATIVE_LINE_CHANNEL_SECRET
         sync: false
       - key: AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN
