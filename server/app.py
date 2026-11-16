@@ -17,7 +17,7 @@ import sqlite3
 import traceback
 import urllib.request
 import urllib.error
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from io import BytesIO, StringIO
@@ -2936,6 +2936,97 @@ async def ad_creative_tracking_config():
     }
 
 
+def _meta_unix_timestamp(value, fallback=None) -> int:
+    """Convert an ISO timestamp to Unix seconds, using fallback if it is invalid."""
+    try:
+        if isinstance(value, datetime):
+            parsed = value
+        else:
+            timestamp = str(value or "").strip()
+            if not timestamp:
+                raise ValueError("empty timestamp")
+            parsed = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return int(parsed.timestamp())
+    except (TypeError, ValueError, OverflowError, OSError):
+        if fallback is not None:
+            return int(fallback)
+        return int(datetime.now(timezone.utc).timestamp())
+
+
+def _build_meta_capi_lead_payload(req, request: Request, saved_at) -> dict:
+    """Build a Meta Lead payload from an already-saved career application."""
+    event_time = _meta_unix_timestamp(saved_at)
+    email = str(req.email or "").strip().lower()
+    phone = re.sub(r"[^0-9]", "", str(req.phone or ""))
+    if phone.startswith("0"):
+        phone = "81" + phone[1:]
+
+    user_data = {
+        "em": [hashlib.sha256(email.encode("utf-8")).hexdigest()],
+        "ph": [hashlib.sha256(phone.encode("utf-8")).hexdigest()],
+        "client_user_agent": request.headers.get("user-agent", ""),
+    }
+    forwarded_for = request.headers.get("x-forwarded-for", "")
+    client_ip = forwarded_for.split(",", 1)[0].strip() if forwarded_for else ""
+    if not client_ip:
+        client = getattr(request, "client", None)
+        client_ip = getattr(client, "host", "") or ""
+    user_data["client_ip_address"] = client_ip
+
+    fbclid = str(req.fbclid or "").strip()
+    if fbclid:
+        first_touch = _meta_unix_timestamp(req.first_touch_at, fallback=event_time)
+        user_data["fbc"] = f"fb.1.{first_touch}.{fbclid}"
+
+    payload = {
+        "data": [{
+            "event_name": "Lead",
+            "event_time": event_time,
+            "event_id": req.client_submission_id,
+            "event_source_url": "https://symmetrylab.jp/career-check/",
+            "action_source": "website",
+            "user_data": user_data,
+        }],
+    }
+    test_event_code = os.getenv("SYMMETRY_META_CAPI_TEST_EVENT_CODE", "").strip()
+    if test_event_code:
+        payload["test_event_code"] = test_event_code
+    return payload
+
+
+def send_meta_capi_lead(req, request: Request, saved_at) -> None:
+    """Send a saved career Lead to Meta; failures must not affect registration."""
+    try:
+        enabled = os.getenv("SYMMETRY_META_TRACKING_ENABLED", "false").strip().lower() in {
+            "1", "true", "yes", "on"
+        }
+        pixel_id = os.getenv("SYMMETRY_META_PIXEL_ID", "").strip()
+        access_token = os.getenv("SYMMETRY_META_CAPI_ACCESS_TOKEN", "").strip()
+        if not enabled or not re.fullmatch(r"\d{5,20}", pixel_id) or not access_token:
+            return
+
+        payload = _build_meta_capi_lead_payload(req, request, saved_at)
+        body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        url = (
+            f"https://graph.facebook.com/v21.0/{pixel_id}/events"
+            f"?access_token={quote(access_token, safe='')}"
+        )
+        capi_request = urllib.request.Request(
+            url,
+            data=body,
+            headers={"Content-Type": "application/json", "Accept": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(capi_request, timeout=5) as response:
+            print(f"[Meta CAPI送信成功] status={response.status}")
+    except urllib.error.HTTPError as error:
+        print(f"[Meta CAPI送信失敗] HTTPError status={error.code}")
+    except Exception as error:
+        print(f"[Meta CAPI送信失敗] {type(error).__name__}")
+
+
 @app.get("/career-check", response_class=HTMLResponse, include_in_schema=False)
 @app.get("/career-check/", response_class=HTMLResponse, include_in_schema=False)
 async def ad_creative_career_check():
@@ -3042,6 +3133,7 @@ async def create_ad_creative_application(
                 "line_required": bool(line),
             },
         )
+        background_tasks.add_task(send_meta_capi_lead, req, request, now)
         result = {"ok": True, "duplicate": False, "application_id": application_id, "lead_id": application_id, "created_at": now}
         if line:
             result["line"] = line
