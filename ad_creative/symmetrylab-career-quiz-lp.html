@@ -603,7 +603,7 @@
     var jobData = null;
     var attributionKey = "symmetrylab_ad_attribution_v1";
     var metaConsentKey = "symmetrylab_ad_meta_consent_v1";
-    var metaConsentVersion = "career-check-privacy-2026-11-16-v5";
+    var metaConsentVersion = "career-check-privacy-2026-11-16-v6";
     var metaPixelId = "";
     var metaPixelReady = false;
     var metaPixelLoading = false;
@@ -666,14 +666,15 @@
       } catch (error) {}
       return "undecided";
     }
-    function sendMetaEvent(eventName, parameters) {
+    function sendMetaEvent(eventName, parameters, eventId) {
       if (metaConsentState === "denied") return false;
       if (!metaPixelReady) {
-        metaPendingEvents.push({ name: eventName, parameters: parameters || {} });
+        metaPendingEvents.push({ name: eventName, parameters: parameters || {}, eventId: eventId || "" });
         loadMetaPixel();
         return true;
       }
-      window.fbq("trackSingle", metaPixelId, eventName, parameters || {});
+      if (eventId) window.fbq("trackSingle", metaPixelId, eventName, parameters || {}, { eventID: eventId });
+      else window.fbq("trackSingle", metaPixelId, eventName, parameters || {});
       return true;
     }
     function replayUndeliveredCareerEvents() {
@@ -704,7 +705,10 @@
         f("trackSingle", id, "ViewContent", { content_name: "career-check" });
         metaPixelReady = true;
         metaPendingEvents.splice(0).forEach(function(event) {
-          if (metaConsentState !== "denied") f("trackSingle", id, event.name, event.parameters);
+          if (metaConsentState !== "denied") {
+            if (event.eventId) f("trackSingle", id, event.name, event.parameters, { eventID: event.eventId });
+            else f("trackSingle", id, event.name, event.parameters);
+          }
         });
         replayUndeliveredCareerEvents();
         var script = document.createElement("script");
@@ -857,7 +861,7 @@
         return response.json().then(function(data) { return { ok: response.ok, data: data }; });
       }).then(function(result) {
         if (!result.ok || !result.data.ok) throw new Error(result.data.detail || "送信できませんでした");
-        if (!result.data.duplicate) sendMetaEvent("Lead");
+        if (!result.data.duplicate) sendMetaEvent("Lead", {}, getSubmissionId());
         exitArmed = false;
         document.querySelector(".form-card").style.display = "none";
         if (result.data.line && result.data.line.message_url) {
@@ -890,7 +894,7 @@
         <h3>保管期間</h3>
         <p>登録情報は利用目的の達成に必要な期間保有します。利用目的の達成後または法定の保存期間経過後は、遅滞なく適切な方法で消去または匿名化します。法令に基づき保存が義務付けられている情報は、その期間保存します。</p>
         <h3>広告計測について</h3>
-        <p>当ページでは、広告効果の測定・広告配信の最適化のため、Meta Pixelを読み込み、ページ閲覧（PageView）、キャリア情報ページ閲覧（ViewContent）、登録開始（StartRegistration）、Q1（転職時期）回答完了（CareerCheckAnswered）、各質問への到達（CareerCheckStepReached）、登録完了（Lead）のイベントをMeta Platforms, Inc.へ送信します。送信される情報には閲覧ページのURL・広告流入情報、IPアドレス、ブラウザー・端末情報およびMeta Pixelの識別子等が含まれる場合があります。氏名、メールアドレス、電話番号、年齢および質問への回答内容はMetaへ送信しません。広告配信に伴うMeta上での情報の取扱いは、Metaの<a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>をご確認ください。</p>
+        <p>当ページでは、広告効果の測定・広告配信の最適化のため、Meta Pixelを読み込み、ページ閲覧（PageView）、キャリア情報ページ閲覧（ViewContent）、登録開始（StartRegistration）、Q1（転職時期）回答完了（CareerCheckAnswered）、各質問への到達（CareerCheckStepReached）、登録完了（Lead）のイベントをMeta Platforms, Inc.へ送信します。送信される情報には閲覧ページのURL・広告流入情報、IPアドレス、ブラウザー・端末情報およびMeta Pixelの識別子等が含まれる場合があります。また、登録完了（Lead）の測定では、広告の成果を正確に測るため、メールアドレスと電話番号を、そのままでは復元できないよう加工（ハッシュ化）したうえで送信します。氏名、年齢および質問への回答内容はMetaへ送信しません。広告配信に伴うMeta上での情報の取扱いは、Metaの<a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>をご確認ください。</p>
         <h3>お問い合わせ</h3>
         <p>個人情報の開示・訂正・利用停止等に関するお問い合わせは、SYMMETRY Lab株式会社（<a href="mailto:info@symmetrylab.jp">info@symmetrylab.jp</a>）までご連絡ください。</p>
         <p><a href="/privacy.html" target="_blank" rel="noopener noreferrer">当社プライバシーポリシー</a>もあわせてご確認ください。</p>`
