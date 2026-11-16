@@ -57,6 +57,10 @@ services:
         sync: false
       - key: SYMMETRY_META_TRACKING_ENABLED
         value: "true"
+      - key: SYMMETRY_META_CAPI_ACCESS_TOKEN
+        sync: false
+      - key: SYMMETRY_META_CAPI_TEST_EVENT_CODE
+        sync: false
       - key: AD_CREATIVE_CONSENT_VERSION
         value: career-check-privacy-2026-10-12-v2
       - key: AD_CREATIVE_JOBS_PATH
