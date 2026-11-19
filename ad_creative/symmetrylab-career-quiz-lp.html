@@ -609,10 +609,12 @@
     var metaPixelLoading = false;
     var lineMode = false;
     var metaPendingEvents = [];
+    var metaStandardEventNames = { Lead: true };
     var careerCheckAnsweredSent = false;
     var careerCheckStepReachedSent = {};
     var careerCheckAnsweredDelivered = false;
     var careerCheckStepReachedDelivered = {};
+    var careerCheckNumberedStepReachedDelivered = {};
     var metaConsentState = readMetaConsent();
     var attribution = readAttribution();
     var progBar = document.getElementById("progBar");
@@ -666,6 +668,11 @@
       } catch (error) {}
       return "undecided";
     }
+    function trackMetaEvent(pixelId, eventName, parameters, eventId) {
+      var method = metaStandardEventNames[eventName] ? "trackSingle" : "trackSingleCustom";
+      if (eventId) window.fbq(method, pixelId, eventName, parameters || {}, { eventID: eventId });
+      else window.fbq(method, pixelId, eventName, parameters || {});
+    }
     function sendMetaEvent(eventName, parameters, eventId) {
       if (metaConsentState === "denied") return false;
       if (!metaPixelReady) {
@@ -673,8 +680,7 @@
         loadMetaPixel();
         return true;
       }
-      if (eventId) window.fbq("trackSingle", metaPixelId, eventName, parameters || {}, { eventID: eventId });
-      else window.fbq("trackSingle", metaPixelId, eventName, parameters || {});
+      trackMetaEvent(metaPixelId, eventName, parameters, eventId);
       return true;
     }
     function replayUndeliveredCareerEvents() {
@@ -682,8 +688,12 @@
         careerCheckAnsweredDelivered = sendMetaEvent("CareerCheckAnswered");
       }
       Object.keys(careerCheckStepReachedSent).forEach(function(displayedStep) {
-        if (careerCheckStepReachedSent[displayedStep] && !careerCheckStepReachedDelivered[displayedStep]) {
+        if (!careerCheckStepReachedSent[displayedStep]) return;
+        if (!careerCheckStepReachedDelivered[displayedStep]) {
           careerCheckStepReachedDelivered[displayedStep] = sendMetaEvent("CareerCheckStepReached", { step: Number(displayedStep) });
+        }
+        if (!careerCheckNumberedStepReachedDelivered[displayedStep]) {
+          careerCheckNumberedStepReachedDelivered[displayedStep] = sendMetaEvent("CareerCheckStepReached_Q" + displayedStep, { step: Number(displayedStep) });
         }
       });
     }
@@ -706,8 +716,7 @@
         metaPixelReady = true;
         metaPendingEvents.splice(0).forEach(function(event) {
           if (metaConsentState !== "denied") {
-            if (event.eventId) f("trackSingle", id, event.name, event.parameters, { eventID: event.eventId });
-            else f("trackSingle", id, event.name, event.parameters);
+            trackMetaEvent(id, event.name, event.parameters, event.eventId);
           }
         });
         replayUndeliveredCareerEvents();
@@ -755,6 +764,7 @@
       if (!careerCheckStepReachedSent[step]) {
         careerCheckStepReachedSent[step] = true;
         careerCheckStepReachedDelivered[step] = sendMetaEvent("CareerCheckStepReached", { step: step });
+        careerCheckNumberedStepReachedDelivered[step] = sendMetaEvent("CareerCheckStepReached_Q" + step, { step: step });
       }
     }
     function selectedValues(group) {
@@ -894,7 +904,7 @@
         <h3>保管期間</h3>
         <p>登録情報は利用目的の達成に必要な期間保有します。利用目的の達成後または法定の保存期間経過後は、遅滞なく適切な方法で消去または匿名化します。法令に基づき保存が義務付けられている情報は、その期間保存します。</p>
         <h3>広告計測について</h3>
-        <p>当ページでは、広告効果の測定・広告配信の最適化のため、Meta Pixelを読み込み、ページ閲覧（PageView）、キャリア情報ページ閲覧（ViewContent）、登録開始（StartRegistration）、Q1（転職時期）回答完了（CareerCheckAnswered）、各質問への到達（CareerCheckStepReached）、登録完了（Lead）のイベントをMeta Platforms, Inc.へ送信します。送信される情報には閲覧ページのURL・広告流入情報、IPアドレス、ブラウザー・端末情報およびMeta Pixelの識別子等が含まれる場合があります。また、登録完了（Lead）の測定では、広告の成果を正確に測るため、メールアドレスと電話番号を、そのままでは復元できないよう加工（ハッシュ化）したうえで送信します。氏名、年齢および質問への回答内容はMetaへ送信しません。広告配信に伴うMeta上での情報の取扱いは、Metaの<a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>をご確認ください。</p>
+        <p>当ページでは、広告効果の測定・広告配信の最適化のため、Meta Pixelを読み込み、ページ閲覧（PageView）、キャリア情報ページ閲覧（ViewContent）、登録開始（StartRegistration）、Q1（転職時期）回答完了（CareerCheckAnswered）、各質問への到達（CareerCheckStepReachedおよび設問番号別のCareerCheckStepReached_Q1〜Q7）、登録完了（Lead）のイベントをMeta Platforms, Inc.へ送信します。送信される情報には閲覧ページのURL・広告流入情報、IPアドレス、ブラウザー・端末情報およびMeta Pixelの識別子等が含まれる場合があります。また、登録完了（Lead）の測定では、広告の成果を正確に測るため、メールアドレスと電話番号を、そのままでは復元できないよう加工（ハッシュ化）したうえで送信します。氏名、年齢および質問への回答内容はMetaへ送信しません。広告配信に伴うMeta上での情報の取扱いは、Metaの<a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>をご確認ください。</p>
         <h3>お問い合わせ</h3>
         <p>個人情報の開示・訂正・利用停止等に関するお問い合わせは、SYMMETRY Lab株式会社（<a href="mailto:info@symmetrylab.jp">info@symmetrylab.jp</a>）までご連絡ください。</p>
         <p><a href="/privacy.html" target="_blank" rel="noopener noreferrer">当社プライバシーポリシー</a>もあわせてご確認ください。</p>`

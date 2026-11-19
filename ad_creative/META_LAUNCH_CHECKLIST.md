@@ -34,7 +34,7 @@
 https://symmetrylab.jp/career-check/?utm_source=instagram&utm_medium=paid_social&utm_campaign=consulting_career&utm_content=creative_01
 ```
 
-- Events Managerのテストイベントで `PageView` → `ViewContent` → `StartRegistration` → `Lead` を確認する
+- Events Managerのテストイベントで `PageView` → `ViewContent` → `StartRegistration` → `CareerCheckStepReached_Q1`〜`CareerCheckStepReached_Q7` → `CareerCheckAnswered` → `Lead` を確認する
 - 送信成功1件につき`Lead`が1件、再送では追加発火しないことを確認する
 - 予算・配信地域・開始日時・公開ボタンは最後にオーナーが確認する
 
