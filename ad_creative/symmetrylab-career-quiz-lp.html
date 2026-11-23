@@ -153,6 +153,7 @@
       font-size: 11px;
       font-weight: 700;
     }
+    .required-note { margin: -4px 2px 10px; color: var(--text-sub); font-size: 10px; text-align: right; }
 
     .form-card {
       overflow: hidden;
@@ -233,6 +234,22 @@
       font-weight: 800;
     }
     .choice-btn.selected::after { content: " ✓"; color: var(--cyan-deep); }
+    .choice-label { display: inline-block; }
+    .ranked-multi .choice-btn { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .ranked-multi .choice-btn.selected::after { content: ""; }
+    .choice-order {
+      display: inline-flex;
+      min-width: 28px;
+      min-height: 28px;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      background: var(--cyan-deep);
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .choice-order:empty { display: none; }
     .form-foot {
       display: flex;
       gap: 10px;
@@ -272,6 +289,7 @@
       font-size: 12px;
       font-weight: 700;
     }
+    .form-hint { display: block; margin: -2px 0 8px; color: var(--muted); font-size: 11px; line-height: 1.5; }
     .form-input, .form-select {
       width: 100%;
       min-height: 48px;
@@ -283,6 +301,7 @@
       font-size: 15px;
     }
     .form-input::placeholder { color: #a5b1b7; }
+    .form-textarea { min-height: 104px; resize: vertical; line-height: 1.65; }
     .form-input:focus, .form-select:focus {
       border-color: var(--cyan-deep);
       box-shadow: 0 0 0 3px rgba(54, 201, 230, .13);
@@ -296,6 +315,56 @@
       font-weight: 700;
     }
     .field-error.show { display: block; }
+    .conditional-field[hidden] { display: none; }
+    .wheel-help { margin: -8px 0 14px; color: var(--text-sub); font-size: 12px; line-height: 1.6; }
+    .wheel-picker { display: flex; gap: 12px; justify-content: center; }
+    .wheel-column-wrap { position: relative; width: min(48%, 168px); text-align: center; }
+    .wheel-label { display: block; margin-bottom: 6px; color: var(--text-sub); font-size: 12px; font-weight: 800; }
+    .wheel-column {
+      height: 180px;
+      overflow-y: auto;
+      padding: 68px 8px;
+      overscroll-behavior: contain;
+      scroll-snap-type: y mandatory;
+      scrollbar-width: none;
+      background: linear-gradient(to bottom, #f4f8f9 0, #fff 33%, #fff 67%, #f4f8f9 100%);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      -webkit-overflow-scrolling: touch;
+    }
+    .wheel-column::-webkit-scrollbar { display: none; }
+    .salary-wheel-column { width: min(100%, 320px); height: 152px; margin: 0 auto; padding: 54px 8px; }
+    .wheel-item {
+      display: block;
+      width: 100%;
+      height: 44px;
+      padding: 0 4px;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      scroll-snap-align: center;
+    }
+    .wheel-item.is-centered { color: var(--navy); background: var(--cyan-pale); font-size: 18px; font-weight: 900; }
+    .wheel-value { min-height: 22px; margin: 12px 0 8px; color: var(--navy); font-size: 14px; font-weight: 800; text-align: center; }
+    .timing-undecided-btn {
+      display: block;
+      width: 100%;
+      min-height: 44px;
+      margin: 0 auto;
+      padding: 10px;
+      color: var(--text-sub);
+      background: #fbfcfc;
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .timing-undecided-btn.selected { color: var(--cyan-deep); background: var(--cyan-pale); border-color: var(--cyan-deep); }
     .consent {
       margin: 9px 0 0;
       color: var(--muted);
@@ -365,7 +434,7 @@
       font-weight: 700;
     }
     .trust-footer a { text-decoration: none; }
-    .prequiz-overlay, .exit-overlay, .modal-overlay {
+    .exit-overlay, .modal-overlay {
       position: fixed;
       inset: 0;
       z-index: 50;
@@ -376,50 +445,13 @@
       background: rgba(25, 42, 52, .68);
       backdrop-filter: blur(6px);
     }
-    .prequiz-sheet, .exit-sheet, .modal-box {
+    .exit-sheet, .modal-box {
       width: min(100%, 430px);
       overflow: hidden;
       background: var(--white);
       border-radius: var(--radius-xl);
       box-shadow: 0 24px 70px rgba(10, 26, 36, .28);
     }
-    .prequiz-license {
-      padding: 10px 16px;
-      color: rgba(31, 41, 55, .66);
-      background: #f2f7f8;
-      border-bottom: 1px solid var(--line);
-      font-size: 10px;
-      text-align: center;
-    }
-    .prequiz-body { padding: 28px 20px 24px; }
-    .prequiz-title {
-      margin: 0 0 20px;
-      color: var(--navy);
-      font-size: 18px;
-      font-weight: 900;
-      text-align: center;
-    }
-    .prequiz-choices { display: grid; gap: 10px; }
-    .prequiz-btn {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      min-height: 58px;
-      padding: 0 18px;
-      color: var(--white);
-      background: var(--navy);
-      border: 0;
-      border-radius: var(--radius-md);
-      box-shadow: 0 4px 0 var(--navy-deep);
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 900;
-      text-align: left;
-      transition: transform .15s ease, background .15s ease;
-    }
-    .prequiz-btn:first-child { background: var(--cyan-deep); box-shadow: 0 4px 0 #137d96; }
-    .prequiz-btn:hover { transform: translateY(-2px); }
-    .prequiz-arrow { font-size: 21px; font-weight: 400; }
     .exit-overlay { display: none; }
     .exit-overlay.show { display: flex; }
     .exit-sheet { padding: 30px 22px 22px; text-align: center; }
@@ -475,64 +507,127 @@
 
     <section class="hero-copy">
       <h1 class="hero-headline">経験を整理して、<br>次のキャリアを選ぶ。</h1>
-      <p class="hero-sub">7つの質問に答えるだけで、いま整理すべきキャリアテーマが見えてきます。</p>
+      <p class="hero-sub">10の質問で、希望するキャリアや転職条件を整理できます。</p>
     </section>
 
     <section class="form-outer" aria-label="キャリア相談フォーム">
       <div class="prog-bar" id="progBar" aria-hidden="true"></div>
       <div class="prog-label-row">
-        <span class="prog-step">STEP <strong id="stepNo">1</strong> / 7</span>
-        <span class="prog-name" id="stepName">相談時期</span>
+        <span class="prog-step">STEP <strong id="stepNo">1</strong> / 10</span>
+        <span class="prog-name" id="stepName">希望業界</span>
       </div>
+      <p class="required-note">Q9以外は必須です</p>
 
       <div class="form-card">
         <section class="form-step active" id="step1">
-          <p class="step-q">Q1 / 7</p><h2 class="step-title">転職・キャリア相談の時期は？</h2>
-          <div class="choice-grid cols-2">
-            <button class="choice-btn" type="button">1か月以内</button><button class="choice-btn" type="button">2〜3か月以内</button>
-            <button class="choice-btn" type="button">4〜6か月以内</button><button class="choice-btn" type="button">7か月以降</button>
-            <button class="choice-btn" type="button">時期未定・情報収集中</button>
+          <p class="step-q">Q1 / 10 <span class="multi-hint">複数選択</span></p><h2 class="step-title">希望する業界を教えてください</h2>
+          <div class="choice-grid cols-2 multi" data-answer-key="q2_industry" aria-required="true">
+            <button class="choice-btn" type="button" data-value="コンサルティング・専門サービス"><span class="choice-label">コンサルティング・専門サービス</span></button>
+            <button class="choice-btn" type="button" data-value="IT・通信・インターネット"><span class="choice-label">IT・通信・インターネット</span></button>
+            <button class="choice-btn" type="button" data-value="メーカー・製造"><span class="choice-label">メーカー・製造</span></button>
+            <button class="choice-btn" type="button" data-value="金融・保険"><span class="choice-label">金融・保険</span></button>
+            <button class="choice-btn" type="button" data-value="商社・卸売"><span class="choice-label">商社・卸売</span></button>
+            <button class="choice-btn" type="button" data-value="不動産・建設"><span class="choice-label">不動産・建設</span></button>
+            <button class="choice-btn" type="button" data-value="小売・消費財"><span class="choice-label">小売・消費財</span></button>
+            <button class="choice-btn" type="button" data-value="医療・ヘルスケア"><span class="choice-label">医療・ヘルスケア</span></button>
+            <button class="choice-btn" type="button" data-value="広告・メディア"><span class="choice-label">広告・メディア</span></button>
+            <button class="choice-btn" type="button" data-value="人材・教育"><span class="choice-label">人材・教育</span></button>
+            <button class="choice-btn" type="button" data-value="物流・運輸"><span class="choice-label">物流・運輸</span></button>
+            <button class="choice-btn" type="button" data-value="エネルギー・インフラ・公共"><span class="choice-label">エネルギー・インフラ・公共</span></button>
+            <button class="choice-btn" type="button" data-value="その他（具体的な希望はQ9へ）"><span class="choice-label">その他（具体的な希望はQ9へ）</span></button>
+            <button class="choice-btn" type="button" data-value="まだ決めていない" data-exclusive="undecided"><span class="choice-label">まだ決めていない</span></button>
           </div>
+          <p class="multi-note">複数の業界を選択できます。「まだ決めていない」は他の選択肢と同時に選べません。</p>
+          <p class="submit-status" id="industryStatus" role="status"></p>
+          <div class="form-foot"><button class="btn-next" type="button" data-next>次へ →</button></div>
         </section>
         <section class="form-step" id="step2">
-          <p class="step-q">Q2 / 7</p><h2 class="step-title">現在のおおよその年収は？</h2>
-          <div class="choice-grid cols-2">
-            <button class="choice-btn" type="button">〜399万円</button><button class="choice-btn" type="button">400〜599万円</button>
-            <button class="choice-btn" type="button">600〜799万円</button><button class="choice-btn" type="button">800〜999万円</button>
-            <button class="choice-btn" type="button">1,000〜1,499万円</button><button class="choice-btn" type="button">1,500〜1,999万円</button>
-            <button class="choice-btn" type="button">2,000万円以上</button>
+          <p class="step-q">Q2 / 10 <span class="multi-hint">複数選択</span></p><h2 class="step-title">希望する職種・仕事内容を教えてください</h2>
+          <div class="choice-grid cols-2 multi" data-answer-key="q3_role" aria-required="true">
+            <button class="choice-btn" type="button" data-value="経営・事業企画"><span class="choice-label">経営・事業企画</span></button>
+            <button class="choice-btn" type="button" data-value="戦略・経営コンサルタント"><span class="choice-label">戦略・経営コンサルタント</span></button>
+            <button class="choice-btn" type="button" data-value="業務・ITコンサルタント"><span class="choice-label">業務・ITコンサルタント</span></button>
+            <button class="choice-btn" type="button" data-value="プロジェクト管理・PMO"><span class="choice-label">プロジェクト管理・PMO</span></button>
+            <button class="choice-btn" type="button" data-value="営業・営業企画"><span class="choice-label">営業・営業企画</span></button>
+            <button class="choice-btn" type="button" data-value="マーケティング・広報"><span class="choice-label">マーケティング・広報</span></button>
+            <button class="choice-btn" type="button" data-value="商品・サービス企画"><span class="choice-label">商品・サービス企画</span></button>
+            <button class="choice-btn" type="button" data-value="ITエンジニア・データ・AI"><span class="choice-label">ITエンジニア・データ・AI</span></button>
+            <button class="choice-btn" type="button" data-value="技術・研究開発"><span class="choice-label">技術・研究開発</span></button>
+            <button class="choice-btn" type="button" data-value="財務・経理・金融専門職"><span class="choice-label">財務・経理・金融専門職</span></button>
+            <button class="choice-btn" type="button" data-value="人事・組織・採用"><span class="choice-label">人事・組織・採用</span></button>
+            <button class="choice-btn" type="button" data-value="オペレーション・SCM・物流"><span class="choice-label">オペレーション・SCM・物流</span></button>
+            <button class="choice-btn" type="button" data-value="その他"><span class="choice-label">その他</span></button>
+            <button class="choice-btn" type="button" data-value="まだ決めていない" data-exclusive="undecided"><span class="choice-label">まだ決めていない</span></button>
           </div>
+          <label class="form-field conditional-field" id="roleOtherField" hidden><span class="form-label">希望する職種・仕事内容（その他・必須）</span><textarea class="form-input form-textarea" id="roleOtherInput" rows="3" maxlength="500" placeholder="希望する職種や仕事内容を入力してください" required></textarea><span class="field-error" id="roleOtherError">具体的な内容を入力してください</span></label>
+          <p class="multi-note">複数の職種を選択できます。「まだ決めていない」は他の選択肢と同時に選べません。</p>
+          <p class="submit-status" id="roleStatus" role="status"></p>
+          <div class="form-foot"><button class="btn-next" type="button" data-next>次へ →</button></div>
         </section>
         <section class="form-step" id="step3">
-          <p class="step-q">Q3 / 7</p><h2 class="step-title">最終学歴を教えてください</h2>
-          <div class="choice-grid cols-2">
-            <button class="choice-btn" type="button">大学院</button><button class="choice-btn" type="button">大学</button>
-            <button class="choice-btn" type="button">高専</button><button class="choice-btn" type="button">短大・専門学校</button>
-            <button class="choice-btn" type="button">高校</button><button class="choice-btn" type="button">その他</button>
-          </div>
+          <p class="step-q">Q3 / 10</p><h2 class="step-title">現在の年収・希望年収・最低許容年収を教えてください</h2>
+          <p class="wheel-help">それぞれのホイールを上下に動かして選択してください。0〜3,000万円を10万円刻みで選べます。</p>
+          <label class="form-field"><span class="form-label">現在の年収（必須）</span><div class="wheel-column salary-wheel-column" id="currentIncomeWheel" role="listbox" aria-label="現在の年収、0〜3,000万円、10万円刻み" tabindex="0"></div><p class="wheel-value" id="currentIncomeValue" aria-live="polite">年収を選択してください</p><input id="currentIncomeInput" type="hidden" data-answer-key="q4_current_income" required><span class="field-error" id="currentIncomeError">現在の年収を選択してください</span></label>
+          <label class="form-field"><span class="form-label">希望年収（必須）</span><div class="wheel-column salary-wheel-column" id="desiredIncomeWheel" role="listbox" aria-label="希望年収、0〜3,000万円、10万円刻み" tabindex="0"></div><p class="wheel-value" id="desiredIncomeValue" aria-live="polite">年収を選択してください</p><input id="desiredIncomeInput" type="hidden" data-answer-key="q4_desired_income" required><span class="field-error" id="desiredIncomeError">希望年収を選択してください</span></label>
+          <label class="form-field"><span class="form-label">最低許容年収（必須）</span><div class="wheel-column salary-wheel-column" id="minimumIncomeWheel" role="listbox" aria-label="最低許容年収、0〜3,000万円、10万円刻み" tabindex="0"></div><p class="wheel-value" id="minimumIncomeValue" aria-live="polite">年収を選択してください</p><input id="minimumIncomeInput" type="hidden" data-answer-key="q4_minimum_income" required><span class="field-error" id="minimumIncomeError">最低許容年収を選択してください</span></label>
+          <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div>
         </section>
         <section class="form-step" id="step4">
-          <p class="step-q">Q4 / 7</p><h2 class="step-title">次の選択で最も大切にしたいことは？</h2>
-          <div class="choice-grid cols-2">
-            <button class="choice-btn" type="button">仕事内容・ポジション</button><button class="choice-btn" type="button">年収・待遇</button>
-            <button class="choice-btn" type="button">専門性・スキル</button><button class="choice-btn" type="button">成長機会・裁量</button>
-            <button class="choice-btn" type="button">勤務地・通勤条件</button><button class="choice-btn" type="button">働き方・ワークライフバランス</button>
-            <button class="choice-btn" type="button">まだ決めていない</button>
-          </div>
+          <p class="step-q">Q4 / 10</p><h2 class="step-title">希望する勤務地を教えてください</h2>
+          <label class="form-field"><span class="form-label">希望する勤務地（必須・複数可）</span><textarea class="form-input form-textarea" id="locationInput" rows="4" maxlength="500" placeholder="例：東京都、神奈川県、リモートワーク可" required></textarea><span class="field-error" id="locationError">希望する勤務地を入力してください</span></label>
+          <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div>
         </section>
         <section class="form-step" id="step5">
-          <p class="step-q">Q5 / 7</p><h2 class="step-title">年齢を教えてください</h2>
-          <label class="form-field"><span class="form-label">現在の年齢（必須）</span><input class="form-input" id="ageInput" type="number" inputmode="numeric" min="18" max="80" autocomplete="off" placeholder="例：24" required><span class="field-error" id="ageError">年齢を入力してください（18〜80歳）</span></label>
+          <p class="step-q">Q5 / 10</p><h2 class="step-title">希望する働き方や制約について教えてください</h2>
+          <label class="form-field"><span class="form-label">働き方や制約（必須）</span><textarea class="form-input form-textarea" id="workStyleInput" rows="4" maxlength="1000" placeholder="例：在宅勤務を希望、育児と両立したい" required></textarea><span class="field-error" id="workStyleError">希望する働き方や制約を入力してください</span></label>
           <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div>
         </section>
         <section class="form-step" id="step6">
-          <p class="step-q">Q6 / 7</p><h2 class="step-title">お名前を教えてください</h2>
-          <label class="form-field"><span class="form-label">お名前（フルネーム）</span><input class="form-input" id="nameInput" type="text" autocomplete="name" placeholder="例：山田 太郎"><span class="field-error" id="nameError">お名前を入力してください</span></label>
+          <p class="step-q">Q6 / 10</p><h2 class="step-title">いつ頃の転職を希望していますか？</h2>
+          <p class="wheel-help">年と月を上下に動かして選択してください。</p>
+          <div class="wheel-picker" id="timingWheelPicker">
+            <div class="wheel-column-wrap"><span class="wheel-label">年</span><div class="wheel-column" id="yearWheel" role="listbox" aria-label="転職希望年" tabindex="0"></div></div>
+            <div class="wheel-column-wrap"><span class="wheel-label">月</span><div class="wheel-column" id="monthWheel" role="listbox" aria-label="転職希望月" tabindex="0"></div></div>
+          </div>
+          <p class="wheel-value" id="timingValue" aria-live="polite">年月を選択してください</p>
+          <button class="timing-undecided-btn" type="button" id="timingUndecided">時期未定</button>
+          <p class="field-error" id="timingError">希望年月を選ぶか、「時期未定」を選択してください</p>
           <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div>
         </section>
         <section class="form-step" id="step7">
-          <p class="step-q">Q7 / 7</p><h2 class="step-title">連絡先を入力してください</h2>
-          <label class="form-field"><span class="form-label">メールアドレス</span><input class="form-input" id="emailInput" type="email" autocomplete="email" placeholder="例：name@example.com"><span class="field-error" id="emailError">メールアドレスを入力してください</span></label>
+          <p class="step-q">Q7 / 10 <span class="multi-hint">最大3つ・押した順で順位付け</span></p><h2 class="step-title">転職先を選ぶうえで、特に重視する条件を教えてください</h2>
+          <div class="choice-grid cols-2 multi ranked-multi" data-answer-key="q8_priority" data-max="3" aria-required="true">
+            <button class="choice-btn" type="button" data-value="仕事内容・ポジション"><span class="choice-label">仕事内容・ポジション</span><span class="choice-order" aria-hidden="true"></span></button>
+            <button class="choice-btn" type="button" data-value="年収・待遇"><span class="choice-label">年収・待遇</span><span class="choice-order" aria-hidden="true"></span></button>
+            <button class="choice-btn" type="button" data-value="専門性・スキル"><span class="choice-label">専門性・スキル</span><span class="choice-order" aria-hidden="true"></span></button>
+            <button class="choice-btn" type="button" data-value="成長機会・裁量"><span class="choice-label">成長機会・裁量</span><span class="choice-order" aria-hidden="true"></span></button>
+            <button class="choice-btn" type="button" data-value="勤務地・通勤条件"><span class="choice-label">勤務地・通勤条件</span><span class="choice-order" aria-hidden="true"></span></button>
+            <button class="choice-btn" type="button" data-value="働き方・ワークライフバランス"><span class="choice-label">働き方・ワークライフバランス</span><span class="choice-order" aria-hidden="true"></span></button>
+            <button class="choice-btn" type="button" data-value="その他"><span class="choice-label">その他</span><span class="choice-order" aria-hidden="true"></span></button>
+          </div>
+          <label class="form-field conditional-field" id="priorityOtherField" hidden><span class="form-label">重視する条件（その他・必須）</span><textarea class="form-input form-textarea" id="priorityOtherInput" rows="3" maxlength="500" placeholder="重視する条件を入力してください" required></textarea><span class="field-error" id="priorityOtherError">具体的な条件を入力してください</span></label>
+          <p class="multi-note">選んだ順に1位、2位、3位と表示されます。1つ以上、3つまで選択してください。</p>
+          <p class="submit-status" id="priorityStatus" role="status"></p>
+          <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div>
+        </section>
+        <section class="form-step" id="step8" data-manual="true">
+          <p class="step-q">Q8 / 10</p><h2 class="step-title">マネジメント経験はありますか？ある場合は、マネジメントした組織の規模を教えてください。</h2>
+          <div class="choice-grid cols-2" data-answer-key="q9_management_experience" aria-required="true">
+            <button class="choice-btn" type="button" data-value="経験あり"><span class="choice-label">経験あり</span></button>
+            <button class="choice-btn" type="button" data-value="経験なし"><span class="choice-label">経験なし</span></button>
+          </div>
+          <label class="form-field conditional-field" id="managementSizeField" hidden><span class="form-label">マネジメントした組織の規模（必須）</span><span class="form-hint">チームや部門など、同時にマネジメントしていた組織の規模をご記入ください。</span><input class="form-input" id="managementSizeInput" type="text" maxlength="120" placeholder="例：5名のチーム、20名の部門" required><span class="field-error" id="managementSizeError">マネジメントした組織の規模を入力してください</span></label>
+          <p class="submit-status" id="managementStatus" role="status"></p>
+          <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div>
+        </section>
+        <section class="form-step" id="step9">
+          <p class="step-q">Q9 / 10</p><h2 class="step-title">その他、転職先に求める条件やご希望があれば教えてください</h2>
+          <label class="form-field"><span class="form-label">その他のご希望（任意）</span><textarea class="form-input form-textarea" id="otherPreferencesInput" rows="4" maxlength="1500" placeholder="自由に入力してください"></textarea></label>
+          <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div></section>
+        <section class="form-step" id="step10">
+          <p class="step-q">Q10 / 10</p><h2 class="step-title">お客様の基本情報を教えてください</h2>
+          <label class="form-field"><span class="form-label">氏名（必須）</span><input class="form-input" id="nameInput" type="text" autocomplete="name" placeholder="例：山田 太郎" required><span class="field-error" id="nameError">氏名を入力してください</span></label>
+          <label class="form-field"><span class="form-label">メールアドレス（必須）</span><input class="form-input" id="emailInput" type="email" autocomplete="email" placeholder="例：name@example.com" required><span class="field-error" id="emailError">有効なメールアドレスを入力してください</span></label>
           <label class="form-field"><span class="form-label">電話番号（必須）</span><input class="form-input" id="telInput" type="tel" autocomplete="tel" placeholder="例：09012345678" required><span class="field-error" id="telError">電話番号を入力してください</span></label>
           <input id="websiteInput" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
           <label class="consent-check"><input id="privacyConsent" type="checkbox"><span><a href="#" data-modal="privacy">個人情報の取扱い</a>を確認し、登録情報をキャリア・求人情報の案内等に利用することに同意します。<span id="lineConsentNote" hidden>公式LINEでの連絡のため、送信内容とLINEアカウントの識別子を関連付けます。</span></span></label>
@@ -559,19 +654,6 @@
     </footer>
   </main>
 
-  <div class="prequiz-overlay" id="prequizOverlay">
-    <div class="prequiz-sheet">
-      <div class="prequiz-license">SYMMETRY Lab｜キャリア支援</div>
-      <div class="prequiz-body">
-        <h2 class="prequiz-title">お気持ちはどちらに近いですか？</h2>
-        <div class="prequiz-choices">
-          <button class="prequiz-btn" type="button" data-intention="soon"><span>近いうちに転職したい</span><span class="prequiz-arrow">›</span></button>
-          <button class="prequiz-btn" type="button" data-intention="info"><span>まずは情報収集をしたい</span><span class="prequiz-arrow">›</span></button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="exit-overlay" id="exitOverlay" aria-hidden="true">
     <div class="exit-sheet">
       <h2 class="exit-title">回答内容が消えてしまいます</h2>
@@ -590,20 +672,29 @@
   </div>
 
   <script>
-    var totalSteps = 7;
+    var totalSteps = 10;
     var step = 1;
     var started = false;
+    var startRegistrationSent = false;
     var exitArmed = false;
-    var stepNames = ["相談時期", "現在の年収", "最終学歴", "希望条件", "年齢", "お名前", "連絡先"];
+    var stepNames = ["希望業界", "希望職種", "年収", "勤務地", "働き方", "転職時期", "重視条件", "マネジメント", "その他", "基本情報"];
     var answers = {};
+    var priorityOrder = [];
+    var timingSelected = false;
+    var timingUndecided = false;
+    var timingStartYear = 0;
+    var timingStartMonth = 0;
+    var timingYear = 0;
+    var timingMonth = 0;
+    var timingWheelCommitArmed = true;
+    var wheelScrollTimers = {};
+    var salaryWheelScrollTimers = {};
     var params = new URLSearchParams(window.location.search);
     var jobPublicId = params.get("job") || "";
     var submissionStorageKey = "symmetrylab_ad_submission_v1:generic";
     var submissionId = null;
     var jobData = null;
     var attributionKey = "symmetrylab_ad_attribution_v1";
-    var metaConsentKey = "symmetrylab_ad_meta_consent_v1";
-    var metaConsentVersion = "career-check-privacy-2026-11-16-v6";
     var metaPixelId = "";
     var metaPixelReady = false;
     var metaPixelLoading = false;
@@ -615,7 +706,6 @@
     var careerCheckAnsweredDelivered = false;
     var careerCheckStepReachedDelivered = {};
     var careerCheckNumberedStepReachedDelivered = {};
-    var metaConsentState = readMetaConsent();
     var attribution = readAttribution();
     var progBar = document.getElementById("progBar");
     for (var i = 1; i <= totalSteps; i++) {
@@ -624,7 +714,8 @@
       segment.dataset.step = String(i);
       progBar.appendChild(segment);
     }
-    var ageInput = document.getElementById("ageInput");
+    initializeTimingPicker();
+    initializeSalaryPickers();
 
     if (window.location.protocol !== "file:") {
       fetch("/api/ad-creative/tracking-config", { headers: { "Accept": "application/json" }, cache: "no-store" }).then(function(response) {
@@ -660,21 +751,12 @@
       try { localStorage.setItem(attributionKey, JSON.stringify(current)); } catch (error) {}
       return current;
     }
-    function readMetaConsent() {
-      try {
-        var consent = JSON.parse(localStorage.getItem(metaConsentKey) || "null");
-        if (consent && consent.status === "denied") return "denied";
-        if (consent && consent.version === metaConsentVersion && consent.status === "granted") return "granted";
-      } catch (error) {}
-      return "undecided";
-    }
     function trackMetaEvent(pixelId, eventName, parameters, eventId) {
       var method = metaStandardEventNames[eventName] ? "trackSingle" : "trackSingleCustom";
       if (eventId) window.fbq(method, pixelId, eventName, parameters || {}, { eventID: eventId });
       else window.fbq(method, pixelId, eventName, parameters || {});
     }
     function sendMetaEvent(eventName, parameters, eventId) {
-      if (metaConsentState === "denied") return false;
       if (!metaPixelReady) {
         metaPendingEvents.push({ name: eventName, parameters: parameters || {}, eventId: eventId || "" });
         loadMetaPixel();
@@ -682,6 +764,12 @@
       }
       trackMetaEvent(metaPixelId, eventName, parameters, eventId);
       return true;
+    }
+    function markRegistrationStarted() {
+      started = true;
+      if (startRegistrationSent) return;
+      startRegistrationSent = true;
+      sendMetaEvent("StartRegistration");
     }
     function replayUndeliveredCareerEvents() {
       if (careerCheckAnsweredSent && !careerCheckAnsweredDelivered) {
@@ -698,13 +786,13 @@
       });
     }
     function loadMetaPixel() {
-      if (metaConsentState === "denied" || metaPixelReady || metaPixelLoading || window.location.protocol === "file:") return;
+      if (metaPixelReady || metaPixelLoading || window.location.protocol === "file:") return;
       metaPixelLoading = true;
       fetch("/api/ad-creative/tracking-config", { headers: { "Accept": "application/json" }, cache: "no-store" }).then(function(response) {
         return response.ok ? response.json() : null;
       }).then(function(config) {
         var id = config && config.enabled && /^\d{5,20}$/.test(String(config.meta_pixel_id || "")) ? String(config.meta_pixel_id) : "";
-        if (!id || metaConsentState === "denied") return;
+        if (!id) return;
         metaPixelId = id;
         var f = window.fbq = function() { f.callMethod ? f.callMethod.apply(f, arguments) : f.queue.push(arguments); };
         if (!window._fbq) window._fbq = f;
@@ -715,9 +803,7 @@
         f("trackSingle", id, "ViewContent", { content_name: "career-check" });
         metaPixelReady = true;
         metaPendingEvents.splice(0).forEach(function(event) {
-          if (metaConsentState !== "denied") {
-            trackMetaEvent(id, event.name, event.parameters, event.eventId);
-          }
+          trackMetaEvent(id, event.name, event.parameters, event.eventId);
         });
         replayUndeliveredCareerEvents();
         var script = document.createElement("script");
@@ -768,34 +854,284 @@
       }
     }
     function selectedValues(group) {
-      return Array.prototype.map.call(group.querySelectorAll(".choice-btn.selected"), function(el) { return el.textContent.trim(); });
+      return Array.prototype.map.call(group.querySelectorAll(".choice-btn.selected"), function(el) { return el.dataset.value; });
     }
     function rememberStep(group) {
-      var stepNumber = Number(group.id.replace("step", ""));
-      var values = selectedValues(group);
-      var answerKeys = ["q2_timing", "q3_income", "q5_education", "q8_priority"];
-      if (values[0] && answerKeys[stepNumber - 1]) answers[answerKeys[stepNumber - 1]] = values[0];
+      var answerKey = group.dataset.answerKey;
+      if (!answerKey) return;
+      if (answerKey === "q8_priority") answers[answerKey] = priorityOrder.slice();
+      else if (group.classList.contains("multi")) answers[answerKey] = selectedValues(group);
+      else answers[answerKey] = selectedValues(group)[0] || "";
     }
     function selectButton(button) {
       var group = button.closest(".form-step");
-      if (group && group.querySelector(".multi")) {
+      var choiceGrid = button.closest(".choice-grid");
+      if (!group || !choiceGrid) return;
+      if (step === 1) markRegistrationStarted();
+      if (choiceGrid.classList.contains("multi")) {
         var isUndecided = button.dataset.exclusive === "undecided";
         if (isUndecided) {
           var wasSelected = button.classList.contains("selected");
-          group.querySelectorAll(".choice-btn").forEach(function(el) { el.classList.remove("selected"); });
+          choiceGrid.querySelectorAll(".choice-btn").forEach(function(el) { el.classList.remove("selected"); });
           if (!wasSelected) button.classList.add("selected");
+          if (choiceGrid.dataset.answerKey === "q8_priority") priorityOrder = wasSelected ? [] : [button.dataset.value];
         } else {
-          var undecided = group.querySelector('[data-exclusive="undecided"]');
+          var undecided = choiceGrid.querySelector('[data-exclusive="undecided"]');
           if (undecided) undecided.classList.remove("selected");
+          var alreadySelected = button.classList.contains("selected");
+          var limit = Number(choiceGrid.dataset.max || 0);
+          if (!alreadySelected && limit && selectedValues(choiceGrid).length >= limit) {
+            showStepStatus("priorityStatus", "重視する条件は3つまで選択できます。");
+            return;
+          }
           button.classList.toggle("selected");
+          if (choiceGrid.dataset.answerKey === "q8_priority") {
+            priorityOrder = priorityOrder.filter(function(value) { return value !== button.dataset.value; });
+            if (!alreadySelected) priorityOrder.push(button.dataset.value);
+          }
         }
-        rememberStep(group);
+        rememberStep(choiceGrid);
+        updateChoiceFeedback(group, choiceGrid);
         return;
       }
-      group.querySelectorAll(".choice-btn").forEach(function(el) { el.classList.remove("selected"); });
+      choiceGrid.querySelectorAll(".choice-btn").forEach(function(el) { el.classList.remove("selected"); });
       button.classList.add("selected");
-      rememberStep(group);
-      window.setTimeout(function() { setStep(step + 1); }, 180);
+      rememberStep(choiceGrid);
+      updateChoiceFeedback(group, choiceGrid);
+      if (group.dataset.manual !== "true") window.setTimeout(function() { setStep(step + 1); }, 180);
+    }
+    function updateChoiceFeedback(group, choiceGrid) {
+      if (choiceGrid.dataset.answerKey === "q3_role") {
+        var showRoleOther = selectedValues(choiceGrid).indexOf("その他") !== -1;
+        document.getElementById("roleOtherField").hidden = !showRoleOther;
+        if (!showRoleOther) {
+          document.getElementById("roleOtherInput").value = "";
+          answers.q3_other = "";
+        }
+        document.getElementById("roleOtherError").classList.remove("show");
+        document.getElementById("roleStatus").classList.remove("show", "error");
+      }
+      if (choiceGrid.dataset.answerKey === "q8_priority") {
+        document.getElementById("priorityOtherField").hidden = selectedValues(choiceGrid).indexOf("その他") === -1;
+        if (document.getElementById("priorityOtherField").hidden) {
+          document.getElementById("priorityOtherInput").value = "";
+          answers.q8_other = "";
+        }
+        document.getElementById("priorityOtherError").classList.remove("show");
+        document.getElementById("priorityStatus").classList.remove("show", "error");
+      }
+      if (choiceGrid.dataset.answerKey === "q2_industry") document.getElementById("industryStatus").classList.remove("show", "error");
+      if (choiceGrid.dataset.answerKey === "q9_management_experience") {
+        var hasManagement = selectedValues(choiceGrid)[0] === "経験あり";
+        document.getElementById("managementSizeField").hidden = !hasManagement;
+        if (!hasManagement) {
+          document.getElementById("managementSizeInput").value = "";
+          answers.q9_management_size = "";
+        }
+        document.getElementById("managementSizeError").classList.remove("show");
+        document.getElementById("managementStatus").classList.remove("show", "error");
+      }
+      group.querySelectorAll(".choice-btn").forEach(function(el) {
+        el.setAttribute("aria-pressed", el.classList.contains("selected") ? "true" : "false");
+      });
+      if (choiceGrid.dataset.answerKey === "q8_priority") {
+        choiceGrid.querySelectorAll(".choice-btn").forEach(function(el) {
+          var order = priorityOrder.indexOf(el.dataset.value);
+          var badge = el.querySelector(".choice-order");
+          if (badge) badge.textContent = order === -1 ? "" : String(order + 1);
+          if (order !== -1) el.setAttribute("aria-label", (order + 1) + "位 " + el.dataset.value);
+          else el.removeAttribute("aria-label");
+        });
+      }
+    }
+    function populateWheel(column, values, selectedValue) {
+      column.replaceChildren();
+      values.forEach(function(option, index) {
+        var item = document.createElement("button");
+        item.type = "button";
+        item.className = "wheel-item";
+        item.dataset.value = String(option.value);
+        item.textContent = option.label;
+        item.setAttribute("role", "option");
+        item.setAttribute("aria-selected", String(String(option.value) === String(selectedValue)));
+        item.addEventListener("click", function() {
+          if (column.id === "yearWheel") {
+            timingYear = Number(item.dataset.value);
+            populateTimingMonths();
+          } else {
+            timingMonth = Number(item.dataset.value);
+          }
+          column.scrollTo({ top: index * 44, behavior: "smooth" });
+          setTimingValue();
+        });
+        column.appendChild(item);
+      });
+      var selectedIndex = values.findIndex(function(option) { return String(option.value) === String(selectedValue); });
+      column.scrollTop = Math.max(0, selectedIndex) * 44;
+      highlightWheelCenter(column);
+    }
+    function populateTimingYears() {
+      var years = [];
+      for (var year = timingStartYear; year <= timingStartYear + 5; year++) {
+        years.push({ value: year, label: year + "年" });
+      }
+      populateWheel(document.getElementById("yearWheel"), years, timingYear);
+    }
+    function populateTimingMonths() {
+      var firstMonth = timingYear === timingStartYear ? timingStartMonth : 1;
+      var lastMonth = timingYear === timingStartYear + 5 ? timingStartMonth : 12;
+      if (timingMonth < firstMonth || timingMonth > lastMonth) timingMonth = firstMonth;
+      var months = [];
+      for (var month = firstMonth; month <= lastMonth; month++) months.push({ value: month, label: month + "月" });
+      populateWheel(document.getElementById("monthWheel"), months, timingMonth);
+    }
+    function highlightWheelCenter(column) {
+      var items = Array.prototype.slice.call(column.querySelectorAll(".wheel-item"));
+      var index = Math.max(0, Math.min(items.length - 1, Math.round(column.scrollTop / 44)));
+      items.forEach(function(item, itemIndex) {
+        item.classList.toggle("is-centered", itemIndex === index);
+        item.setAttribute("aria-selected", String(itemIndex === index));
+      });
+      return index;
+    }
+    function setTimingValue() {
+      timingSelected = true;
+      timingUndecided = false;
+      timingWheelCommitArmed = true;
+      answers.q7_timing = timingYear + "-" + String(timingMonth).padStart(2, "0");
+      document.getElementById("timingValue").textContent = timingYear + "年" + timingMonth + "月";
+      document.getElementById("timingUndecided").classList.remove("selected");
+      document.getElementById("timingError").classList.remove("show");
+    }
+    function chooseTimingUndecided() {
+      timingWheelCommitArmed = false;
+      Object.keys(wheelScrollTimers).forEach(function(columnId) {
+        window.clearTimeout(wheelScrollTimers[columnId]);
+        delete wheelScrollTimers[columnId];
+      });
+      timingSelected = false;
+      timingUndecided = true;
+      answers.q7_timing = "未定";
+      document.getElementById("timingValue").textContent = "時期未定";
+      document.getElementById("timingUndecided").classList.add("selected");
+      document.getElementById("timingError").classList.remove("show");
+    }
+    function finishWheelScroll(column) {
+      var items = column.querySelectorAll(".wheel-item");
+      if (!items.length) return;
+      var index = highlightWheelCenter(column);
+      var value = Number(items[index].dataset.value);
+      if (column.id === "yearWheel") {
+        if (timingYear !== value) {
+          timingYear = value;
+          populateTimingMonths();
+        }
+      } else {
+        timingMonth = value;
+      }
+      setTimingValue();
+    }
+    function initializeTimingPicker() {
+      var nowParts = {};
+      new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Tokyo", year: "numeric", month: "numeric" }).formatToParts(new Date()).forEach(function(part) {
+        if (part.type === "year" || part.type === "month") nowParts[part.type] = Number(part.value);
+      });
+      timingStartYear = nowParts.year || new Date().getFullYear();
+      timingStartMonth = nowParts.month || new Date().getMonth() + 1;
+      timingYear = timingStartYear;
+      timingMonth = timingStartMonth;
+      populateTimingYears();
+      populateTimingMonths();
+      [document.getElementById("yearWheel"), document.getElementById("monthWheel")].forEach(function(column) {
+        column.addEventListener("scroll", function() {
+          if (!timingWheelCommitArmed) return;
+          clearTimeout(wheelScrollTimers[column.id]);
+          wheelScrollTimers[column.id] = window.setTimeout(function() { finishWheelScroll(column); }, 120);
+        }, { passive: true });
+        ["wheel", "touchstart", "pointerdown"].forEach(function(eventName) {
+          column.addEventListener(eventName, function() { timingWheelCommitArmed = true; }, { passive: true });
+        });
+        column.addEventListener("keydown", function(event) {
+          timingWheelCommitArmed = true;
+          var amount = event.key === "ArrowDown" ? 44 : event.key === "ArrowUp" ? -44 : 0;
+          if (!amount && event.key !== "Home" && event.key !== "End") return;
+          event.preventDefault();
+          if (event.key === "Home") column.scrollTo({ top: 0, behavior: "smooth" });
+          else if (event.key === "End") column.scrollTo({ top: column.scrollHeight, behavior: "smooth" });
+          else column.scrollBy({ top: amount, behavior: "smooth" });
+        });
+      });
+      document.getElementById("timingUndecided").addEventListener("click", chooseTimingUndecided);
+    }
+    function setSalaryValue(column, amount) {
+      var input = document.getElementById(column.dataset.inputId);
+      var value = document.getElementById(column.dataset.valueId);
+      var error = document.getElementById(column.dataset.errorId);
+      if (amount === "") {
+        input.value = "";
+        input.setAttribute("aria-invalid", "true");
+        answers[column.dataset.answerKey] = "";
+        value.textContent = "年収を選択してください";
+        return;
+      }
+      input.value = String(amount) + "万円";
+      input.setAttribute("aria-invalid", "false");
+      answers[column.dataset.answerKey] = input.value;
+      value.textContent = input.value;
+      error.classList.remove("show");
+    }
+    function finishSalaryWheelScroll(column) {
+      var items = column.querySelectorAll(".wheel-item");
+      if (!items.length) return;
+      var index = highlightWheelCenter(column);
+      setSalaryValue(column, items[index].dataset.value);
+    }
+    function initializeSalaryPickers() {
+      [
+        ["currentIncomeWheel", "currentIncomeInput", "currentIncomeValue", "currentIncomeError", "q4_current_income"],
+        ["desiredIncomeWheel", "desiredIncomeInput", "desiredIncomeValue", "desiredIncomeError", "q4_desired_income"],
+        ["minimumIncomeWheel", "minimumIncomeInput", "minimumIncomeValue", "minimumIncomeError", "q4_minimum_income"]
+      ].forEach(function(config) {
+        var column = document.getElementById(config[0]);
+        column.dataset.inputId = config[1];
+        column.dataset.valueId = config[2];
+        column.dataset.errorId = config[3];
+        column.dataset.answerKey = config[4];
+        column.replaceChildren();
+        [{ value: "", label: "選択してください" }].concat(Array.from({ length: 301 }, function(_, index) {
+          var amount = index * 10;
+          return { value: String(amount), label: amount.toLocaleString("ja-JP") + "万円" };
+        })).forEach(function(option, index) {
+          var item = document.createElement("button");
+          item.type = "button";
+          item.className = "wheel-item";
+          item.dataset.value = option.value;
+          item.textContent = option.label;
+          item.tabIndex = -1;
+          item.setAttribute("role", "option");
+          item.setAttribute("aria-selected", "false");
+          item.addEventListener("click", function() {
+            if (!item.dataset.value) return;
+            column.scrollTo({ top: index * 44, behavior: "smooth" });
+            setSalaryValue(column, item.dataset.value);
+          });
+          column.appendChild(item);
+        });
+        column.scrollTop = 0;
+        highlightWheelCenter(column);
+        column.addEventListener("scroll", function() {
+          clearTimeout(salaryWheelScrollTimers[column.id]);
+          salaryWheelScrollTimers[column.id] = window.setTimeout(function() { finishSalaryWheelScroll(column); }, 120);
+        }, { passive: true });
+        column.addEventListener("keydown", function(event) {
+          var amount = event.key === "ArrowDown" ? 44 : event.key === "ArrowUp" ? -44 : 0;
+          if (!amount && event.key !== "Home" && event.key !== "End") return;
+          event.preventDefault();
+          if (event.key === "Home") column.scrollTo({ top: 0, behavior: "smooth" });
+          else if (event.key === "End") column.scrollTo({ top: column.scrollHeight, behavior: "smooth" });
+          else column.scrollBy({ top: amount, behavior: "smooth" });
+        });
+      });
     }
     function statusMessage(message, isError) {
       var status = document.getElementById("submitStatus");
@@ -814,34 +1150,109 @@
         return response.ok ? response.json() : fallback;
       }).catch(function() { return fallback; }).then(renderJob);
     }
-    document.querySelectorAll(".choice-btn").forEach(function(button) { button.addEventListener("click", function() { selectButton(button); }); });
+    function validateTextInput(inputId, errorId, message, pattern) {
+      var input = document.getElementById(inputId);
+      var error = document.getElementById(errorId);
+      var value = input.value.trim();
+      var valid = Boolean(value) && (!pattern || pattern.test(value));
+      if (!valid && message) error.textContent = message;
+      error.classList.toggle("show", !valid);
+      input.setAttribute("aria-invalid", valid ? "false" : "true");
+      return valid;
+    }
+    function showStepStatus(id, message) {
+      var status = document.getElementById(id);
+      status.textContent = message;
+      status.classList.add("show", "error");
+    }
+    function validateCurrentStep() {
+      var selected;
+      var otherSelected;
+      if (step === 1) {
+        if (!selectedValues(document.querySelector('#step1 [data-answer-key="q2_industry"]')).length) {
+          showStepStatus("industryStatus", "希望する業界を1つ以上選択してください。");
+          return false;
+        }
+      }
+      if (step === 2) {
+        selected = selectedValues(document.querySelector('#step2 [data-answer-key="q3_role"]'));
+        if (!selected.length) {
+          showStepStatus("roleStatus", "希望する職種・仕事内容を1つ以上選択してください。");
+          return false;
+        }
+        otherSelected = selected.indexOf("その他") !== -1;
+        if (otherSelected && !validateTextInput("roleOtherInput", "roleOtherError", "具体的な職種や仕事内容を入力してください")) return false;
+      }
+      if (step === 3) {
+        var incomeValid = validateTextInput("currentIncomeInput", "currentIncomeError", "現在の年収を入力してください");
+        incomeValid = validateTextInput("desiredIncomeInput", "desiredIncomeError", "希望年収を入力してください") && incomeValid;
+        incomeValid = validateTextInput("minimumIncomeInput", "minimumIncomeError", "最低許容年収を入力してください") && incomeValid;
+        return incomeValid;
+      }
+      if (step === 4) return validateTextInput("locationInput", "locationError", "希望する勤務地を入力してください");
+      if (step === 5) return validateTextInput("workStyleInput", "workStyleError", "希望する働き方や制約を入力してください");
+      if (step === 6) {
+        if (!timingSelected && !timingUndecided) {
+          document.getElementById("timingError").classList.add("show");
+          return false;
+        }
+      }
+      if (step === 7) {
+        selected = selectedValues(document.querySelector('#step7 [data-answer-key="q8_priority"]'));
+        if (!selected.length) {
+          showStepStatus("priorityStatus", "重視する条件を1つ以上選択してください。");
+          return false;
+        }
+        otherSelected = selected.indexOf("その他") !== -1;
+        if (otherSelected && !validateTextInput("priorityOtherInput", "priorityOtherError", "重視する条件を入力してください")) return false;
+      }
+      if (step === 8) {
+        selected = selectedValues(document.querySelector('#step8 [data-answer-key="q9_management_experience"]'));
+        if (!selected.length) {
+          showStepStatus("managementStatus", "マネジメント経験の有無を選択してください。");
+          return false;
+        }
+        if (selected[0] === "経験あり" && !validateTextInput("managementSizeInput", "managementSizeError", "マネジメントした組織の規模を入力してください")) return false;
+      }
+      return true;
+    }
+    document.querySelectorAll(".choice-btn").forEach(function(button) {
+      button.setAttribute("aria-pressed", "false");
+      button.addEventListener("click", function() { selectButton(button); });
+    });
     document.querySelectorAll("[data-next]").forEach(function(button) {
       button.addEventListener("click", function() {
-        var current = currentStepEl();
-        if (step === 5 && (!ageInput.value || Number(ageInput.value) < 18 || Number(ageInput.value) > 80)) { document.getElementById("ageError").classList.add("show"); return; }
-        if (step === 6 && !document.getElementById("nameInput").value.trim()) { document.getElementById("nameError").classList.add("show"); return; }
-        if (current.querySelector(".multi") && !current.querySelector(".selected")) { statusMessage("少なくとも1つ選択してください。", true); return; }
+        if (!validateCurrentStep()) return;
         setStep(step + 1);
       });
     });
     document.querySelectorAll("[data-back]").forEach(function(button) { button.addEventListener("click", function() { setStep(step - 1); }); });
-    document.querySelectorAll("[data-intention]").forEach(function(button) {
-      button.addEventListener("click", function() {
-        started = true;
-        answers.intention = button.dataset.intention;
-        document.getElementById("prequizOverlay").style.display = "none";
-        setStep(1);
-        sendMetaEvent("StartRegistration");
+    loadMetaPixel();
+    [
+      ["roleOtherInput", "q3_other", "roleOtherError"], ["currentIncomeInput", "q4_current_income", "currentIncomeError"],
+      ["desiredIncomeInput", "q4_desired_income", "desiredIncomeError"], ["minimumIncomeInput", "q4_minimum_income", "minimumIncomeError"],
+      ["locationInput", "q5_location", "locationError"], ["workStyleInput", "q6_work_style", "workStyleError"],
+      ["priorityOtherInput", "q8_other", "priorityOtherError"], ["managementSizeInput", "q9_management_size", "managementSizeError"],
+      ["otherPreferencesInput", "q10_other", ""]
+    ].forEach(function(binding) {
+      var input = document.getElementById(binding[0]);
+      input.addEventListener("input", function() {
+        answers[binding[1]] = input.value.trim();
+        if (binding[2]) document.getElementById(binding[2]).classList.remove("show");
       });
     });
-    if (metaConsentState !== "denied") loadMetaPixel();
-    ageInput.addEventListener("input", function() {
-      document.getElementById("ageError").classList.remove("show");
-      answers.q10_age = ageInput.value;
+    ["nameInput", "emailInput", "telInput"].forEach(function(id) {
+      document.getElementById(id).addEventListener("input", function() {
+        document.getElementById(id === "nameInput" ? "nameError" : id === "emailInput" ? "emailError" : "telError").classList.remove("show");
+        document.getElementById(id).setAttribute("aria-invalid", "false");
+      });
     });
-    document.getElementById("nameInput").addEventListener("input", function() { document.getElementById("nameError").classList.remove("show"); });
-    document.getElementById("telInput").addEventListener("input", function() { document.getElementById("telError").classList.remove("show"); });
     document.getElementById("submitButton").addEventListener("click", function() {
+      var name = document.getElementById("nameInput").value.trim();
+      var nameError = document.getElementById("nameError");
+      if (!name) { nameError.textContent = "氏名を入力してください"; nameError.classList.add("show"); document.getElementById("nameInput").setAttribute("aria-invalid", "true"); return; }
+      nameError.classList.remove("show");
+      document.getElementById("nameInput").setAttribute("aria-invalid", "false");
       var email = document.getElementById("emailInput").value.trim();
       var emailError = document.getElementById("emailError");
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { emailError.textContent = "有効なメールアドレスを入力してください"; emailError.classList.add("show"); return; }
@@ -854,8 +1265,17 @@
       if (!jobData || jobData.application_enabled !== true) { statusMessage("現在は受付準備中です。受付開始後に送信できます。", true); return; }
       var payload = {
         client_submission_id: getSubmissionId(), website: document.getElementById("websiteInput").value, job_public_id: jobPublicId,
-        intention: answers.intention || "info", q2_timing: answers.q2_timing || "", q3_income: answers.q3_income || "",
-        q5_education: answers.q5_education || "", q8_priority: answers.q8_priority || "", q10_age: answers.q10_age || ageInput.value,
+        intention: "not_collected",
+        answers: {
+          form_version: "contact_last_v2",
+          q2_industry: answers.q2_industry || [], q3_role: answers.q3_role || [], q3_other: answers.q3_other || "",
+          q4_current_income: answers.q4_current_income || "", q4_desired_income: answers.q4_desired_income || "",
+          q4_minimum_income: answers.q4_minimum_income || "", q5_location: answers.q5_location || "",
+          q6_work_style: answers.q6_work_style || "", q7_timing: answers.q7_timing || "",
+          q8_priority: answers.q8_priority || [], q8_other: answers.q8_other || "",
+          q9_management_experience: answers.q9_management_experience || "", q9_management_size: answers.q9_management_size || "",
+          q10_other: answers.q10_other || ""
+        },
         name: document.getElementById("nameInput").value.trim(), email: email, phone: phone,
         privacy_consent: document.getElementById("privacyConsent").checked,
         line_consent: lineMode && document.getElementById("privacyConsent").checked,
@@ -896,7 +1316,7 @@
         <h3>事業者</h3>
         <p>SYMMETRY Lab株式会社（代表者：竹内 悠人）<br>所在地：〒107-0061 東京都港区北青山1-3-3 三橋ビル 3階</p>
         <h3>取得する情報</h3>
-        <p>氏名、メールアドレス、電話番号、年齢、キャリア・登録意向に関する回答（相談時期、年収帯、最終学歴、希望条件など）を取得します。LINEで受付番号を含むメッセージを送信した場合、LINEユーザー識別子と表示名を登録情報に関連付けます。LINE上では送信されたメッセージも当社が確認できます。広告URLで求人識別子が指定されている場合はその識別子も取得します。フォーム送信時には、流入元、閲覧ページ、UTMパラメータ、Meta広告のクリックID（fbclid）・キャンペーン／広告セット／広告ID・掲載面、初回および最終アクセス日時を登録情報と関連付けて当社サーバーに保存します。ページの閲覧・送信に伴い、IPアドレス、ブラウザー情報、アクセス日時等が通信ログとして記録される場合があります。広告流入情報はブラウザーのlocalStorageに保存し、次回アクセス時に更新され、ブラウザーから削除されるまで保持します。重複送信防止用IDはsessionStorageに保存し、閲覧中のタブセッション終了時に削除されます。</p>
+        <p>氏名、メールアドレス、電話番号、希望業界・職種、現在の年収・希望年収・最低許容年収、希望勤務地、希望する働き方や制約、転職希望時期、重視する条件、マネジメント経験・マネジメントした組織の規模、その他の希望を取得します。LINEで受付番号を含むメッセージを送信した場合、LINEユーザー識別子と表示名を登録情報に関連付けます。LINE上では送信されたメッセージも当社が確認できます。広告URLで求人識別子が指定されている場合はその識別子も取得します。フォーム送信時には、流入元、閲覧ページ、UTMパラメータ、Meta広告のクリックID（fbclid）・キャンペーン／広告セット／広告ID・掲載面、初回および最終アクセス日時を登録情報と関連付けて当社サーバーに保存します。ページの閲覧・送信に伴い、IPアドレス、ブラウザー情報、アクセス日時等が通信ログとして記録される場合があります。広告流入情報はブラウザーのlocalStorageに保存し、次回アクセス時に更新され、ブラウザーから削除されるまで保持します。重複送信防止用IDはsessionStorageに保存し、閲覧中のタブセッション終了時に削除されます。</p>
         <h3>利用目的</h3>
         <p>登録の受付・内容確認、初回面談についてのLINEでのご連絡、キャリア・求人情報のご案内、問い合わせへの回答、広告効果の社内測定・改善、重複送信や不正利用の防止に利用します。</p>
         <h3>第三者提供・取扱いの委託</h3>
@@ -904,7 +1324,7 @@
         <h3>保管期間</h3>
         <p>登録情報は利用目的の達成に必要な期間保有します。利用目的の達成後または法定の保存期間経過後は、遅滞なく適切な方法で消去または匿名化します。法令に基づき保存が義務付けられている情報は、その期間保存します。</p>
         <h3>広告計測について</h3>
-        <p>当ページでは、広告効果の測定・広告配信の最適化のため、Meta Pixelを読み込み、ページ閲覧（PageView）、キャリア情報ページ閲覧（ViewContent）、登録開始（StartRegistration）、Q1（転職時期）回答完了（CareerCheckAnswered）、各質問への到達（CareerCheckStepReachedおよび設問番号別のCareerCheckStepReached_Q1〜Q7）、登録完了（Lead）のイベントをMeta Platforms, Inc.へ送信します。送信される情報には閲覧ページのURL・広告流入情報、IPアドレス、ブラウザー・端末情報およびMeta Pixelの識別子等が含まれる場合があります。また、登録完了（Lead）の測定では、広告の成果を正確に測るため、メールアドレスと電話番号を、そのままでは復元できないよう加工（ハッシュ化）したうえで送信します。氏名、年齢および質問への回答内容はMetaへ送信しません。広告配信に伴うMeta上での情報の取扱いは、Metaの<a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>をご確認ください。</p>
+        <p>当ページでは、広告効果の測定・広告配信の最適化のため、Meta Pixelを読み込み、ページ閲覧（PageView）、キャリア情報ページ閲覧（ViewContent）、登録開始（StartRegistration）、Q1回答完了（CareerCheckAnswered）、各質問への到達（CareerCheckStepReachedおよび設問番号別のCareerCheckStepReached_Q1〜Q10）、登録完了（Lead）のイベントをMeta Platforms, Inc.へ送信します。送信される情報には閲覧ページのURL・広告流入情報、IPアドレス、ブラウザー・端末情報およびMeta Pixelの識別子等が含まれる場合があります。また、登録完了（Lead）の測定では、広告の成果を正確に測るため、メールアドレスと電話番号を、そのままでは復元できないよう加工（ハッシュ化）したうえで送信します。氏名および質問への回答内容はMetaへ送信しません。広告配信に伴うMeta上での情報の取扱いは、Metaの<a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>をご確認ください。</p>
         <h3>お問い合わせ</h3>
         <p>個人情報の開示・訂正・利用停止等に関するお問い合わせは、SYMMETRY Lab株式会社（<a href="mailto:info@symmetrylab.jp">info@symmetrylab.jp</a>）までご連絡ください。</p>
         <p><a href="/privacy.html" target="_blank" rel="noopener noreferrer">当社プライバシーポリシー</a>もあわせてご確認ください。</p>`
@@ -918,6 +1338,7 @@
       });
     });
     document.getElementById("modalClose").addEventListener("click", function() { document.getElementById("modalOverlay").classList.remove("show"); });
+    setStep(1);
     history.pushState(null, "", location.href);
     window.addEventListener("popstate", function() {
       if (started && exitArmed) { document.getElementById("exitOverlay").classList.add("show"); history.pushState(null, "", location.href); }

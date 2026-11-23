@@ -22,7 +22,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 from uuid import uuid4
 from urllib.parse import parse_qs, urlparse, quote
 from zoneinfo import ZoneInfo
@@ -241,16 +241,17 @@ class AdCreativeApplicationRequest(BaseModel):
     client_submission_id: str
     website: str = ""
     job_public_id: str = ""
-    intention: str
-    q2_timing: str
-    q3_income: str
-    q5_education: str
-    q8_priority: str
-    q10_age: str
+    intention: str = "not_collected"
+    q2_timing: str = ""
+    q3_income: str = ""
+    q5_education: str = ""
+    q8_priority: str = ""
+    q10_age: str = ""
     name: str
     email: str
     phone: str
     privacy_consent: bool
+    answers: dict[str, Any] = Field(default_factory=dict)
     line_consent: bool = False
     utm_source: str = ""
     utm_medium: str = ""
@@ -1258,16 +1259,34 @@ AD_CREATIVE_APPLICATION_STATUSES = {
 }
 
 AD_CREATIVE_CONSENT_VERSION = os.getenv(
-    "AD_CREATIVE_CONSENT_VERSION", "career-check-privacy-2026-10-12-v2"
-).strip() or "career-check-privacy-2026-10-12-v2"
+    "AD_CREATIVE_CONSENT_VERSION", "career-check-privacy-2026-11-19-v7"
+).strip() or "career-check-privacy-2026-11-19-v7"
 AD_CREATIVE_LINE_CONSENT_VERSION = "career-check-line-2026-11-05-v1"
 
 AD_CREATIVE_CHOICES = {
-    "intention": {"soon", "info"},
+    "intention": {"soon", "info", "not_collected"},
     "q2_timing": {"1か月以内", "2〜3か月以内", "4〜6か月以内", "7か月以降", "時期未定・情報収集中"},
     "q3_income": {"〜399万円", "400〜599万円", "600〜799万円", "800〜999万円", "1,000〜1,499万円", "1,500〜1,999万円", "2,000万円以上"},
     "q5_education": {"大学院", "大学", "高専", "短大・専門学校", "高校", "その他"},
     "q8_priority": {"仕事内容・ポジション", "年収・待遇", "専門性・スキル", "成長機会・裁量", "勤務地・通勤条件", "働き方・ワークライフバランス", "まだ決めていない"},
+}
+
+AD_CREATIVE_INDUSTRY_CHOICES = {
+    "コンサルティング・専門サービス", "IT・通信・インターネット", "メーカー・製造",
+    "金融・保険", "商社・卸売", "不動産・建設", "小売・消費財", "医療・ヘルスケア",
+    "広告・メディア", "人材・教育", "物流・運輸", "エネルギー・インフラ・公共",
+    "その他（具体的な希望はQ9へ）", "まだ決めていない",
+}
+AD_CREATIVE_ROLE_CHOICES = {
+    "経営・事業企画", "戦略・経営コンサルタント", "業務・ITコンサルタント",
+    "プロジェクト管理・PMO", "営業・営業企画", "マーケティング・広報",
+    "商品・サービス企画", "ITエンジニア・データ・AI", "技術・研究開発",
+    "財務・経理・金融専門職", "人事・組織・採用", "オペレーション・SCM・物流",
+    "その他", "まだ決まっていない",
+}
+AD_CREATIVE_PRIORITY_CHOICES = {
+    "仕事内容・ポジション", "年収・待遇", "専門性・スキル", "成長機会・裁量",
+    "勤務地・通勤条件", "働き方・ワークライフバランス", "その他",
 }
 
 
@@ -1674,6 +1693,100 @@ def _career_origin_allowed(request: Request) -> bool:
     )
 
 
+def _validate_ad_creative_answers(raw_answers: dict[str, Any]) -> dict[str, Any]:
+    allowed_keys = {
+        "form_version",
+        "q2_industry", "q3_role", "q3_other", "q4_current_income", "q4_desired_income",
+        "q4_minimum_income", "q5_location", "q6_work_style", "q7_timing", "q8_priority",
+        "q8_other", "q9_management_experience", "q9_management_size", "q10_other",
+    }
+    unexpected_keys = set(raw_answers) - allowed_keys
+    if unexpected_keys:
+        raise HTTPException(status_code=422, detail="回答項目が正しくありません")
+
+    answers: dict[str, Any] = {}
+    form_version = raw_answers.get("form_version", "")
+    if not isinstance(form_version, str) or form_version not in {"", "contact_last_v1", "contact_last_v2"}:
+        raise HTTPException(status_code=422, detail="フォームの版が正しくありません")
+    if form_version:
+        answers["form_version"] = form_version
+    for key, label, choices, exclusive in (
+        ("q2_industry", "希望業界", AD_CREATIVE_INDUSTRY_CHOICES, "まだ決めていない"),
+        ("q3_role", "希望職種・仕事内容", AD_CREATIVE_ROLE_CHOICES, "まだ決めていない"),
+        ("q8_priority", "重視する条件", AD_CREATIVE_PRIORITY_CHOICES, None),
+    ):
+        value = raw_answers.get(key)
+        if not isinstance(value, list) or not value:
+            raise HTTPException(status_code=422, detail=f"{label}を選択してください")
+        selected = []
+        for item in value:
+            if not isinstance(item, str):
+                raise HTTPException(status_code=422, detail=f"{label}の選択肢が正しくありません")
+            cleaned = _career_trim(item, label, 120, required=True)
+            if cleaned not in choices or cleaned in selected:
+                raise HTTPException(status_code=422, detail=f"{label}の選択肢が正しくありません")
+            selected.append(cleaned)
+        if exclusive in selected and len(selected) > 1:
+            raise HTTPException(status_code=422, detail=f"「{exclusive}」は他の選択肢と同時に選べません")
+        if key == "q8_priority" and len(selected) > 3:
+            raise HTTPException(status_code=422, detail="重視する条件は3つまで選択できます")
+        answers[key] = selected
+
+    text_fields = (
+        ("q3_other", "希望職種・仕事内容（その他）", 500, "その他" in answers["q3_role"]),
+        ("q4_current_income", "現在の年収", 120, True),
+        ("q4_desired_income", "希望年収", 120, True),
+        ("q4_minimum_income", "最低許容年収", 120, True),
+        ("q5_location", "希望勤務地", 500, True),
+        ("q6_work_style", "働き方や制約", 1000, True),
+        ("q8_other", "重視する条件（その他）", 500, "その他" in answers["q8_priority"]),
+        ("q9_management_size", "マネジメントした組織の規模", 120, raw_answers.get("q9_management_experience") == "経験あり"),
+        ("q10_other", "その他の希望", 1500, False),
+    )
+    for key, label, max_length, required in text_fields:
+        value = raw_answers.get(key, "")
+        if not isinstance(value, str):
+            raise HTTPException(status_code=422, detail=f"{label}の入力が正しくありません")
+        answers[key] = _career_trim(value, label, max_length, required=required)
+    for key, label in (
+        ("q4_current_income", "現在の年収"),
+        ("q4_desired_income", "希望年収"),
+        ("q4_minimum_income", "最低許容年収"),
+    ):
+        match = re.fullmatch(r"(0|[1-9]\d{0,3})万円", answers[key])
+        amount = int(match.group(1)) if match else -1
+        if amount < 0 or amount > 3000 or amount % 10:
+            raise HTTPException(status_code=422, detail=f"{label}は0〜3,000万円の10万円刻みで選択してください")
+    if "その他" not in answers["q3_role"] and answers["q3_other"]:
+        raise HTTPException(status_code=422, detail="希望職種・仕事内容（その他）はその他を選択した場合だけ入力できます")
+    if "その他" not in answers["q8_priority"] and answers["q8_other"]:
+        raise HTTPException(status_code=422, detail="重視する条件（その他）はその他を選択した場合だけ入力できます")
+
+    experience = raw_answers.get("q9_management_experience")
+    if not isinstance(experience, str) or experience not in {"経験あり", "経験なし"}:
+        raise HTTPException(status_code=422, detail="マネジメント経験を選択してください")
+    answers["q9_management_experience"] = experience
+    if experience == "経験なし" and answers["q9_management_size"]:
+        raise HTTPException(status_code=422, detail="マネジメントした組織の規模は経験ありの場合だけ入力してください")
+
+    timing = raw_answers.get("q7_timing")
+    if not isinstance(timing, str):
+        raise HTTPException(status_code=422, detail="転職希望時期を選択してください")
+    timing = _career_trim(timing, "転職希望時期", 20, required=True)
+    if timing != "未定":
+        match = re.fullmatch(r"(\d{4})-(\d{2})", timing)
+        if not match:
+            raise HTTPException(status_code=422, detail="転職希望時期の年月が正しくありません")
+        year, month = (int(part) for part in match.groups())
+        if not 1 <= month <= 12:
+            raise HTTPException(status_code=422, detail="転職希望時期の年月が正しくありません")
+        now = datetime.now(JST)
+        if not (now.year, now.month) <= (year, month) <= (now.year + 5, now.month):
+            raise HTTPException(status_code=422, detail="転職希望時期は今月から5年先まで選択してください")
+    answers["q7_timing"] = timing
+    return answers
+
+
 def _validate_ad_creative_application(req: AdCreativeApplicationRequest) -> AdCreativeApplicationRequest:
     if req.website.strip():
         raise HTTPException(status_code=422, detail="申込を受け付けられませんでした")
@@ -1687,22 +1800,26 @@ def _validate_ad_creative_application(req: AdCreativeApplicationRequest) -> AdCr
     ):
         raise HTTPException(status_code=422, detail="求人が見つからないか、現在受付していません")
 
-    for field_name, label in (
-        ("intention", "事前意向"),
-        ("q2_timing", "相談時期"),
-        ("q3_income", "現在の年収帯"),
-        ("q5_education", "最終学歴"),
-        ("q8_priority", "重視条件"),
-        ("q10_age", "年齢"),
-    ):
-        value = _career_trim(getattr(req, field_name), label, 120, required=True)
-        setattr(req, field_name, value)
-        allowed = AD_CREATIVE_CHOICES.get(field_name)
-        if allowed is not None and value not in allowed:
-            raise HTTPException(status_code=422, detail=f"{label}の選択肢が正しくありません")
-
-    if not re.fullmatch(r"\d{1,2}", req.q10_age) or not 18 <= int(req.q10_age) <= 80:
-        raise HTTPException(status_code=422, detail="年齢は18〜80の数字で入力してください")
+    req.intention = _career_trim(req.intention, "事前意向", 120, required=True)
+    if req.intention not in AD_CREATIVE_CHOICES["intention"]:
+        raise HTTPException(status_code=422, detail="事前意向が正しくありません")
+    if req.answers:
+        req.answers = _validate_ad_creative_answers(req.answers)
+    else:
+        for field_name, label in (
+            ("q2_timing", "相談時期"),
+            ("q3_income", "現在の年収帯"),
+            ("q5_education", "最終学歴"),
+            ("q8_priority", "重視条件"),
+            ("q10_age", "年齢"),
+        ):
+            value = _career_trim(getattr(req, field_name), label, 120, required=True)
+            setattr(req, field_name, value)
+            allowed = AD_CREATIVE_CHOICES.get(field_name)
+            if allowed is not None and value not in allowed:
+                raise HTTPException(status_code=422, detail=f"{label}の選択肢が正しくありません")
+        if not re.fullmatch(r"\d{1,2}", req.q10_age) or not 18 <= int(req.q10_age) <= 80:
+            raise HTTPException(status_code=422, detail="年齢は18〜80の数字で入力してください")
 
     req.name = _career_trim(req.name, "氏名", 120, required=True)
     req.email = _career_trim(req.email, "メールアドレス", 254, required=True)
@@ -3052,7 +3169,7 @@ async def create_ad_creative_application(
     background_tasks: BackgroundTasks,
     req: AdCreativeApplicationRequest,
 ):
-    """広告専用の7ステップ登録を保存する。既存の採用APIとは分離する。"""
+    """広告専用LPの登録を保存する。既存の採用APIとは分離する。"""
     if not _career_origin_allowed(request):
         raise HTTPException(status_code=403, detail="許可されていない送信元です")
     # LINE is an optional handoff. A missing credential or a slow config
@@ -3089,13 +3206,14 @@ async def create_ad_creative_application(
         now = datetime.now(JST).isoformat(timespec="seconds")
         consent_version = AD_CREATIVE_LINE_CONSENT_VERSION if line_requested else AD_CREATIVE_CONSENT_VERSION
         job_snapshot = _public_ad_creative_job(job) if job else {}
-        answers = {
+        answers = req.answers or {
             "q2_timing": req.q2_timing,
             "q3_income": req.q3_income,
             "q5_education": req.q5_education,
             "q8_priority": req.q8_priority,
             "q10_age": req.q10_age,
         }
+        age_band = req.q10_age if not req.answers else ""
         conn.execute("""
             INSERT INTO ad_creative_applications (
                 application_id, client_submission_id, created_at, updated_at,
@@ -3109,7 +3227,7 @@ async def create_ad_creative_application(
         """, (
             application_id, req.client_submission_id, now, now,
             req.job_public_id, str(job.get("version", "")) if job else "", json.dumps(job_snapshot, ensure_ascii=False),
-            req.intention, json.dumps(answers, ensure_ascii=False), req.name, req.email, req.phone, req.q10_age,
+            req.intention, json.dumps(answers, ensure_ascii=False), req.name, req.email, req.phone, age_band,
             now, "", consent_version,
             req.utm_source, req.utm_medium, req.utm_campaign, req.utm_term, req.utm_content,
             req.fbclid, req.meta_campaign_id, req.meta_adset_id, req.meta_ad_id, req.meta_placement,

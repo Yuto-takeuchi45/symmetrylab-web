@@ -4,10 +4,10 @@
 
 ## 現在実装済み
 
-- `symmetrylab-career-quiz-lp.html`：Wius型の冒頭二択＋7ステップUI
+- `symmetrylab-career-quiz-lp.html`：Q1から始まる10問フォーム
 - `jobs.json`：任意で求人情報を紐づける場合のデータファイル
 - `/api/ad-creative/jobs/<public_id>`：広告用求人表示API
-- `/api/ad-creative/applications`：7ステップ回答・同意・流入情報の保存API
+- `/api/ad-creative/applications`：回答・同意・流入情報の保存API
 - `/api/admin/ad-creative/applications`：登録情報の確認・ステータス更新API
 - Meta Pixel：Pixel IDと有効化フラグが揃った場合だけ読み込み
 - `Lead`：DB保存成功後、重複でない登録に限り発火
@@ -34,7 +34,7 @@
 https://symmetrylab.jp/career-check/?utm_source=instagram&utm_medium=paid_social&utm_campaign=consulting_career&utm_content=creative_01
 ```
 
-- Events Managerのテストイベントで `PageView` → `ViewContent` → `StartRegistration` → `CareerCheckStepReached_Q1`〜`CareerCheckStepReached_Q7` → `CareerCheckAnswered` → `Lead` を確認する
+- Events Managerのテストイベントで、ページ表示後の`CareerCheckStepReached_Q1`、Q1での最初の選択時の`StartRegistration`、Q1完了時の`CareerCheckAnswered`、Q2〜Q10の到達イベント、送信成功後の`Lead`を確認する
 - 送信成功1件につき`Lead`が1件、再送では追加発火しないことを確認する
 - 予算・配信地域・開始日時・公開ボタンは最後にオーナーが確認する
 
