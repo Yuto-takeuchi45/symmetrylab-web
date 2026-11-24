@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow">
   <title>SYMMETRY Lab｜キャリア相談</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.ico" sizes="any">
   <style>
     :root {
       --navy: #1f2937;
@@ -496,13 +499,49 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
     }
+    /* =========================================================
+       HPの新デザインにそろえる上書き（白×水色・すりガラス、背景に粒子と光の模様、濃い色の丸いボタン）
+       質問の流れ・入力項目・送信処理は変えず、見た目だけを変える
+       ========================================================= */
+    :root { --glass-border: 1px solid rgba(255, 255, 255, .8); --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 20px 50px -30px rgba(31, 41, 55, .25); }
+    html { background: #F6F8F9; }
+    body { background: transparent; }
+    /* 写真の背景をやめ、HPと同じ淡い地にする。その上に粒子（#gl）を重ねる */
+    .page-hero { background: #F6F8F9; }
+    .page-hero::before, .page-hero::after { content: none; }
+    #gl { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; display: block; }
+    /* ロゴ：白い札をやめ、HPのヘッダーと同じ見せ方にする */
+    .nav-logo { width: auto; height: 26px; padding: 0; background: none; border-radius: 0; box-shadow: none; }
+    .hero-headline { font-weight: 700; letter-spacing: -.02em; }
+    .hero-sub { color: #5B6B78; font-weight: 500; }
+    /* フォーム：すりガラスのカード */
+    .form-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, .8), rgba(255, 255, 255, .58));
+      border: var(--glass-border); box-shadow: var(--glass-shadow); border-radius: 28px;
+      backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    }
+    .choice-btn, .form-input, .form-select, .timing-undecided-btn { background: rgba(255, 255, 255, .7); }
+    .wheel-column { background: linear-gradient(to bottom, rgba(244, 248, 249, .9) 0, rgba(255, 255, 255, .95) 33%, rgba(255, 255, 255, .95) 67%, rgba(244, 248, 249, .9) 100%); }
+    /* ボタン：HPと同じ、濃い色の丸いボタン（押すと水色） */
+    .btn-next, .btn-submit, .exit-stay {
+      border: 0; border-radius: 999px; background: var(--navy); color: #fff;
+      box-shadow: 0 10px 30px rgba(31, 41, 55, .16); transition: background .3s, color .3s, transform .3s;
+    }
+    .btn-next:hover, .btn-submit:hover, .exit-stay:hover { background: var(--cyan); color: var(--navy); }
+    .btn-submit:active { transform: translateY(1px); box-shadow: 0 6px 18px rgba(31, 41, 55, .16); }
+    .btn-back, .exit-leave { border-radius: 999px; }
+    .exit-sheet, .modal-box { border-radius: 28px; }
+    .modal-box { border-radius: 28px 28px 0 0; }
+    /* 日本語の改行：文節の切れ目で折り返す（HPと同じ指定） */
+    h1, h2, h3, p, .choice-label { word-break: auto-phrase; line-break: strict; overflow-wrap: anywhere; }
   </style>
 </head>
 <body>
   <div class="page-hero" aria-hidden="true"></div>
+  <canvas id="gl" aria-hidden="true"></canvas>
   <main class="page-scroll">
     <nav class="top-nav">
-      <img class="nav-logo" src="../images/logo.jpg" alt="SYMMETRY Lab">
+      <img class="nav-logo" src="../images/logo_full.png" alt="SYMMETRY Lab">
     </nav>
 
     <section class="hero-copy">
@@ -1347,5 +1386,7 @@
     document.getElementById("leaveButton").addEventListener("click", function() { exitArmed = false; history.back(); });
     loadJob();
   </script>
+  <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
+  <script type="module" src="../sub.js?v=20261124-04"></script>
 </body>
 </html>

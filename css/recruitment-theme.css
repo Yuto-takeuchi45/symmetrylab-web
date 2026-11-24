@@ -1,0 +1,78 @@
+/* =========================================================
+   求人ページ（/recruitment/・/jobs/〇〇/）を、HPの新デザインにそろえる上書き
+   - css/recruitment.css の後に読み込む。質問の流れ・入力項目・送信処理（js/recruitment.js）は変えない
+   - 色はHPと同じ紺（#1F2937）と水色（#36C9E6）に、面は白のすりガラスにそろえる
+   ========================================================= */
+:root {
+  --recruit-ink: #1F2937;
+  --recruit-ink-soft: #5B6B78;
+  --recruit-cream: #F6F8F9;
+  --recruit-line: rgba(31, 41, 55, .12);
+  --recruit-mint: rgba(54, 201, 230, .1);
+  --recruit-lime: #36C9E6;
+  --recruit-coral: #1FA8C4;
+  --recruit-glass-bg: linear-gradient(135deg, rgba(255, 255, 255, .42), rgba(255, 255, 255, .12));
+  --recruit-glass-border: 1px solid rgba(255, 255, 255, .75);
+  --recruit-glass-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 20px 50px -30px rgba(31, 41, 55, .25);
+  font-family: "Inter", "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+}
+html { background: #F6F8F9; }
+body { background: transparent; }
+/* 背景の粒子と光の模様（sub.js が描く） */
+#gl { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; display: block; }
+
+/* ヘッダー：HPと同じロゴ画像 */
+.brand-lockup img.brand-full { width: auto; height: 26px; border-radius: 0; }
+.header-label { color: #0E7F96; letter-spacing: .12em; }
+
+/* ファーストビュー：紺の板と黄色い円をやめ、すりガラスのパネルに濃い文字 */
+.job-hero {
+  color: var(--recruit-ink); background: var(--recruit-glass-bg); border: var(--recruit-glass-border);
+  box-shadow: var(--recruit-glass-shadow); border-radius: 28px;
+  backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+.job-hero::after { content: none; }
+.job-hero h1 { color: var(--recruit-ink); font-weight: 700; letter-spacing: -.02em; font-size: clamp(1.9rem, 4.4vw, 3.2rem); line-height: 1.3; }
+.job-catch-copy { color: var(--recruit-ink-soft); }
+.eyebrow { color: #fff; background: #36C9E6; }
+.sample-note { color: var(--recruit-ink-soft); }
+
+/* カード類：白い板をすりガラスに */
+.job-card, .detail-card, .content-section, .application-panel, .unavailable-panel {
+  background: var(--recruit-glass-bg); border: var(--recruit-glass-border); box-shadow: var(--recruit-glass-shadow);
+  backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
+}
+.job-card, .detail-card { border-radius: 20px; }
+.content-section, .application-panel, .unavailable-panel { border-radius: 28px; }
+.application-panel { background: linear-gradient(135deg, rgba(255, 255, 255, .78), rgba(255, 255, 255, .55)); }
+.job-card small { color: #1FA8C4; }
+.trust-panel, .status-panel { border-radius: 16px; }
+.review-list { background: rgba(255, 255, 255, .55); }
+
+/* ボタン：HPと同じ、濃い色の丸いボタン（押すと水色） */
+.hero-cta, .primary-action {
+  color: #fff; background: var(--recruit-ink); border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(31, 41, 55, .16); transition: background .3s, color .3s, transform .3s;
+}
+.hero-cta:hover, .primary-action:hover { color: var(--recruit-ink); background: #36C9E6; }
+.secondary-action { border-radius: 999px; }
+.choice-button, .field-input { border-radius: 12px; background: rgba(255, 255, 255, .7); }
+.choice-button[aria-pressed="true"] { border-color: #1FA8C4; }
+
+/* フッター：HPと共通の形（案A：ロゴ＋3列、紺の背景）。theme.css は読み込まない（入力欄の共通指定が質問フォームに効いてしまうため）ので、必要な分をここに持つ */
+.site-footer { margin-top: 40px; background: #1F2937; color: #fff; padding: 70px 0 30px; }
+.site-footer .wrap { max-width: 1320px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 56px); }
+.site-footer .footer-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 30px; }
+.site-footer .footer-brand { display: flex; gap: 10px; align-items: center; align-self: start; text-decoration: none; }
+.site-footer .brand-mark { width: 22px; height: auto; }
+.site-footer .brand-text { font-size: 1rem; font-weight: 600; letter-spacing: .18em; color: #fff; }
+.site-footer .brand-text b { font-weight: 400; letter-spacing: .04em; }
+.site-footer h4 { margin: 0 0 14px; font-size: .78rem; letter-spacing: .2em; color: #B2C4CD; font-weight: 500; }
+.site-footer a { display: block; padding: 4px 0; font-size: .85rem; font-weight: 400; color: #fff; opacity: .85; text-decoration: none; }
+.site-footer a:hover { color: #36C9E6; opacity: 1; }
+.site-footer .copy { margin: 50px auto 0; font-size: .74rem; color: #B2C4CD; }
+@media (max-width: 860px) { .site-footer .footer-grid { grid-template-columns: 1fr 1fr; } .site-footer .footer-brand { grid-column: 1 / -1; } }
+
+/* 日本語の改行：文節の切れ目で折り返す（下層ページ共通の指定と同じ） */
+h1, h2, h3, h4, p, li, dd, dt { word-break: auto-phrase; line-break: strict; overflow-wrap: anywhere; }
+h1, h2, h3 { text-wrap: balance; }

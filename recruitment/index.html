@@ -12,14 +12,16 @@
   <link rel="canonical" href="">
   <link rel="icon" href="/images/favicon.ico" sizes="any">
   <link rel="stylesheet" href="/css/recruitment.css?v=20260908-01">
+  <!-- HPの新デザインにそろえる上書き -->
+  <link rel="stylesheet" href="/css/recruitment-theme.css?v=20261124-01">
   <title>求人詳細 | SYMMETRY Lab</title>
 </head>
 <body>
+  <canvas id="gl" aria-hidden="true"></canvas>
   <div class="recruitment-page" id="recruitment-app">
     <header class="recruitment-header">
       <a class="brand-lockup" href="/" aria-label="SYMMETRY Labトップへ戻る">
-        <img src="/images/logo_mark.jpg" alt="">
-        <span>SYMMETRY LAB</span>
+        <img class="brand-full" src="/images/logo_full.png" alt="SYMMETRY Lab">
       </a>
       <span class="header-label">CAREER</span>
     </header>
@@ -108,12 +110,21 @@
       </section>
     </main>
 
-    <footer class="recruitment-footer">
-    <p>© SYMMETRY Lab. <a href="/privacy.html">プライバシーポリシー</a></p>
+    <!-- フッター：HP共通（案A） -->
+    <footer class="footer site-footer">
+      <div class="wrap footer-grid">
+        <a href="/" class="footer-brand"><img src="/images/favicon-mark.png" alt="" class="brand-mark"><span class="brand-text">SYMMETRY <b>Lab</b></span></a>
+        <div><h4>サービス</h4><a href="/services.html#career">キャリア形成支援事業</a><a href="/services.html#consulting">コンサルティング事業</a><a href="/job.html">ジョブ対策講座</a><a href="/lp-case.html">ケース面接対策講座</a><a href="/booking.html">お申し込み</a></div>
+        <div><h4>会社情報</h4><a href="/company.html">会社概要</a><a href="/works.html">実績</a><a href="/blog/">コラム</a></div>
+        <div><h4>サポート</h4><a href="/faq.html">よくある質問</a><a href="/contact.html">お問い合わせ</a><a href="/privacy.html">プライバシーポリシー</a><a href="/tokushoho.html">特定商取引法に基づく表記</a></div>
+      </div>
+      <p class="wrap copy">&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</p>
     </footer>
   </div>
 
   <script src="/js/recruitment-tracking.js?v=20260908-01" defer></script>
   <script src="/js/recruitment.js?v=20260908-01" defer></script>
+  <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
+  <script type="module" src="/sub.js?v=20261124-04"></script>
 </body>
 </html>

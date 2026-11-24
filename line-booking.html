@@ -229,6 +229,28 @@
     .error-msg {
       text-align: center; padding: 40px 20px; color: #DC2626; font-size: 13px;
     }
+    /* =========================================================
+       HPの新デザインにそろえる上書き（白×水色・すりガラス、背景に粒子と光の模様、濃い色の丸いボタン）
+       予約・決済の処理（下のスクリプト）は変えず、見た目だけを変える
+       ========================================================= */
+    html { background: #F6F8F9; }
+    body { background: transparent; }
+    #gl { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; display: block; }
+    .page-brand { display: block; margin: 4px 0 16px; }
+    .page-brand img { height: 24px; width: auto; }
+    .card {
+      border-top: 0; border-radius: 20px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, .7), rgba(255, 255, 255, .45));
+      border: 1px solid rgba(255, 255, 255, .8);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 20px 50px -30px rgba(31, 41, 55, .25);
+      backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    }
+    .type-btn, .day-type-btn, .slot, .form-input, .form-select { border-radius: 12px; }
+    .cal { border-radius: 12px; overflow: hidden; }
+    .pick-item { border-radius: 10px; }
+    /* 申込ボタン：HPと同じ、濃い色の丸いボタン（押すと水色） */
+    .btn-submit { background: var(--gray-900); border-radius: 999px; box-shadow: 0 10px 30px rgba(31, 41, 55, .16); }
+    .btn-submit:hover:not(:disabled), .btn-submit:active:not(:disabled) { background: var(--tiffany); color: var(--gray-900); }
   </style>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KR9VEKC8JZ"></script>
@@ -244,8 +266,11 @@
   <link rel="apple-touch-icon" sizes="192x192" href="images/favicon-192x192.png">
 </head>
 <body>
+<canvas id="gl" aria-hidden="true"></canvas>
 
 <div class="container">
+  <!-- ロゴ：HPのヘッダーと同じ画像 -->
+  <a class="page-brand" href="/" aria-label="SYMMETRY Lab ホーム"><img src="/images/logo_full.png" alt="SYMMETRY Lab"></a>
   <div id="loadingView" class="loading-overlay">
     <div>
       <div class="spinner-big" style="margin:0 auto 12px;"></div>
@@ -776,5 +801,8 @@
   // 起動
   window.addEventListener('DOMContentLoaded', initLiff);
 </script>
+<!-- 背景の粒子（HPの下層ページと共通） -->
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
+<script type="module" src="/sub.js?v=20261124-04"></script>
 </body>
 </html>

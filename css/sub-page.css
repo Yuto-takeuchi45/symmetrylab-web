@@ -1,0 +1,116 @@
+/* =========================================================
+   旧デザインのHTMLのまま残っている下層ページ（お問い合わせ・よくある質問・実績・お申し込み・
+   ジョブ対策講座・プライバシーポリシー・特定商取引法）を、トップ・サービスページと同じ組み方に見せる上書き
+   - css/style.css（旧デザイン）→ theme.css → このファイル の順に読み込む
+   - 「中央揃えの見出し＋各セクションを囲む大きな白い箱」をやめ、
+     「ロゴマーク付きの英字ラベル＋左寄せの大きな見出し＋細い罫線」で組む。カード・フォームはすりガラスのまま
+   - ページ内に直接書かれた見た目の指定（style属性）を打ち消すため、必要な箇所だけ !important を使う
+   - 文言・フォームの項目・送信処理は変えない
+   ========================================================= */
+:root {
+  --sp-ink: #1F2937;
+  --sp-ink-2: #374151;
+  --sp-mute: #5B6B78;
+  --sp-tif: #36C9E6;
+  --sp-tif-dark: #1FA8C4;
+  --sp-line: rgba(31, 41, 55, .12);
+}
+
+/* パンくず：新デザインのページには置いていないので出さない */
+.breadcrumb { display: none !important; }
+
+/* --- セクションの外枠：白い大箱をやめ、HPと同じ幅・余白で背景の上に直接置く --- */
+.section, .section-alt { padding: 0 !important; }
+.section > .container, .section-alt > .container {
+  max-width: 1320px !important; margin: 0 auto !important;
+  padding: clamp(72px, 10vw, 140px) clamp(16px, 4vw, 56px) 0 !important;
+  background: none !important; border: 0 !important; box-shadow: none !important; border-radius: 0 !important;
+  backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+}
+main > .section:last-of-type > .container, body > .section:last-of-type > .container { padding-bottom: clamp(72px, 10vw, 140px) !important; }
+.section + footer, .section-alt + footer { margin-top: clamp(72px, 10vw, 140px); }
+
+/* --- 見出し：英字ラベル（ロゴマーク付き）＋左寄せの大きな見出し --- */
+.section-header { text-align: left !important; max-width: 900px; margin: 0 0 48px !important; }
+.section-header .section-eyebrow, .section-eyebrow {
+  display: flex !important; justify-content: flex-start !important; align-items: center; gap: 10px;
+  color: var(--sp-ink) !important; font-size: .92rem !important; font-weight: 500 !important; letter-spacing: .01em !important; margin: 0 0 24px !important;
+}
+.section-header h1, .section-header h2 {
+  font-size: clamp(2rem, 4.2vw, 3.6rem) !important; font-weight: 500 !important; line-height: 1.32 !important;
+  letter-spacing: -.005em !important; color: var(--sp-ink) !important; text-align: left !important;
+  white-space: normal !important; text-wrap: balance; margin: 0 0 24px !important;
+}
+.section-header h1 br.mobile-only, .section-header h2 br.mobile-only { display: none; }
+.section-header p:not(.section-eyebrow) { color: var(--sp-mute) !important; text-align: left !important; white-space: normal !important; max-width: 720px; margin: 0 !important; }
+
+/* 本文の幅を絞って中央に寄せていた箱は、左寄せにする（フォームは読みやすい幅を保つ） */
+.section [style*="margin:0 auto"] { margin-left: 0 !important; margin-right: 0 !important; }
+.section p[style*="text-align:center"] { text-align: left !important; }
+.section p[style*="text-align:center"] span[style*="nowrap"] { white-space: normal !important; }
+
+/* --- 文章だけの白い箱（プライバシーポリシーなど）：箱をやめて背景の上に直接置く --- */
+.section div[style*="background:#fff"] {
+  background: none !important; border: 0 !important; box-shadow: none !important; border-radius: 0 !important;
+  padding: 0 !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+}
+.section div[style*="background:#fff"] h2 { color: var(--sp-ink) !important; padding-top: 28px; border-top: 1px solid var(--sp-line); }
+.section div[style*="background:#fff"] h2:first-child { border-top: 0; padding-top: 0; }
+
+/* --- 表（特定商取引法・会社情報など）：上に濃い罫線、各行を細い罫線で区切る --- */
+.section table, .info-table {
+  background: none !important; box-shadow: none !important; border-radius: 0 !important; border: 0 !important;
+  border-top: 1px solid var(--sp-ink) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+}
+.section table th, .section table td, .info-table th, .info-table td {
+  background: none !important; border: 0 !important; border-bottom: 1px solid var(--sp-line) !important; padding: 22px 16px 22px 0 !important;
+}
+.section table th, .info-table th { color: var(--sp-tif-dark) !important; font-size: .9rem; font-weight: 600; width: 26%; }
+
+/* --- よくある質問：白いカードの積み重ねをやめ、細い罫線で区切った行に --- */
+.faq-section h2 { color: var(--sp-ink) !important; font-size: clamp(1.3rem, 2.2vw, 1.7rem) !important; font-weight: 500 !important; margin: 56px 0 16px !important; }
+.faq-section h2:first-child { margin-top: 0 !important; }
+.faq-section details {
+  background: none !important; border: 0 !important; border-bottom: 1px solid var(--sp-line) !important; border-radius: 0 !important;
+  box-shadow: none !important; padding: 20px 0 !important; margin: 0 !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+}
+.faq-section h2 + details { border-top: 1px solid var(--sp-ink) !important; }
+
+/* --- 講座カード（お申し込み・ジョブ対策）：水色の帯の見出しをやめ、すりガラスのカードの中で文字で見せる --- */
+.service-card-header { background: none !important; color: var(--sp-ink) !important; border-bottom: 1px solid var(--sp-line); padding-bottom: 18px !important; }
+.service-card-header h3 { color: var(--sp-ink) !important; }
+.service-card-header p, .service-card-header .text-small { color: var(--sp-tif-dark) !important; opacity: 1 !important; }
+.service-card-body[style*="text-align:center"] { text-align: left !important; }
+
+/* --- 選ばれる理由（ジョブ対策）：丸囲みの番号カードを、大きな番号＋罫線の並びに --- */
+/* 文章だけの白い箱を消す上の指定（.section div[style*=...]）より優先させるため、.section を付けて詳しく指定する */
+.section div.service-reason-card {
+  background: none !important; border: 0 !important; border-bottom: 1px solid var(--sp-line) !important; border-radius: 0 !important;
+  box-shadow: none !important; padding: 36px 0 !important; margin: 0 !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+}
+.service-reason-card > div[style*="border-radius:50%"] {
+  width: 120px !important; height: auto !important; border: 0 !important; border-radius: 0 !important;
+  justify-content: flex-start !important; color: var(--sp-ink) !important;
+  font-family: "Inter Tight", "Inter", sans-serif; font-size: clamp(2.4rem, 4vw, 3.2rem) !important; font-weight: 300 !important;
+}
+.service-reason-card h3[style] { color: var(--sp-ink) !important; font-size: 1.15rem !important; }
+
+/* 「margin:2rem auto 0」のように中央寄せしていた本文の箱も、左寄せにする */
+.section div[style*="margin:"][style*="auto"] { margin-left: 0 !important; margin-right: 0 !important; }
+
+/* 料金などの淡い水色の箱：すりガラスのカードにして、文字は左寄せ */
+.section div[style*="background:var(--color-bg-alt)"] {
+  background: linear-gradient(135deg, rgba(255, 255, 255, .42), rgba(255, 255, 255, .12)) !important;
+  border: 1px solid rgba(255, 255, 255, .75) !important; border-radius: 20px !important; text-align: left !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 20px 50px -30px rgba(31, 41, 55, .25) !important;
+  padding: 28px 32px !important;
+}
+
+/* 選ばれる理由の並び：上に濃い罫線を引き、番号の「NO.」は小さく、数字は大きく */
+.service-reasons { gap: 0 !important; border-top: 1px solid var(--sp-ink); }
+.service-reason-card { align-items: flex-start !important; }
+.service-reason-card > div[style*="border-radius:50%"] span span:first-child { font-size: .7rem !important; color: var(--sp-tif-dark); margin-right: 6px; }
+.service-reason-card > div[style*="border-radius:50%"] span span:last-child { font-size: clamp(2.4rem, 4vw, 3.2rem) !important; font-weight: 300; letter-spacing: -.03em; }
+
+/* 日本語の改行：旧デザインの keep-all を、文節の切れ目で折り返す指定に置き換える */
+.section h1, .section h2, .section h3, .section h4, .section p, .section li, .section td, .section th { word-break: auto-phrase !important; line-break: strict; overflow-wrap: anywhere !important; }

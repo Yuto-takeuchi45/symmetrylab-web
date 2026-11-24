@@ -14,25 +14,28 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css?v=20260624-0209">
   <link rel="stylesheet" href="../css/consulting-career.css?v=20260904-application-v3">
+  <!-- HPの新デザインにそろえる：共通部品（theme.css）→ LP用の上書き（consulting-career-theme.css）の順に重ねる -->
+  <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="../css/consulting-career-theme.css?v=20261124-01">
   <link rel="icon" href="../favicon.ico" sizes="any">
   <title>コンサル転職支援｜戦略・総合コンサルへの中途転職 | SYMMETRY Lab</title>
 </head>
 <body class="career-page">
-  <header class="career-header">
-    <div class="career-container career-header-inner">
-      <a href="../index.html" class="career-logo" aria-label="SYMMETRY Lab ホーム">
-        <img src="../images/logo_full.png" alt="SYMMETRY Lab">
-      </a>
-      <nav class="career-nav" id="career-nav" aria-label="ページ内ナビゲーション">
-        <a href="#flow">ご利用の流れ</a>
-        <a href="#faq">よくある質問</a>
-        <a href="#application" class="career-nav-cta">無料で相談する</a>
-      </nav>
-      <button class="career-menu-toggle" type="button" aria-label="メニューを開く" aria-expanded="false" aria-controls="career-nav">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <!-- ヘッダー：HPと共通の形。開閉は sub.js が行う（#menuBtn / #nav） -->
+  <header class="header">
+    <a href="../index.html" class="brand" aria-label="SYMMETRY Lab ホーム"><img src="../images/logo_full.png" alt="SYMMETRY Lab"></a>
+    <a href="#application" class="header-cta">無料相談 <svg class="ph" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
+    <button class="menu-btn" id="menuBtn" aria-label="メニュー" aria-expanded="false" aria-controls="nav"><svg viewBox="0 0 100 100" aria-hidden="true"><path class="line line1" d="M 20,29.000046 H 80.000231 C 80.000231,29.000046 94.498839,28.817352 94.532987,66.711331 94.543142,77.980673 90.966081,81.670246 85.259173,81.668997 79.552261,81.667751 75.000211,74.999942 75.000211,74.999942 L 25.000021,25.000058"/><path class="line line2" d="M 20,50 H 80"/><path class="line line3" d="M 20,70.999954 H 80.000231 C 80.000231,70.999954 94.498839,71.182648 94.532987,33.288669 94.543142,22.019327 90.966081,18.329754 85.259173,18.331003 79.552261,18.332249 75.000211,25.000058 75.000211,25.000058 L 25.000021,74.999942"/></svg></button>
   </header>
+  <nav class="nav" id="nav" aria-label="ページ内ナビゲーション">
+    <div class="nav-inner">
+      <a href="#target" class="nav-item">こんな方へ<span class="nav-en">For you</span></a>
+      <a href="#flow" class="nav-item">ご利用の流れ<span class="nav-en">Flow</span></a>
+      <a href="#faq" class="nav-item">よくある質問<span class="nav-en">FAQ</span></a>
+      <a href="#application" class="nav-item">無料で相談する<span class="nav-en">Contact</span></a>
+    </div>
+  </nav>
 
   <main>
     <section class="career-hero">
@@ -46,9 +49,9 @@
           </div>
         </div>
         <ul class="career-hero-benefits" aria-label="SYMMETRY Labの支援の特長">
-          <li><img src="../images/hero-benefit-free.png" alt="" aria-hidden="true"><span>書類作成やケース面接など、<br>全ての支援が入社まで完全無料</span></li>
-          <li><img src="../images/hero-benefit-advisor.png" alt="" aria-hidden="true"><span>外資戦略コンサル出身者が、<br>全てのプロセスを一貫して支援</span></li>
-          <li><img src="../images/hero-benefit-decision.png" alt="" aria-hidden="true"><span>無理な応募は勧めず、求職者様が<br>納得できる意思決定を支援</span></li>
+          <li><img class="career-benefit-icon" src="../images/benefit-icon-free.png" alt="" aria-hidden="true"><span>書類作成やケース面接など、<br>全ての支援が入社まで完全無料</span></li>
+          <li><img class="career-benefit-icon" src="../images/benefit-icon-advisor.png" alt="" aria-hidden="true"><span>外資戦略コンサル出身者が、<br>全てのプロセスを一貫して支援</span></li>
+          <li><img class="career-benefit-icon" src="../images/benefit-icon-decision.png" alt="" aria-hidden="true"><span>無理な応募は勧めず、求職者様が<br>納得できる意思決定を支援</span></li>
         </ul>
       </div>
     </section>
@@ -168,40 +171,18 @@
     </section>
   </main>
 
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div>
-          <h4>サービス</h4>
-          <div class="footer-links">
-            <a href="../services.html">ジョブ対策</a>
-            <a href="../lp-case.html">ケース面接対策</a>
-            <a href="../booking.html">お申し込み</a>
-          </div>
-        </div>
-        <div>
-          <h4>会社情報</h4>
-          <div class="footer-links">
-            <a href="../company.html">会社概要</a>
-            <a href="../blog/">コラム</a>
-          </div>
-        </div>
-        <div>
-          <h4>サポート</h4>
-          <div class="footer-links">
-            <a href="../faq.html">よくある質問</a>
-            <a href="../contact.html">お問い合わせ</a>
-            <a href="../privacy.html">プライバシーポリシー</a>
-            <a href="../tokushoho.html">特定商取引法に基づく表記</a>
-          </div>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</span>
-      </div>
+  <footer class="footer site-footer">
+    <div class="wrap footer-grid">
+      <a href="../index.html" class="footer-brand"><img src="../images/favicon-mark.png" alt="" class="brand-mark"><span class="brand-text">SYMMETRY <b>Lab</b></span></a>
+      <div><h4>サービス</h4><a href="../services.html#career">キャリア形成支援事業</a><a href="../services.html#consulting">コンサルティング事業</a><a href="../job.html">ジョブ対策講座</a><a href="../lp-case.html">ケース面接対策講座</a><a href="../booking.html">お申し込み</a></div>
+      <div><h4>会社情報</h4><a href="../company.html">会社概要</a><a href="../works.html">実績</a><a href="../blog/">コラム</a></div>
+      <div><h4>サポート</h4><a href="../faq.html">よくある質問</a><a href="../contact.html">お問い合わせ</a><a href="../privacy.html">プライバシーポリシー</a><a href="../tokushoho.html">特定商取引法に基づく表記</a></div>
     </div>
+    <p class="wrap copy">&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</p>
   </footer>
   <script src="../js/consulting-career-tracking.js?v=20260822-ads-fix15" defer></script>
   <script src="../js/consulting-career.js"></script>
+  <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
+  <script type="module" src="../sub.js?v=20261124-04"></script>
 </body>
 </html>

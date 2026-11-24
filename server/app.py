@@ -14,6 +14,7 @@ import base64
 import secrets
 import smtplib
 import sqlite3
+import stat
 import traceback
 import urllib.request
 import urllib.error
@@ -137,6 +138,11 @@ RESEND_FROM_NAME = os.getenv("RESEND_FROM_NAME", "SYMMETRY Lab")
 AD_CREATIVE_NOTIFICATION_EMAIL = os.getenv(
     "AD_CREATIVE_NOTIFICATION_EMAIL", "info@symmetrylab.jp"
 ).strip()
+# HPのお問い合わせ（お問い合わせページ・サービスページ）の社内通知先。カンマ区切りで複数指定できる。
+# 未設定時は会社の代表窓口に届ける（Instagram LP の通知先と同じ既定値）
+CONTACT_NOTIFICATION_EMAIL = os.getenv(
+    "CONTACT_NOTIFICATION_EMAIL", "info@symmetrylab.jp"
+).strip()
 
 
 def get_admin_emails() -> list:
@@ -154,7 +160,9 @@ AD_CREATIVE_LINE_ID = os.getenv("AD_CREATIVE_LINE_ID", "@575jlvap").strip()
 AD_CREATIVE_LINE_CHANNEL_SECRET = os.getenv("AD_CREATIVE_LINE_CHANNEL_SECRET", "").strip()
 AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN = os.getenv("AD_CREATIVE_LINE_CHANNEL_ACCESS_TOKEN", "").strip()
 
-app = FastAPI(title="SYMMETRY Lab Booking API")
+# APIの自動ドキュメント（/docs・/redoc・/openapi.json）は公開しない。
+# 管理系APIの一覧と仕様が誰でも見られてしまうため（公開するのはサイトのページと画像のみという方針）
+app = FastAPI(title="SYMMETRY Lab Booking API", docs_url=None, redoc_url=None, openapi_url=None)
 
 app.add_middleware(
     CORSMiddleware,
@@ -274,6 +282,31 @@ class CareerApplicationStatusRequest(BaseModel):
 
 
 class RecruitmentApplicationStatusRequest(BaseModel):
+    status: str
+    admin_notes: str = ""
+
+
+class ContactInquiryRequest(BaseModel):
+    """HPのお問い合わせフォームから送られる内容。
+
+    form_type で送信元フォームを区別する（general：お問い合わせページ、consulting：サービスページのコンサル相談）。
+    """
+    client_submission_id: str
+    website: str = ""  # ボット対策の隠し項目。人が入力することはない
+    form_type: str
+    name: str
+    email: str
+    phone: str
+    company: str = ""
+    occupation: str = ""
+    inquiry_type: str
+    message: str
+    privacy_consent: bool
+    page_url: str = ""
+
+
+class ContactInquiryStatusRequest(BaseModel):
+    """管理画面からのお問い合わせ対応状況・メモの更新内容。"""
     status: str
     admin_notes: str = ""
 
@@ -606,6 +639,42 @@ def init_db():
         )
     """)
     conn.execute("CREATE INDEX IF NOT EXISTS idx_ad_creative_status_history_application ON ad_creative_application_status_history(application_id, changed_at)")
+    # HPのお問い合わせ。既存の表には手を加えず、新しい表として追加する
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS contact_inquiries (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            inquiry_id TEXT NOT NULL UNIQUE,
+            client_submission_id TEXT NOT NULL UNIQUE,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            inquiry_status TEXT NOT NULL DEFAULT 'new',
+            form_type TEXT NOT NULL,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            company TEXT NOT NULL DEFAULT '',
+            occupation TEXT NOT NULL DEFAULT '',
+            inquiry_type TEXT NOT NULL,
+            message TEXT NOT NULL,
+            privacy_consent_at TEXT NOT NULL,
+            privacy_policy_version TEXT NOT NULL,
+            page_url TEXT NOT NULL DEFAULT '',
+            admin_notes TEXT NOT NULL DEFAULT ''
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_contact_inquiries_created ON contact_inquiries(created_at DESC)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_contact_inquiries_status ON contact_inquiries(inquiry_status)")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS contact_inquiry_status_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            inquiry_id TEXT NOT NULL,
+            status TEXT NOT NULL,
+            changed_at TEXT NOT NULL,
+            admin_notes TEXT NOT NULL DEFAULT '',
+            FOREIGN KEY (inquiry_id) REFERENCES contact_inquiries(inquiry_id)
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_contact_inquiry_status_history_inquiry ON contact_inquiry_status_history(inquiry_id, changed_at)")
     seed_articles(conn)
     conn.commit()
     conn.close()
@@ -970,6 +1039,107 @@ def send_career_application_notifications(application: dict) -> None:
             )
         except Exception as exc:
             print(f"[コンサル転職相談] 申込者通知に失敗 ({applicant_email}): {exc}")
+
+
+# --- HPのお問い合わせ ---
+# 対応状況：新規 → 対応中 → 対応済み。営業メールやいたずらは「対象外」にする
+CONTACT_INQUIRY_STATUSES = {"new", "in_progress", "completed", "excluded"}
+CONTACT_FORM_TYPES = {"general", "consulting"}
+CONTACT_FORM_LABELS = {"general": "お問い合わせページ", "consulting": "コンサルティングのご相談（サービスページ）"}
+# 選択肢はフォームの <option> と一致させる。一致しない値は改ざんとみなして受け付けない
+CONTACT_OCCUPATION_CHOICES = {"法人", "主婦", "社会人", "大学院生", "大学生", "高校生", "その他"}
+CONTACT_INQUIRY_TYPE_CHOICES = {
+    "general": {"講座内容について", "料金について", "無料相談のお申し込み", "法人でのお申し込み", "その他"},
+    "consulting": {"戦略コンサルティング", "ITコンサルティング", "その他"},
+}
+
+
+def _jst_display(value: str) -> str:
+    """保存済みのUTC日時（ISO形式）を、メール表示用の日本時間の文字列にする。"""
+    try:
+        moment = datetime.fromisoformat(value)
+    except (TypeError, ValueError):
+        return str(value or "")
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=timezone.utc)
+    return moment.astimezone(JST).strftime("%Y年%m月%d日 %H:%M")
+
+
+def _contact_inquiry_email_html(inquiry: dict, audience: str) -> str:
+    """お問い合わせの通知メール本文を作る。audience は admin（社内）か inquirer（お問い合わせした方）。"""
+    def esc(key: str) -> str:
+        """値をHTMLに埋め込めるようにエスケープする（入力値をそのまま出さないため）。"""
+        return html.escape(str(inquiry.get(key) or ""))
+
+    message = esc("message") or "（記載なし）"
+    form_label = html.escape(CONTACT_FORM_LABELS.get(inquiry.get("form_type", ""), ""))
+    received = html.escape(_jst_display(inquiry.get("created_at", "")))
+    if audience == "admin":
+        rows = [
+            ("受付日時", received), ("フォーム", form_label), ("お問い合わせ種別", esc("inquiry_type")),
+            ("会社名", esc("company") or "—"), ("氏名", esc("name")), ("メール", esc("email")),
+            ("電話番号", esc("phone")), ("ご職業・ご身分", esc("occupation") or "—"),
+            ("送信ページ", esc("page_url") or "—"), ("受付ID", esc("inquiry_id")),
+        ]
+        table = "".join(
+            f'<tr><th style="text-align:left;padding:8px;background:#f3f4f6;white-space:nowrap;">{label}</th><td style="padding:8px;">{value}</td></tr>'
+            for label, value in rows
+        )
+        return f"""
+        <div style="font-family:Arial,'Noto Sans JP',sans-serif;line-height:1.8;color:#1f2937;max-width:680px;">
+          <h1 style="font-size:20px;border-bottom:3px solid #36c9e6;padding-bottom:12px;">HPから新しいお問い合わせが届きました</h1>
+          <p>管理画面の「お問い合わせ」タブで対応状況を更新してください。</p>
+          <table style="border-collapse:collapse;width:100%;">{table}</table>
+          <h2 style="font-size:16px;margin-top:24px;">お問い合わせ内容</h2>
+          <p style="white-space:pre-wrap;background:#f8fafc;padding:12px;">{message}</p>
+        </div>
+        """
+    # 送信者向けの受付メールには、自由記述の本文を載せない。
+    # メールアドレスの持ち主確認をしていないため、第三者のアドレスを入れて任意の文面を送らせる悪用を防ぐ
+    # （既存のコンサル転職相談の受付メールと同じ方針）
+    return f"""
+    <div style="font-family:Arial,'Noto Sans JP',sans-serif;line-height:1.8;color:#1f2937;max-width:680px;">
+      <h1 style="font-size:20px;border-bottom:3px solid #36c9e6;padding-bottom:12px;">お問い合わせを受け付けました</h1>
+      <p>{esc("name")} 様</p>
+      <p>SYMMETRY Labへお問い合わせいただきありがとうございます。担当者が内容を確認のうえ、ご連絡します。</p>
+      <p><strong>お問い合わせ種別：</strong>{esc("inquiry_type")}</p>
+      <p style="font-size:13px;color:#667085;">このメールは受付のお知らせです。お心当たりのない場合は破棄してください。</p>
+      <p style="font-size:13px;color:#667085;">受付ID：{esc("inquiry_id")}</p>
+    </div>
+    """
+
+
+def send_contact_inquiry_notifications(inquiry: dict) -> None:
+    """保存済みのお問い合わせについて、社内と送信者へ通知する。
+
+    お問い合わせ自体はDBに保存済みのため、通知に失敗しても受付結果は変えない。
+    失敗はサーバーログに残し、内容は管理画面の「お問い合わせ」タブで確認できる。
+    """
+    inquiry_id = inquiry.get("inquiry_id", "")
+    admin_recipients = [r.strip() for r in CONTACT_NOTIFICATION_EMAIL.split(",") if r.strip()]
+    if not admin_recipients:
+        print(f"[お問い合わせ] CONTACT_NOTIFICATION_EMAIL未設定のため社内通知をスキップ (ID={inquiry_id})")
+    form_label = CONTACT_FORM_LABELS.get(inquiry.get("form_type", ""), "お問い合わせ")
+    admin_subject = f"【SYMMETRY Lab】新しいお問い合わせ（{form_label}）"
+    admin_html = _contact_inquiry_email_html(inquiry, "admin")
+    for recipient in admin_recipients:
+        try:
+            if not send_email(recipient, admin_subject, admin_html):
+                print(f"[お問い合わせ] 社内通知メールを送信できませんでした ({recipient}, ID={inquiry_id})")
+        except Exception as exc:
+            print(f"[お問い合わせ] 社内通知に失敗 ({recipient}, ID={inquiry_id}): {exc}")
+
+    inquirer_email = inquiry.get("email", "")
+    if inquirer_email:
+        try:
+            if not send_email(
+                inquirer_email,
+                "【SYMMETRY Lab】お問い合わせを受け付けました",
+                _contact_inquiry_email_html(inquiry, "inquirer"),
+            ):
+                print(f"[お問い合わせ] 受付確認メールを送信できませんでした (ID={inquiry_id})")
+        except Exception as exc:
+            print(f"[お問い合わせ] 受付確認メールに失敗 (ID={inquiry_id}): {exc}")
 
 
 def _ad_creative_application_email_html(application: dict, audience: str) -> str:
@@ -1691,6 +1861,42 @@ def _career_origin_allowed(request: Request) -> bool:
         and origin_url.scheme == "http"
         and origin_url.hostname in {"127.0.0.1", "localhost"}
     )
+
+
+def _validate_contact_inquiry(req: ContactInquiryRequest) -> ContactInquiryRequest:
+    """お問い合わせ内容を検証し、前後の空白を除いた値に整える。不正な場合は422を返す。"""
+    if req.website.strip():
+        raise HTTPException(status_code=422, detail="お問い合わせを受け付けられませんでした")
+    req.client_submission_id = _career_trim(req.client_submission_id, "送信識別子", 100, required=True)
+    if not re.fullmatch(r"[A-Za-z0-9_-]{10,100}", req.client_submission_id):
+        raise HTTPException(status_code=422, detail="送信識別子が正しくありません")
+    if req.form_type not in CONTACT_FORM_TYPES:
+        raise HTTPException(status_code=422, detail="フォームの種類が正しくありません")
+    # 文字数の上限は、既存の申込フォーム（コンサル転職相談）と同じ基準にそろえる
+    req.name = _career_trim(req.name, "氏名", 120, required=True)
+    req.email = _career_trim(req.email, "メールアドレス", 254, required=True)
+    if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", req.email):
+        raise HTTPException(status_code=422, detail="メールアドレスの形式が正しくありません")
+    req.phone = _career_trim(req.phone, "電話番号", 40, required=True)
+    if len(re.sub(r"[^0-9]", "", req.phone)) < 7:
+        raise HTTPException(status_code=422, detail="電話番号の形式が正しくありません")
+    req.inquiry_type = _career_trim(req.inquiry_type, "お問い合わせ種別", 120, required=True)
+    if req.inquiry_type not in CONTACT_INQUIRY_TYPE_CHOICES[req.form_type]:
+        raise HTTPException(status_code=422, detail="お問い合わせ種別の選択肢が正しくありません")
+    if req.form_type == "consulting":
+        # 法人向けの相談なので会社名を必須にし、個人向けの「ご職業・ご身分」は持たない
+        req.company = _career_trim(req.company, "会社名", 200, required=True)
+        req.occupation = ""
+    else:
+        req.company = ""
+        req.occupation = _career_trim(req.occupation, "ご職業・ご身分", 120, required=True)
+        if req.occupation not in CONTACT_OCCUPATION_CHOICES:
+            raise HTTPException(status_code=422, detail="ご職業・ご身分の選択肢が正しくありません")
+    req.message = _career_trim(req.message, "お問い合わせ内容", 5000, required=True)
+    req.page_url = _career_trim(req.page_url, "送信ページ", 500)
+    if not req.privacy_consent:
+        raise HTTPException(status_code=422, detail="プライバシーポリシーへの同意が必要です")
+    return req
 
 
 def _validate_ad_creative_answers(raw_answers: dict[str, Any]) -> dict[str, Any]:
@@ -2559,6 +2765,171 @@ async def export_career_applications(request: Request):
     )
 
 
+# --- HPのお問い合わせ API ---
+def _existing_contact_inquiry(conn: sqlite3.Connection, client_submission_id: str):
+    """同じ送信識別子のお問い合わせが保存済みなら返す（二重送信の判定用）。"""
+    return conn.execute(
+        "SELECT inquiry_id, created_at FROM contact_inquiries WHERE client_submission_id = ?",
+        (client_submission_id,),
+    ).fetchone()
+
+
+@app.post("/api/contact/inquiries")
+async def create_contact_inquiry(request: Request, background_tasks: BackgroundTasks, req: ContactInquiryRequest):
+    """HPのお問い合わせを保存し、社内通知と受付確認メールを送る。
+
+    ボタンの連打や通信の再送で同じ内容が二重に保存されないよう、
+    フォームを開くごとに発行する client_submission_id が同じ送信は、保存済みの結果を返す。
+    """
+    if not _career_origin_allowed(request):
+        raise HTTPException(status_code=403, detail="許可されていない送信元です")
+    req = _validate_contact_inquiry(req)
+    conn = get_db()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        existing = _existing_contact_inquiry(conn, req.client_submission_id)
+        if existing:
+            conn.rollback()
+            return {"ok": True, "duplicate": True, "inquiry_id": existing["inquiry_id"], "created_at": existing["created_at"]}
+        inquiry_id = str(uuid4())
+        now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        conn.execute("""
+            INSERT INTO contact_inquiries (
+                inquiry_id, client_submission_id, created_at, updated_at, inquiry_status,
+                form_type, name, email, phone, company, occupation, inquiry_type, message,
+                privacy_consent_at, privacy_policy_version, page_url
+            ) VALUES (?, ?, ?, ?, 'new', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            inquiry_id, req.client_submission_id, now, now,
+            req.form_type, req.name, req.email, req.phone, req.company, req.occupation,
+            req.inquiry_type, req.message, now, os.getenv("PRIVACY_POLICY_VERSION", "current"), req.page_url,
+        ))
+        conn.execute(
+            "INSERT INTO contact_inquiry_status_history (inquiry_id, status, changed_at, admin_notes) VALUES (?, 'new', ?, '')",
+            (inquiry_id, now),
+        )
+        conn.commit()
+    except sqlite3.IntegrityError:
+        # 同じ送信がほぼ同時に届いた場合は、先に保存された方の結果を返す
+        conn.rollback()
+        existing = _existing_contact_inquiry(conn, req.client_submission_id)
+        if existing:
+            return {"ok": True, "duplicate": True, "inquiry_id": existing["inquiry_id"], "created_at": existing["created_at"]}
+        print(f"[お問い合わせ] 保存に失敗 (client_submission_id={req.client_submission_id})")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="お問い合わせを保存できませんでした")
+    finally:
+        conn.close()
+    background_tasks.add_task(send_contact_inquiry_notifications, {
+        "inquiry_id": inquiry_id, "created_at": now, "form_type": req.form_type,
+        "name": req.name, "email": req.email, "phone": req.phone, "company": req.company,
+        "occupation": req.occupation, "inquiry_type": req.inquiry_type, "message": req.message,
+        "page_url": req.page_url,
+    })
+    return {"ok": True, "duplicate": False, "inquiry_id": inquiry_id, "created_at": now}
+
+
+def _csv_safe(value) -> str:
+    """CSVをExcelで開いたときに、入力値が数式として実行されないようにする。
+
+    「=」「+」「-」「@」やタブ・改行で始まる値は数式とみなされるため、先頭に「'」を付けて文字列として扱わせる。
+    """
+    text = "" if value is None else str(value)
+    return "'" + text if text[:1] in ("=", "+", "-", "@", "\t", "\r") else text
+
+
+@app.get("/api/admin/contact/inquiries/export")
+async def export_contact_inquiries(request: Request):
+    """管理画面用：お問い合わせ全件をCSV（Excelで開けるBOM付きUTF-8）で出力する。"""
+    if not _admin_key_is_valid(request):
+        raise HTTPException(status_code=403, detail="認証が必要です")
+    conn = get_db()
+    try:
+        rows = conn.execute("SELECT * FROM contact_inquiries ORDER BY id DESC").fetchall()
+    finally:
+        conn.close()
+    columns = [
+        ("inquiry_id", "受付ID"), ("created_at", "受付日時(UTC)"), ("updated_at", "更新日時(UTC)"),
+        ("inquiry_status", "対応状況"), ("form_type", "フォーム"), ("inquiry_type", "お問い合わせ種別"),
+        ("company", "会社名"), ("name", "氏名"), ("email", "メールアドレス"), ("phone", "電話番号"),
+        ("occupation", "ご職業・ご身分"), ("message", "お問い合わせ内容"),
+        ("privacy_consent_at", "同意日時(UTC)"), ("privacy_policy_version", "プライバシーポリシーバージョン"),
+        ("page_url", "送信ページ"), ("admin_notes", "管理メモ"),
+    ]
+    output = StringIO(newline="")
+    writer = csv.writer(output)
+    writer.writerow([label for _, label in columns])
+    for row in rows:
+        writer.writerow([_csv_safe(row[field]) for field, _ in columns])
+    content = ("\ufeff" + output.getvalue()).encode("utf-8")
+    return StreamingResponse(
+        BytesIO(content),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": "attachment; filename=contact-inquiries.csv"},
+    )
+
+
+@app.get("/api/admin/contact/inquiries")
+async def list_contact_inquiries(request: Request, status: str = "", limit: int = 100, offset: int = 0):
+    """管理画面用：お問い合わせを新しい順に返す。1回の上限は既存の申込一覧APIと同じ500件。"""
+    if not _admin_key_is_valid(request):
+        raise HTTPException(status_code=403, detail="認証が必要です")
+    limit = min(max(limit, 1), 500)
+    offset = max(offset, 0)
+    conn = get_db()
+    try:
+        if status:
+            if status not in CONTACT_INQUIRY_STATUSES:
+                raise HTTPException(status_code=400, detail="無効なステータスです")
+            rows = conn.execute(
+                "SELECT * FROM contact_inquiries WHERE inquiry_status = ? ORDER BY id DESC LIMIT ? OFFSET ?",
+                (status, limit, offset),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM contact_inquiries ORDER BY id DESC LIMIT ? OFFSET ?",
+                (limit, offset),
+            ).fetchall()
+    finally:
+        conn.close()
+    return [dict(row) for row in rows]
+
+
+@app.patch("/api/admin/contact/inquiries/{inquiry_id}")
+async def update_contact_inquiry(inquiry_id: str, request: Request, payload: ContactInquiryStatusRequest):
+    """管理画面用：お問い合わせの対応状況と管理メモを更新する。対応状況が変わったときは履歴に残す。"""
+    if not _admin_key_is_valid(request):
+        raise HTTPException(status_code=403, detail="認証が必要です")
+    if payload.status not in CONTACT_INQUIRY_STATUSES:
+        raise HTTPException(status_code=400, detail="無効なステータスです")
+    if len(payload.admin_notes) > 5000:
+        raise HTTPException(status_code=422, detail="管理メモが長すぎます")
+    conn = get_db()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        current = conn.execute(
+            "SELECT inquiry_status FROM contact_inquiries WHERE inquiry_id = ?", (inquiry_id,)
+        ).fetchone()
+        if not current:
+            conn.rollback()
+            raise HTTPException(status_code=404, detail="お問い合わせが見つかりません")
+        now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        notes = payload.admin_notes.strip()
+        conn.execute(
+            "UPDATE contact_inquiries SET inquiry_status = ?, admin_notes = ?, updated_at = ? WHERE inquiry_id = ?",
+            (payload.status, notes, now, inquiry_id),
+        )
+        if current["inquiry_status"] != payload.status:
+            conn.execute(
+                "INSERT INTO contact_inquiry_status_history (inquiry_id, status, changed_at, admin_notes) VALUES (?, ?, ?, ?)",
+                (inquiry_id, payload.status, now, notes),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+    return {"ok": True, "inquiry_id": inquiry_id, "status": payload.status}
+
+
 @app.get("/api/admin/blocked-dates")
 async def get_blocked_dates(key: str = ""):
     """予約可能日時一覧を取得"""
@@ -2807,6 +3178,48 @@ def get_article_by_slug(slug: str):
     return article
 
 
+# --- コラムのページ（サーバーで組み立てるHTML）の共通部品 ---
+# HPの他のページ（company.html など）と同じ新デザインのヘッダー・メニュー・フッター。
+# リンクを変えるときは、静的ページ側のヘッダー・フッターも合わせて変更する
+PUBLIC_SITE_HEAD = (
+    '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+    '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">'
+    '<link rel="stylesheet" href="/css/style.css?v=20260714"><link rel="stylesheet" href="/theme.css">'
+    '<link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-mark.png">'
+    '<link rel="apple-touch-icon" sizes="192x192" href="/images/favicon-192x192.png">'
+)
+PUBLIC_SITE_HEADER = (
+    '<canvas id="gl" aria-hidden="true"></canvas>'
+    '<header class="header"><a href="/" class="brand"><img src="/images/logo_full.png" alt="SYMMETRY Lab"></a>'
+    '<a href="/contact.html" class="header-cta">無料相談 <svg class="ph" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>'
+    '<button class="menu-btn" id="menuBtn" aria-label="メニュー" aria-expanded="false" aria-controls="nav"><svg viewBox="0 0 100 100" aria-hidden="true"><path class="line line1" d="M 20,29.000046 H 80.000231 C 80.000231,29.000046 94.498839,28.817352 94.532987,66.711331 94.543142,77.980673 90.966081,81.670246 85.259173,81.668997 79.552261,81.667751 75.000211,74.999942 75.000211,74.999942 L 25.000021,25.000058"/><path class="line line2" d="M 20,50 H 80"/><path class="line line3" d="M 20,70.999954 H 80.000231 C 80.000231,70.999954 94.498839,71.182648 94.532987,33.288669 94.543142,22.019327 90.966081,18.329754 85.259173,18.331003 79.552261,18.332249 75.000211,25.000058 75.000211,25.000058 L 25.000021,74.999942"/></svg></button></header>'
+    '<nav class="nav" id="nav" aria-label="メニュー"><div class="nav-inner">'
+    '<a href="/" class="nav-item">トップ<span class="nav-en">Home</span></a>'
+    '<a href="/services.html" class="nav-item">サービス<span class="nav-en">Services</span></a>'
+    '<a href="/company.html" class="nav-item">会社概要<span class="nav-en">Company</span></a>'
+    '<a href="/blog/" class="nav-item">コラム<span class="nav-en">Column</span></a>'
+    '<a href="/contact.html" class="nav-item">お問い合わせ<span class="nav-en">Contact</span></a>'
+    '</div></nav>'
+)
+PUBLIC_SITE_FOOTER = (
+    '<footer class="footer site-footer"><div class="wrap footer-grid">'
+    '<a href="/" class="footer-brand"><img src="/images/favicon-mark.png" alt="" class="brand-mark"><span class="brand-text">SYMMETRY <b>Lab</b></span></a>'
+    '<div><h4>サービス</h4><a href="/services.html#career">キャリア形成支援事業</a><a href="/services.html#consulting">コンサルティング事業</a>'
+    '<a href="/job.html">ジョブ対策講座</a><a href="/lp-case.html">ケース面接対策講座</a><a href="/booking.html">お申し込み</a></div>'
+    '<div><h4>会社情報</h4><a href="/company.html">会社概要</a><a href="/works.html">実績</a><a href="/blog/">コラム</a></div>'
+    '<div><h4>サポート</h4><a href="/faq.html">よくある質問</a><a href="/contact.html">お問い合わせ</a>'
+    '<a href="/privacy.html">プライバシーポリシー</a><a href="/tokushoho.html">特定商取引法に基づく表記</a></div>'
+    '</div><p class="wrap copy">&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</p></footer>'
+)
+# 背景の粒子（sub.js）は three.js をCDNから読み込む。HPの他のページと同じ版にそろえる
+PUBLIC_SITE_SCRIPTS = (
+    '<script src="/js/main.js"></script>'
+    '<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", '
+    '"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>'
+    '<script type="module" src="/sub.js?v=20261124-04"></script>'
+)
+
+
 def public_layout(title: str, description: str, canonical: str, body: str, article=None, preview: bool = False) -> str:
     raw_image = article["cover_image_url"] if article and article["cover_image_url"] else "/images/hero-consulting.jpg"
     image = raw_image if raw_image.startswith(("http://", "https://")) else f"{BASE_URL.rstrip('/')}/{raw_image.lstrip('/')}"
@@ -2831,14 +3244,14 @@ def public_layout(title: str, description: str, canonical: str, body: str, artic
   <title>{html.escape(title)}</title><meta name="description" content="{html.escape(description, quote=True)}">
   <meta name="robots" content="{'noindex, nofollow' if preview else 'index, follow, max-image-preview:large'}">{' ' if preview else f'<link rel="canonical" href="{html.escape(canonical, quote=True)}">'}
   <meta property="og:type" content="article"><meta property="og:title" content="{html.escape(title, quote=True)}"><meta property="og:description" content="{html.escape(description, quote=True)}"><meta property="og:url" content="{html.escape(canonical, quote=True)}"><meta property="og:image" content="{html.escape(image, quote=True)}">
-  <meta name="twitter:card" content="summary_large_image"><link rel="stylesheet" href="/css/style.css?v=20260714">
-  <style>.column-wrap{{max-width:820px;margin:0 auto}}.column-meta{{color:#6b7280;font-size:.9rem;margin-bottom:1rem}}.column-content{{font-size:1rem;line-height:2;color:#273142}}.column-content h2{{font-size:1.65rem;margin:2.5rem 0 1rem;color:#1a2332}}.column-content h3{{font-size:1.3rem;margin:2rem 0 .75rem;color:#1a2332}}.column-content p,.column-content ul,.column-content ol{{margin:0 0 1.25rem}}.column-content ul{{padding-left:1.5rem;list-style:disc}}.column-content ol{{padding-left:1.5rem;list-style:decimal}}.column-content li{{padding-left:.2rem;margin:.35rem 0}}.column-content blockquote{{margin:1.5rem 0;padding:.75rem 1rem;border-left:3px solid #00b4d8;background:#f4f6f9}}.column-content a{{color:#007f9d;text-decoration:underline}}.column-content .table-wrap{{overflow-x:auto;margin:1.5rem 0}}.column-content table{{width:100%;border-collapse:collapse;font-size:.95rem;line-height:1.7;background:#fff}}.column-content th,.column-content td{{border:1px solid #d8dee8;padding:.65rem .75rem;text-align:left;vertical-align:top}}.column-content th{{background:#f4f6f9;font-weight:700;color:#1a2332}}.column-cover{{width:100%;max-height:420px;object-fit:cover;margin:1.5rem 0 2rem;border-radius:8px}}</style>
+  <meta name="twitter:card" content="summary_large_image">{PUBLIC_SITE_HEAD}
+  <style>.column-wrap{{max-width:820px;margin:0 auto}}.column-meta{{color:#5B6B78;font-size:.88rem;margin-bottom:1rem;letter-spacing:.02em}}.column-meta a{{color:#1FA8C4}}.column-content{{font-size:1rem;line-height:2;color:#374151}}.column-content h2{{font-size:1.6rem;margin:2.5rem 0 1rem;color:#1F2937;padding-left:.8rem;border-left:3px solid #36C9E6}}.column-content h3{{font-size:1.25rem;margin:2rem 0 .75rem;color:#1F2937}}.column-content p,.column-content ul,.column-content ol{{margin:0 0 1.25rem}}.column-content ul{{padding-left:1.5rem;list-style:disc}}.column-content ol{{padding-left:1.5rem;list-style:decimal}}.column-content li{{padding-left:.2rem;margin:.35rem 0}}.column-content blockquote{{margin:1.5rem 0;padding:.75rem 1rem;border-left:3px solid #36C9E6;background:rgba(54,201,230,.07);border-radius:0 12px 12px 0}}.column-content a{{color:#1FA8C4;text-decoration:underline}}.column-content .table-wrap{{overflow-x:auto;margin:1.5rem 0}}.column-content table{{width:100%;border-collapse:collapse;font-size:.95rem;line-height:1.7;background:rgba(255,255,255,.55)}}.column-content th,.column-content td{{border:1px solid rgba(31,41,55,.1);padding:.65rem .75rem;text-align:left;vertical-align:top}}.column-content th{{background:rgba(54,201,230,.08);font-weight:700;color:#1F2937}}.column-cover{{width:100%;max-height:420px;object-fit:cover;margin:1.5rem 0 2rem;border-radius:20px}}.column-card{{padding:1.6rem 0;border-bottom:1px solid rgba(31,41,55,.1)}}.column-card h2{{font-size:1.3rem;margin-bottom:.7rem;line-height:1.5}}.column-card h2 a{{color:#1F2937;text-decoration:none}}.column-card h2 a:hover{{color:#1FA8C4}}.column-card .column-more{{margin-top:1rem}}.column-card .column-more a{{color:#1FA8C4;font-weight:600}}.column-cta{{margin-top:2.5rem;padding:2rem;border-radius:24px;color:#fff;background:linear-gradient(135deg,rgba(54,201,230,.85),rgba(31,168,196,.75));box-shadow:0 24px 60px rgba(31,168,196,.22)}}.column-cta h2{{color:#1F2937;font-size:1.3rem}}.column-cta p{{color:#1F2937}}</style>
   {article_json}
 </head><body>
-<nav class="navbar"><div class="container"><a href="/index.html" class="nav-logo"><img src="/images/logo_full.png" alt="SYMMETRY Lab" class="nav-logo-img"></a><button class="nav-toggle" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button><div class="nav-links"><a href="/company.html">会社概要</a><div class="nav-dropdown"><a href="/services.html" class="nav-dropdown-trigger">サービス</a><div class="nav-dropdown-menu"><a href="/services.html">ジョブ対策</a><a href="/lp-case.html">ケース面接対策</a><a href="/works.html">コンサルティングサービス</a><a href="/faq.html">よくある質問</a></div></div><a href="/blog/">コラム</a><a href="/contact.html">お問い合わせ</a></div></div></nav>
+{PUBLIC_SITE_HEADER}
 {body}
-<footer class="footer"><div class="container"><div class="footer-bottom"><span>&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</span></div></div></footer>
-<script src="/js/main.js"></script>
+{PUBLIC_SITE_FOOTER}
+{PUBLIC_SITE_SCRIPTS}
 </body></html>"""
 
 
@@ -2869,7 +3282,7 @@ async def admin_preview_article(request: Request, key: str = ""):
         "updated_at": now,
     }
     image = f'<img class="column-cover" src="{html.escape(article["cover_image_url"], quote=True)}" alt="{html.escape(article["title"], quote=True)}">' if article["cover_image_url"] else ""
-    body = f'<div style="background:#1a2332;color:#fff;padding:.6rem 1rem;text-align:center;font-size:.85rem">プレビュー</div><section class="section"><div class="container column-wrap"><p class="column-meta"><a href="/blog/">コラム</a> / {html.escape(article["category"])} / {now[:10].replace("-", ".")}</p><h1 style="font-size:2rem;line-height:1.5">{html.escape(article["title"])}</h1>{image}<div class="column-content">{markdown_to_html(article["content"])}</div></div></section>'
+    body = f'<div style="background:#1a2332;color:#fff;padding:.6rem 1rem;text-align:center;font-size:.85rem">プレビュー</div><section class="section"><div class="container column-wrap"><p class="column-meta"><a href="/blog/">コラム</a> / {html.escape(article["category"])} / {now[:10].replace("-", ".")}</p><h1 style="font-size:clamp(1.6rem,3.2vw,2.2rem);line-height:1.5">{html.escape(article["title"])}</h1>{image}<div class="column-content">{markdown_to_html(article["content"])}</div></div></section>'
     return HTMLResponse(public_layout(article["meta_title"], article["meta_description"], f"{BASE_URL}/blog/preview/", body, article, preview=True))
 
 
@@ -2969,9 +3382,9 @@ async def public_blog_index():
     for article in articles:
         date = (article["published_at"] or "")[:10].replace("-", ".")
         category = html.escape(article["category"] or "コラム")
-        cards.append(f'''<article style="padding:1.5rem 0;border-bottom:1px solid #e5e7eb"><p class="column-meta">{date} / {category}</p><h2 style="font-size:1.35rem;margin-bottom:.7rem"><a href="/blog/{article["slug"]}/" style="color:#1a2332;text-decoration:none">{html.escape(article["title"])}</a></h2><p>{html.escape(article["excerpt"] or article_summary(article["content"]))}</p><p style="margin-top:1rem"><a href="/blog/{article["slug"]}/">続きを読む</a></p></article>''')
+        cards.append(f'''<article class="column-card"><p class="column-meta">{date} / {category}</p><h2><a href="/blog/{article["slug"]}/">{html.escape(article["title"])}</a></h2><p>{html.escape(article["excerpt"] or article_summary(article["content"]))}</p><p class="column-more"><a href="/blog/{article["slug"]}/">続きを読む</a></p></article>''')
     listing = "".join(cards) or "<p>現在公開中のコラムはありません。</p>"
-    cta = '<div style="margin-top:2rem;padding:1.5rem;background:#1f2937;color:#fff;border-radius:8px"><h2 style="color:#fff;font-size:1.3rem">ケース面接の準備を、今日から具体化する</h2><p>大手外資コンサル出身者が、思考の癖に合わせて丁寧にケース面接を指導。高い内定率を支える実践的な対策を提供します。</p><p style="margin-bottom:0"><a href="/lp-case.html" class="btn-primary">ケース面接対策を見る</a></p></div>'
+    cta = '<div class="column-cta"><h2>ケース面接の準備を、今日から具体化する</h2><p>大手外資コンサル出身者が、思考の癖に合わせて丁寧にケース面接を指導。高い内定率を支える実践的な対策を提供します。</p><p style="margin-bottom:0"><a href="/lp-case.html" class="btn-primary">ケース面接対策を見る</a></p></div>'
     body = f'<section class="section"><div class="container column-wrap"><div class="section-header"><h1>コラム</h1><p>戦略コンサル転職、ケース面接、実務スキルに役立つ情報を発信しています。</p></div>{listing}{cta}</div></section>'
     return HTMLResponse(public_layout("コラム | SYMMETRY Lab株式会社", "戦略コンサル転職に役立つコラム。実務スキルやケース面接のノウハウを解説します。", "https://symmetrylab.jp/blog/", body))
 
@@ -2987,7 +3400,7 @@ async def public_article(slug: str):
     canonical = f"https://symmetrylab.jp/blog/{article['slug']}/"
     date = (article["published_at"] or "")[:10].replace("-", ".")
     image = f'<img class="column-cover" src="{html.escape(article["cover_image_url"], quote=True)}" alt="{html.escape(article["title"], quote=True)}">' if article["cover_image_url"] else ""
-    body = f'<section class="section"><div class="container column-wrap"><p class="column-meta"><a href="/blog/">コラム</a> / {html.escape(article["category"] or "コラム")} / {date}</p><h1 style="font-size:2rem;line-height:1.5">{html.escape(article["title"])}</h1>{image}<div class="column-content">{markdown_to_html(article["content"])}</div></div></section>'
+    body = f'<section class="section"><div class="container column-wrap"><p class="column-meta"><a href="/blog/">コラム</a> / {html.escape(article["category"] or "コラム")} / {date}</p><h1 style="font-size:clamp(1.6rem,3.2vw,2.2rem);line-height:1.5">{html.escape(article["title"])}</h1>{image}<div class="column-content">{markdown_to_html(article["content"])}</div></div></section>'
     return HTMLResponse(public_layout(article["meta_title"] or article["title"], article["meta_description"] or article_summary(article["content"]), canonical, body, article))
 
 
@@ -3518,7 +3931,75 @@ async def startup():
     print(f"[起動] SYMMETRY Lab 予約サーバー - {BASE_URL}")
 
 
-# 静的ファイル配信（最後にマウント）
+# --- 静的ファイル配信（最後にマウント） ---
+# 配信元はリポジトリのルートなので、そのままだとサーバーのプログラム・設定・テスト・社内資料まで公開されてしまう。
+# そのため「サイトのページ・画像と、ページの表示に必要なCSS/JS」だけを通す許可リスト方式にする。
+# 新しい種類のファイルを公開したいときは、ここに追加する（追加しない限り404になる）。
+PUBLIC_STATIC_EXTENSIONS = {
+    ".html",                                                     # ページ
+    ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".avif", ".ico",  # 画像
+    ".css", ".js",                                               # ページの見た目と動きに必要なもの
+}
+# 拡張子に関係なく公開しないフォルダ（先頭のフォルダ名で判定）。
+# server/tests/docs：プログラムと資料、downloads：PDF生成スクリプト等、ad_creative：広告の下書き・社内向けプレビュー
+# （広告LP本体は /career-check/ のルートから個別に配信している）、work/drafts/_review_tmp：作業用の一時フォルダ
+# 大文字・小文字を区別しないファイルシステム（macOS など）で /SERVER/ のように書き換えて回避されないよう、小文字で比較する
+PRIVATE_STATIC_DIRS = {"server", "tests", "docs", "downloads", "ad_creative", "work", "drafts", "_review_tmp", "__pycache__"}
+# 拡張子の許可リストにないが、検索エンジン向けに公開が必要なファイル（ルート直下のみ）
+PUBLIC_STATIC_FILES = {"robots.txt"}
+
+
+def is_public_static_path(relative_path: str, is_dir: bool) -> bool:
+    """配信ルートからの相対パスが、一般公開してよいファイル・フォルダかを判定する。
+
+    - 「.」で始まる名前（.git、.env、作業用の隠しフォルダなど）を含むものは公開しない
+    - 先頭のフォルダが PRIVATE_STATIC_DIRS にあるものは公開しない
+    - ファイルは PUBLIC_STATIC_EXTENSIONS の拡張子か、PUBLIC_STATIC_FILES に一致するものだけ公開する
+    """
+    parts = [p for p in relative_path.replace("\\", "/").split("/") if p not in ("", ".")]
+    if any(p.startswith(".") for p in parts):
+        return False
+    if parts and parts[0].casefold() in PRIVATE_STATIC_DIRS:
+        return False
+    if is_dir:
+        return True
+    if relative_path.replace("\\", "/") in PUBLIC_STATIC_FILES:
+        return True
+    return os.path.splitext(parts[-1] if parts else "")[1].lower() in PUBLIC_STATIC_EXTENSIONS
+
+
+class PublicStaticFiles(StaticFiles):
+    """公開してよいファイルだけを返す StaticFiles。それ以外は存在しないもの（404）として扱う。
+
+    注意：Starlette の lookup_path（ファイル探索）を上書きしている。Starlette を更新したときは
+    tests/test_public_static_files.py で非公開ファイルが404になることを必ず確認する。
+    """
+
+    def __init__(self, *args, **kwargs):
+        """配信フォルダの実際の位置を起動時に一度だけ求めておく。
+
+        follow_symlink は False 固定にする。True だとシンボリックリンクが解決されずに判定され、
+        公開名のリンクから非公開ファイルを返せてしまうため。
+        """
+        kwargs["follow_symlink"] = False
+        super().__init__(*args, **kwargs)
+        self._real_directory = os.path.realpath(self.directory)
+
+    def lookup_path(self, path: str):
+        """通常の探索で見つかったファイルについて、公開可否を確認する。
+
+        判定は実際に解決されたファイルの位置で行う（../ やシンボリックリンクでの回避を防ぐため。
+        配信フォルダの外へのアクセスは Starlette 側の判定で既に除外されている）。
+        """
+        full_path, stat_result = super().lookup_path(path)
+        if stat_result is None:
+            return full_path, stat_result
+        relative = os.path.relpath(full_path, self._real_directory)
+        if not is_public_static_path(relative, stat.S_ISDIR(stat_result.st_mode)):
+            return "", None
+        return full_path, stat_result
+
+
 static_dir = os.getenv("WEBSITE_DIR", os.path.join(os.path.dirname(__file__), ".."))
 if os.path.exists(static_dir):
-    app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
+    app.mount("/", PublicStaticFiles(directory=static_dir, html=True), name="static")

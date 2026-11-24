@@ -1,84 +1,45 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="SYMMETRY Labの実践スキル研修。M&A実務スキルを3日間で体系的に習得。外資系戦略コンサル出身者が実案件ベースで指導します。">
-  <meta property="og:title" content="研修サービス | SYMMETRY Lab株式会社">
-  <meta property="og:description" content="M&A実務スキルを3日間で習得する実践スキル研修。外資系戦略コンサル出身者が指導。">
+    <title>サービス | SYMMETRY Lab株式会社</title>
+  <meta name="description" content="SYMMETRY Lab株式会社は、外資系戦略コンサル出身者による実践型研修・ケース面接対策・コンサルティングを提供しています。">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/TextPlugin.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.1/dist/lenis.min.js" defer></script>
+  <!-- 幕が開く演出は、同じタブで最初に開いたときだけ再生する（ページを移動するたびに幕が一瞬ちらつかないように）。
+       描画前に判定するため、スタイルより先に実行する -->
+  <script>try { if (sessionStorage.getItem('slab-intro-done')) document.documentElement.classList.add('intro-done'); } catch (e) {}</script>
+  <link rel="stylesheet" href="style.css?v=20261124-02">
+  <script type="importmap">
+    { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    } }
+  </script>
+  <meta property="og:title" content="サービス | SYMMETRY Lab株式会社">
+  <meta property="og:description" content="キャリア形成支援事業とコンサルティング事業のご紹介。">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://symmetrylab.jp/services.html">
   <meta property="og:site_name" content="SYMMETRY Lab">
   <meta property="og:locale" content="ja_JP">
   <meta property="og:image" content="https://symmetrylab.jp/images/hero-consulting.jpg">
-  <meta property="og:image:alt" content="SYMMETRY Labの研修サービス">
+  <meta property="og:image:alt" content="SYMMETRY Labの戦略コンサル向け実践研修">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="研修サービス | SYMMETRY Lab株式会社">
-  <meta name="twitter:description" content="M&A実務スキルを3日間で習得する実践スキル研修。外資系戦略コンサル出身者が指導。">
+  <meta name="twitter:title" content="サービス | SYMMETRY Lab株式会社">
+  <meta name="twitter:description" content="キャリア形成支援事業とコンサルティング事業のご紹介。">
   <meta name="twitter:image" content="https://symmetrylab.jp/images/hero-consulting.jpg">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <link rel="canonical" href="https://symmetrylab.jp/services.html">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260624-0209">
-  <title>研修サービス | SYMMETRY Lab株式会社</title>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    "@id": "https://symmetrylab.jp/services.html#services",
-    "name": "SYMMETRY Labの研修サービス",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "item": {
-          "@type": "Service",
-          "@id": "https://symmetrylab.jp/services.html#practical-skills",
-          "name": "ジョブ対策講座",
-          "serviceType": "戦略コンサル志望者向けジョブ対策・M&A実務スキル研修",
-          "url": "https://symmetrylab.jp/services.html#practical-skills",
-          "provider": {
-            "@type": "Organization",
-            "@id": "https://symmetrylab.jp/#organization",
-            "name": "SYMMETRY Lab株式会社",
-            "url": "https://symmetrylab.jp/"
-          },
-          "offers": {
-            "@type": "Offer",
-            "price": "9000",
-            "priceCurrency": "JPY",
-            "availability": "https://schema.org/InStock"
-          }
-        }
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "item": {
-          "@type": "Service",
-          "@id": "https://symmetrylab.jp/lp-case.html#service",
-          "name": "ケース面接対策講座",
-          "serviceType": "戦略コンサルティングファーム向けケース面接対策",
-          "url": "https://symmetrylab.jp/lp-case.html",
-          "provider": {
-            "@type": "Organization",
-            "@id": "https://symmetrylab.jp/#organization",
-            "name": "SYMMETRY Lab株式会社",
-            "url": "https://symmetrylab.jp/"
-          },
-          "offers": {
-            "@type": "Offer",
-            "price": "9000",
-            "priceCurrency": "JPY",
-            "availability": "https://schema.org/InStock"
-          }
-        }
-      }
-    ]
-  }
-  </script>
+  <script>if (location.hash === "#practical-skills") location.replace("job.html"); else if (location.hash === "#case-interview") location.replace("lp-case.html");</script>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KR9VEKC8JZ"></script>
   <script>
@@ -87,521 +48,310 @@
     gtag('js', new Date());
     gtag('config', 'G-KR9VEKC8JZ');
   </script>
-    <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-mark.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="images/favicon-192x192.png">
-  <link rel="apple-touch-icon" sizes="192x192" href="images/favicon-192x192.png">
 </head>
-<body>
+<body data-page="services">
+  <div class="curtain" id="curtain" aria-hidden="true"><span></span><span></span>
+    <svg class="curtain-mark" viewBox="0 0 171.6 200">
+<path class="m-t" d="M171.4 69.4 L170.7 69.4 L170.0 71.2 L167.5 75.8 L165.5 79.0 L163.4 81.8 L160.6 85.1 L158.2 87.5 L154.4 90.7 L151.0 93.2 L63.6 150.3 L61.2 152.3 L59.3 154.2 L57.6 156.2 L56.0 158.6 L54.6 161.4 L53.7 163.6 L52.6 167.8 L52.3 171.1 L52.3 173.6 L52.9 178.2 L53.9 181.5 L54.7 183.7 L56.1 186.2 L57.8 188.7 L59.9 191.2 L61.6 192.8 L65.4 195.5 L68.9 197.4 L72.3 198.7 L76.3 199.6 L78.7 199.8 L84.0 199.7 L88.7 198.8 L92.3 197.6 L95.1 196.3 L96.8 195.2 L158.5 154.8 L162.3 152.1 L165.0 149.4 L167.6 146.0 L169.4 142.6 L170.7 138.9 L171.4 134.5Z"/>
+<path class="m-t" d="M109.9 7.1 L106.8 4.8 L103.0 2.7 L99.2 1.2 L95.9 0.4 L92.1 0.0 L87.8 0.1 L83.9 0.7 L79.6 2.1 L76.6 3.5 L74.6 4.6 L12.9 45.0 L9.3 47.6 L6.2 50.6 L4.0 53.5 L2.1 57.2 L0.8 60.7 L0.1 64.7 L0.0 131.4 L0.4 131.4 L1.4 128.8 L3.8 124.1 L6.1 120.6 L7.8 118.2 L10.5 115.1 L13.6 112.1 L17.8 108.5 L107.6 49.7 L110.5 47.3 L112.6 45.1 L115.4 41.3 L116.9 38.3 L117.6 36.6 L118.5 33.5 L118.9 31.0 L119.1 29.2 L119.1 25.8 L118.5 21.5 L117.6 18.5 L116.8 16.5 L115.6 14.1 L113.9 11.5 L112.3 9.6Z"/>
+<path class="m-g" d="M37.9 95.4 L18.8 107.9 L14.4 111.4 L10.6 115.1 L6.6 120.0 L3.1 125.5 L1.5 128.8 L0.0 132.4 L0.0 134.4 L0.3 136.2 L0.7 137.7 L2.0 140.2 L3.9 142.5 L6.0 144.0 L8.3 145.1 L36.8 155.0 L38.5 155.3 L40.8 155.4 L42.6 155.1 L44.3 154.6 L45.9 153.8 L47.6 152.6 L49.0 151.1 L50.0 149.5 L50.6 148.2 L51.2 146.3 L51.4 145.0 L51.4 107.8 L51.0 105.6 L50.4 103.8 L49.0 101.5 L47.3 99.6 L45.7 98.4 L44.1 97.5 L38.7 95.4Z"/>
+<path class="m-g" d="M130.0 44.5 L128.2 44.9 L127.0 45.3 L125.3 46.2 L123.9 47.2 L122.7 48.4 L121.7 49.8 L121.0 51.1 L120.3 53.2 L120.0 55.4 L120.0 91.6 L120.4 94.2 L121.1 96.2 L122.3 98.4 L124.1 100.3 L125.8 101.6 L127.0 102.2 L132.6 104.4 L133.6 104.4 L153.0 91.7 L157.1 88.4 L160.5 85.1 L164.5 80.2 L166.5 77.4 L168.3 74.4 L169.9 71.2 L171.4 67.5 L171.4 65.2 L170.8 62.3 L169.4 59.7 L167.6 57.5 L165.0 55.6 L163.3 54.8 L134.5 44.9 L132.7 44.5Z"/>
+    </svg>
+  </div>
+  <canvas id="gl" aria-hidden="true"></canvas>
 
-  <!-- Navigation -->
-  <nav class="navbar">
-    <div class="container">
-      <a href="index.html" class="nav-logo"><img src="images/logo_full.png" alt="SYMMETRY Lab" class="nav-logo-img"></a>
-      <button class="nav-toggle" aria-label="メニュー" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-      <div class="nav-links">
-        <a href="company.html">会社概要</a>
-        <div class="nav-dropdown">
-          <a href="services.html" class="nav-dropdown-trigger">サービス</a>
-          <div class="nav-dropdown-menu">
-            <a href="services.html">ジョブ対策</a>
-            <a href="lp-case.html">ケース面接対策</a>
-            <a href="works.html">コンサルティングサービス</a>
-            <a href="faq.html">よくある質問</a>
-          </div>
-        </div>
-        <a href="blog/">コラム</a>
-        <a href="contact.html">お問い合わせ</a>
-      </div>
+  <header class="header">
+    <a href="./" class="brand"><img src="images/logo_full.png" alt="SYMMETRY Lab"></a>
+    <a href="contact.html" class="header-cta" data-magnetic><span class="roll" data-roll>無料相談</span> <svg class="ph" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
+    <button class="menu-btn" id="menuBtn" aria-label="メニュー" aria-expanded="false" aria-controls="nav"><svg viewBox="0 0 100 100" aria-hidden="true"><path class="line line1" d="M 20,29.000046 H 80.000231 C 80.000231,29.000046 94.498839,28.817352 94.532987,66.711331 94.543142,77.980673 90.966081,81.670246 85.259173,81.668997 79.552261,81.667751 75.000211,74.999942 75.000211,74.999942 L 25.000021,25.000058"/><path class="line line2" d="M 20,50 H 80"/><path class="line line3" d="M 20,70.999954 H 80.000231 C 80.000231,70.999954 94.498839,71.182648 94.532987,33.288669 94.543142,22.019327 90.966081,18.329754 85.259173,18.331003 79.552261,18.332249 75.000211,25.000058 75.000211,25.000058 L 25.000021,74.999942"/></svg></button>
+  </header>
+  <!-- メニュー：ほかのページへのリンクだけをまとめる（旧HPと同じ項目） -->
+  <nav class="nav" id="nav" aria-label="メニュー">
+    <div class="nav-inner">
+      <a href="./" class="nav-item">トップ<span class="nav-en">Home</span></a>
+      <a href="services.html" class="nav-item">サービス<span class="nav-en">Services</span></a>
+      <a href="company.html" class="nav-item">会社概要<span class="nav-en">Company</span></a>
+      <a href="blog/" class="nav-item">コラム<span class="nav-en">Column</span></a>
+      <a href="contact.html" class="nav-item">お問い合わせ<span class="nav-en">Contact</span></a>
     </div>
   </nav>
 
-  <!-- ジョブ対策 -->
-  <section id="practical-skills" class="section">
-    <div class="container fade-in">
-      <div class="section-header">
-        <p class="section-eyebrow">━ For Aspiring Strategy Consultants ━</p>
-        <h2 style="font-size:clamp(1.8rem,3vw,2.6rem);line-height:1.4;margin-bottom:0;">内定を勝ち取る最後の壁、<br class="mobile-only">ジョブ…入社後、<br class="mobile-only">本当に現場で戦えるのか不安…<br>そんなあなたのために、<br class="mobile-only">本番さながらの実践演習で、<br class="mobile-only">"活躍する力"を<br class="mobile-only">身につけます。</h2>
+  <main>
+    <!-- ページの見出し -->
+    <section data-stop class="sec svc-head">
+      <div class="wrap">
+        <p class="label"><img src="images/favicon-mark.png" alt="" class="lbl-mark">Services</p>
+        <h1 class="h2 big">サービス</h1>
+        <p class="text">キャリア形成支援事業とコンサルティング事業の2つの事業を行っています。</p>
+        <p class="text">SYMMETRY Labは、外資系戦略コンサルティングファームでM&amp;Aや新規事業のプロジェクトを担当してきたメンバーが立ち上げた会社です。企業の戦略立案とM&amp;Aの支援、業務システムの開発、コンサルティングファームを目指す方の転職支援を行っています。</p>
       </div>
-      <p style="margin:0 auto 1rem;text-align:center;"><span style="white-space:nowrap;">戦略コンサルタントの主要業務<br class="mobile-only">であるM&Aを題材に、<br class="mobile-only">ジョブ等の実務で求められるスキルを<br class="mobile-only">全3回で体系的に習得する<br class="mobile-only">プログラムです。</span><br>実際のプロジェクトで使用する<br class="mobile-only">資料をベースに、<br class="mobile-only">実践的なスキルを身につけます。</p>
+    </section>
 
-      <div class="grid-3 fade-in">
-        <div class="service-card">
-          <div class="service-card-header">
-            <h3>Day 1</h3>
-            <p class="text-small" style="opacity:0.8">M&A基礎知識編</p>
-          </div>
-          <img src="images/Day1.png" alt="Day 1 参考スライド" class="day-card-image">
-          <div class="service-card-body">
-            <p style="word-break:keep-all;overflow-wrap:break-word;">M&Aの全体像を理解し、戦略コンサルタントとしての<br>基礎力を固めます。</p>
-            <ul>
-              <li>M&Aプロセスの全体像</li>
-              <li>M&Aプロセスの各フェーズでの主要論点</li>
-              <li>M&Aにおける戦略コンサルの立ち位置と役割</li>
-            </ul>
-          </div>
-        </div>
-        <div class="service-card">
-          <div class="service-card-header">
-            <h3>Day 2</h3>
-            <p class="text-small" style="opacity:0.8">M&A実務編</p>
-          </div>
-          <img src="images/Day2.png" alt="Day 2 参考スライド" class="day-card-image">
-          <div class="service-card-body">
-            <p style="word-break:keep-all;overflow-wrap:break-word;">コンサルタントの中核業務であるBDD（ビジネス・デュー・デリジェンス）を取り上げ、実務への理解を深めます。</p>
-            <ul>
-              <li>DD（デュー・デリジェンス）の種類と概要</li>
-              <li>BDD（ビジネス・デュー・デリジェンス）の主要論点</li>
-              <li>外部・内部環境分析における実践演習</li>
-            </ul>
-          </div>
-        </div>
-        <div class="service-card">
-          <div class="service-card-header">
-            <h3>Day 3</h3>
-            <p class="text-small" style="opacity:0.8">実務スキル習得編</p>
-          </div>
-          <img src="images/Day3.png" alt="Day 3 参考スライド" class="day-card-image">
-          <div class="service-card-body">
-            <p style="word-break:keep-all;overflow-wrap:break-word;">これまで演習の集大成として、事業計画の策定を行い、論理的思考力と実務スキルを磨きます。</p>
-            <ul>
-              <li>デューデリジェンス結果を投資判断示唆へ接続する方法</li>
-              <li>事業計画の策定</li>
-              <li>資料作成・Excel等の実務スキルの習得</li>
-            </ul>
+    <!-- キャリア形成支援事業：転職支援と面接対策を、画面固定のチャプターで1つずつ大きく見せる。
+         各「○○を見る」ボタンで、このページ内の詳細セクション（#job-change / #programs）へ移動する。 -->
+    <section data-stop class="sec svc-sec svc-chapter" id="career">
+      <div class="wrap">
+        <p class="label"><img src="images/favicon-mark.png" alt="" class="lbl-mark">Career</p>
+        <h2 class="h2">キャリア形成支援事業</h2>
+      </div>
+      <div class="ch-pin" data-chapter style="--n: 2">
+        <span class="stop" style="top: 0"></span><span class="stop" style="top: 100vh"></span>
+        <div class="ch-stage">
+          <div class="wrap ch-grid">
+            <div class="ch-items">
+              <article class="ch-item is-active">
+                <p class="ch-en">Career Change</p>
+                <h3 class="ch-title">転職支援</h3>
+                <div class="ch-body">
+                  <p class="ch-desc">戦略・総合コンサルティングファームへの中途転職に特化。求人紹介だけでなく、書類作成から人物面接、ケース面接まで、入社まで一気通貫で支援します。</p>
+                  <p class="ch-tags">書類添削 / 人物面接対策 / ケース面接対策 / 内定後の伴走</p>
+                  <a href="#job-change" class="ch-link">転職支援を見る <svg class="ph" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg></a>
+                </div>
+              </article>
+              <article class="ch-item">
+                <p class="ch-en">Interview Prep</p>
+                <h3 class="ch-title">面接対策</h3>
+                <div class="ch-body">
+                  <p class="ch-desc">外資系戦略コンサルティングファーム出身の講師が、ケース面接対策とジョブ対策の2つの講座をマンツーマンで担当します。</p>
+                  <p class="ch-tags">ケース面接対策 / ジョブ対策</p>
+                  <a href="#programs" class="ch-link">面接対策を見る <svg class="ph" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg></a>
+                </div>
+              </article>
+            </div>
+            <div class="ch-tabs">
+              <button type="button" class="ch-tab is-active"><i></i>転職支援</button>
+              <button type="button" class="ch-tab"><i></i>面接対策</button>
+            </div>
           </div>
         </div>
       </div>
+    </section>
 
-      <div style="max-width:600px;margin:1.5rem auto 0;padding:1.5rem;background:var(--color-bg-alt);border-radius:8px;text-align:center;">
-        <h3>料金</h3>
-        <p style="font-size:1.5rem;font-weight:300;margin:0.5rem 0;font-family:'Inter',sans-serif;">¥9,000 <span style="font-size:0.85rem;font-weight:400;color:var(--color-text-light);">/ 各日（税込）</span></p>
-        <p class="text-small text-light" style="margin-top:0.75rem;">各日テキスト込み</p>
-        <button class="btn-primary" style="margin-top:1rem;display:inline-block;" onclick="openTrainingModal()">ジョブ対策講座を申し込む</button>
-      </div>
-    </div>
-  </section>
+    <!-- 転職支援：コンサル転職支援LP（consulting-career/）の内容を、このページのデザインに合わせて掲載する。
+         3Dロゴの形の切り替え地点（data-stop）は付けず、直前のキャリア形成支援事業の形を引き継ぐ（main.js の PAGE_KEYS と数を合わせるため）。
+         申し込みは、DB保存・管理画面・通知が整っているLPの申込フォームへ誘導する（フォームを二重に持たないため）。 -->
+    <section class="sec job-change" id="job-change">
+      <div class="wrap">
+        <div class="sec-head">
+          <p class="label"><img src="images/favicon-mark.png" alt="" class="lbl-mark">Career Change</p>
+          <h2 class="h2" data-split="lines">転職支援</h2>
+          <p class="text">コンサル転職を、確かな一歩に。戦略・総合コンサルティングファームへの中途転職に特化し、求人紹介だけでなく、書類作成から人物面接、ケース面接まで、入社まで一気通貫で支援します。</p>
+        </div>
 
-  <!-- Are You Struggling -->
-  <section class="section">
-    <div class="container fade-in">
-      <div class="section-header">
-        <p class="section-eyebrow">━ Are You Struggling With Any Of These ━</p>
-        <h2 style="line-height:1.7;margin-bottom:0;white-space:nowrap;">戦略コンサルでの活躍を目指すあなたは、こんな壁にぶつかっていませんか？</h2>
-      </div>
-
-      <div style="max-width:900px;margin:2rem auto 0;">
-        <ul style="list-style:none;padding:0;margin:0;">
-          <li style="padding:0.75rem 0 0.75rem 2rem;position:relative;border-bottom:1px solid var(--color-border);">
-            <span style="position:absolute;left:0;color:var(--color-accent);font-weight:700;">✓</span>
-            戦略コンサルタントの業務内容が今ひとつ理解できない…
-          </li>
-          <li style="padding:0.75rem 0 0.75rem 2rem;position:relative;border-bottom:1px solid var(--color-border);">
-            <span style="position:absolute;left:0;color:var(--color-accent);font-weight:700;">✓</span>
-            1時間程度のケース面接であれば問題ないが、長時間のワークショップには対応できない…
-          </li>
-          <li style="padding:0.75rem 0 0.75rem 2rem;position:relative;border-bottom:1px solid var(--color-border);">
-            <span style="position:absolute;left:0;color:var(--color-accent);font-weight:700;">✓</span>
-            定性的な問題を解くことは可能だが、定量的に数値に落とし込むことが苦手…
-          </li>
-          <li style="padding:0.75rem 0 0.75rem 2rem;position:relative;border-bottom:1px solid var(--color-border);">
-            <span style="position:absolute;left:0;color:var(--color-accent);font-weight:700;">✓</span>
-            入社前までに実務的なスキルや思考法を習得したい…
-          </li>
-          <li style="padding:0.75rem 0 0.75rem 2rem;position:relative;">
-            <span style="position:absolute;left:0;color:var(--color-accent);font-weight:700;">✓</span>
-            入社後に求められる実際のアウトプットレベルを知っておきたい…
-          </li>
+        <ul class="jc-benefits reveal" aria-label="転職支援の特長">
+          <li><img class="jc-ico" src="images/benefit-icon-free.png" alt="" aria-hidden="true"><span>書類作成やケース面接など、全ての支援が入社まで完全無料</span></li>
+          <li><img class="jc-ico" src="images/benefit-icon-advisor.png" alt="" aria-hidden="true"><span>外資戦略コンサル出身者が、全てのプロセスを一貫して支援</span></li>
+          <li><img class="jc-ico" src="images/benefit-icon-decision.png" alt="" aria-hidden="true"><span>無理な応募は勧めず、求職者様が納得できる意思決定を支援</span></li>
         </ul>
-      </div>
-    </div>
-  </section>
 
-  <!-- Why SYMMETRY Lab -->
-  <section class="section section-why">
-    <div class="container fade-in">
-      <div class="section-header">
-        <p class="section-eyebrow">━ Why SYMMETRY Lab ━</p>
-        <h2>SYMMETRY Lab が選ばれる理由</h2>
-      </div>
-
-      <div class="service-reasons" style="max-width:1100px;margin:2rem auto 0;display:flex;flex-direction:column;gap:1.5rem;">
-        <div class="service-reason-card" style="display:flex;align-items:center;gap:1.5rem;background:#fff;border:1px solid var(--color-border);border-radius:8px;padding:1.5rem 2rem;">
-          <div style="flex-shrink:0;width:80px;height:80px;border-radius:50%;border:1px solid var(--color-accent);color:var(--color-accent-hover);display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-weight:700;">
-            <span style="display:inline-flex;align-items:center;"><span style="font-size:10px;font-weight:600;letter-spacing:0.1em;line-height:1;margin-top:1px;">NO.</span><span style="font-size:22px;line-height:1;">01</span></span>
-          </div>
-          <div>
-            <h3 style="font-size:1rem;font-weight:700;color:var(--color-accent);margin-bottom:0.5rem;">外資系戦略コンサル出身者による直接指導</h3>
-            <p style="font-size:1rem;color:var(--color-text);margin:0;line-height:1.7;">講師は外資系戦略コンサルティングファーム出身のものが担当します。実際のM&Aや新規事業立案等の経営戦略プロジェクトで培った"現場の思考法"を、書籍では決して学べないレベルで<br>伝授します。また、面接官・上長が何を評価しているのかを、評価する側の視点から明らかにします。</p>
-          </div>
+        <h3 class="jc-sub">こんな方を支援しています</h3>
+        <div class="svc-items jc-targets">
+          <article class="svc-item reveal">
+            <h4>自分がコンサルで通用するのかわからない</h4>
+            <p>コンサルティングファームの情報収集を始めたものの、コンサル適性があるのか、どのファームなら可能性があるのか等、自分の現在地がわからない方</p>
+          </article>
+          <article class="svc-item reveal">
+            <h4>現状の選考対策で受かるのか不安</h4>
+            <p>職務経歴書は自己流、ケース面接は書店の対策本を読んだだけ。「この準備で本当に受かるのか」を、選考を熟知した人へ確認したい方</p>
+          </article>
+          <article class="svc-item reveal">
+            <h4>現職が忙しく、転職活動が進まない</h4>
+            <p>平日は業務で手一杯。限られた時間で「何から・どの順で」準備すべきかを明確にし、最短距離で選考に臨みたい方</p>
+          </article>
         </div>
 
-        <div class="service-reason-card" style="display:flex;align-items:center;gap:1.5rem;background:#fff;border:1px solid var(--color-border);border-radius:8px;padding:1.5rem 2rem;">
-          <div style="flex-shrink:0;width:80px;height:80px;border-radius:50%;border:1px solid var(--color-accent);color:var(--color-accent-hover);display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-weight:700;">
-            <span style="display:inline-flex;align-items:center;"><span style="font-size:10px;font-weight:600;letter-spacing:0.1em;line-height:1;margin-top:1px;">NO.</span><span style="font-size:22px;line-height:1;">02</span></span>
-          </div>
-          <div>
-            <h3 style="font-size:1rem;font-weight:700;color:var(--color-accent);margin-bottom:0.5rem;">実案件ベースの実戦型カリキュラム</h3>
-            <p style="font-size:1rem;color:var(--color-text);margin:0;line-height:1.7;">汎用的な実務解説ではなく、実際のプロジェクトをベースにしたオリジナルケースで思考力・スキルそのものを鍛えます。実務レベルの思考法とアウトプットを身につけ、入社後にも現場で戦える"即戦力"へ導きます。</p>
-          </div>
-        </div>
+        <h3 class="jc-sub">ご利用の流れ</h3>
+        <ol class="jc-flow">
+          <li class="reveal"><span class="jc-no">01</span><div><h4>無料相談申込</h4><p>まずはWebから無料相談申込。現在の状況やご希望のファームなどをお聞かせください。</p></div></li>
+          <li class="reveal"><span class="jc-no">02</span><div><h4>初回面談</h4><p>あなたの経験や希望を詳しくお聞かせいただき、転職の進め方・対策内容を確認します。</p></div></li>
+          <li class="reveal"><span class="jc-no">03</span><div><h4>求人紹介</h4><p>提携する人材紹介会社と連携し、あなたのキャリア設計に最適な求人を厳選してご紹介します。</p></div></li>
+          <li class="reveal"><span class="jc-no">04</span><div><h4>書類添削</h4><p>職務経歴書や志望動機を、面接官に刺さる構成・表現へ磨き上げます。</p></div></li>
+          <li class="reveal"><span class="jc-no">05</span><div><h4>面接対策</h4><p>志望動機を問う人物面接から、最大の関門であるケース面接まで、徹底的に対策します。</p></div></li>
+          <li class="reveal"><span class="jc-no">06</span><div><h4>内定後の伴走</h4><p>オファー内容の確認から条件交渉や入社前の準備まで、内定後も伴走します。</p></div></li>
+        </ol>
+        <p class="jc-note">※求人紹介および応募手続、条件交渉は、提携する人材紹介会社と連携して担当します。</p>
 
-        <div class="service-reason-card" style="display:flex;align-items:center;gap:1.5rem;background:#fff;border:1px solid var(--color-border);border-radius:8px;padding:1.5rem 2rem;">
-          <div style="flex-shrink:0;width:80px;height:80px;border-radius:50%;border:1px solid var(--color-accent);color:var(--color-accent-hover);display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-weight:700;">
-            <span style="display:inline-flex;align-items:center;"><span style="font-size:10px;font-weight:600;letter-spacing:0.1em;line-height:1;margin-top:1px;">NO.</span><span style="font-size:22px;line-height:1;">03</span></span>
-          </div>
-          <div>
-            <h3 style="font-size:1rem;font-weight:700;color:var(--color-accent);margin-bottom:0.5rem;">一人ひとりに合わせた柔軟な対応</h3>
-            <p style="font-size:1rem;color:var(--color-text);margin:0;line-height:1.7;">完全マンツーマン指導で一人ひとりの弱点を特定します。<br>また、受講者様の理解度・目的に応じて、Day1~Day3、Day2~Day3、Day3のみといった進め方にも柔軟に対応します。</p>
+        <a href="consulting-career/#application" class="btn jc-cta" data-roll><span class="roll">転職支援を無料で相談する</span> <svg class="ph" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg></a>
+      </div>
+    </section>
+
+    <!-- 面接対策の講座（トップページから移動） -->
+    <section data-stop class="sec programs" id="programs">
+      <div class="wrap">
+        <div class="sec-head">
+          <p class="label"><img src="images/favicon-mark.png" alt="" class="lbl-mark">Career Programs</p>
+          <h2 class="h2" data-split="lines">面接対策の講座</h2>
+        </div>
+        <div class="programs-grid">
+          <article class="pcard reveal">
+            <div class="pcard-top"><span class="pnum">A</span><span class="ptag">新卒・中途対応 / 完全マンツーマン</span></div>
+            <h3>ケース面接対策講座</h3>
+            <p>外資系戦略コンサル出身者が、あなた専用のカリキュラムで直接指導。フレームワーク暗記ではなく、思考プロセスそのものを鍛えます。</p>
+            <ul class="plist">
+              <li><b>Process</b>論点設計 → 構造化 → 仮説構築 → 検証</li>
+              <li><b>Case</b>実案件ベースのオリジナルケース演習</li>
+              <li><b>Coach</b>一人ひとりに合わせたカスタマイズ指導</li>
+            </ul>
+            <div class="pfoot"><span class="price">¥9,000〜<small>（税込）</small></span><a href="lp-case.html" class="more">詳細</a></div>
+            <a href="lp-case.html" class="btn" data-roll><span class="roll">ケース面接対策講座を申し込む</span> <svg class="ph" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg></a>
+          </article>
+          <article class="pcard reveal">
+            <div class="pcard-top"><span class="pnum">B</span><span class="ptag">全3回 / M&amp;A実務スキル習得</span></div>
+            <h3>ジョブ対策講座</h3>
+            <p>戦略コンサルタントの主要業務であるM&amp;Aを題材に、ジョブ等の現場で求められる実務スキルを全3回で体系的に習得します。</p>
+            <ul class="plist">
+              <li><b>Day 1</b>M&amp;A基礎知識編</li>
+              <li><b>Day 2</b>M&amp;A実務編</li>
+              <li><b>Day 3</b>実務スキル習得編</li>
+            </ul>
+            <div class="pfoot"><span class="price">¥9,000<small>/各日（税込）</small></span><a href="job.html#practical-skills" class="more">詳細</a></div>
+            <a href="booking.html" class="btn" data-roll><span class="roll">ジョブ対策講座を申し込む</span> <svg class="ph" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg></a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- コンサルティング事業：戦略とITを画面固定のチャプターで1つずつ見せる。
+         「支援実績を見る」は main.js の data-goto-cat 処理で、下の支援実績の該当カテゴリの位置へ移動する。 -->
+    <section data-stop class="sec svc-sec svc-chapter" id="consulting">
+      <div class="wrap">
+        <p class="label"><img src="images/favicon-mark.png" alt="" class="lbl-mark">Consulting</p>
+        <h2 class="h2">コンサルティング事業</h2>
+      </div>
+      <div class="ch-pin" data-chapter style="--n: 2">
+        <span class="stop" style="top: 0"></span><span class="stop" style="top: 100vh"></span>
+        <div class="ch-stage">
+          <div class="wrap ch-grid">
+            <div class="ch-items">
+              <article class="ch-item is-active">
+                <p class="ch-en">Strategy</p>
+                <h3 class="ch-title">戦略コンサルティング</h3>
+                <div class="ch-body">
+                  <p class="ch-desc">中期経営計画の策定、組織再編・PMI、M&amp;A戦略からビジネスDDまで。定量的なシミュレーションで選択肢を比較できる形にし、経営の意思決定を前に進めます。</p>
+                  <p class="ch-tags">中期経営計画 / M&amp;A・PMI / ビジネスDD</p>
+                  <a href="#works" class="ch-link" data-goto-cat="strategy">支援実績を見る <svg class="ph" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg></a>
+                </div>
+              </article>
+              <article class="ch-item">
+                <p class="ch-en">Technology</p>
+                <h3 class="ch-title">ITコンサルティング</h3>
+                <div class="ch-body">
+                  <p class="ch-desc">業務プロセスの再設計から、文書管理・ワークフローシステムの構築、生成AIを活用したナレッジ基盤の開発まで。戦略を、現場で動く仕組みに落とし込みます。</p>
+                  <p class="ch-tags">業務プロセス改善 / 文書管理・ワークフロー / 生成AI・RAG</p>
+                  <a href="#works" class="ch-link" data-goto-cat="dx">支援実績を見る <svg class="ph" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg></a>
+                </div>
+              </article>
+            </div>
+            <div class="ch-tabs">
+              <button type="button" class="ch-tab is-active"><i></i>戦略コンサルティング</button>
+              <button type="button" class="ch-tab"><i></i>ITコンサルティング</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Footer -->
+    <!-- Works: horizontal -->
+    <section data-stop class="sec works" id="works">
+      <div class="works-pin">
+        <div class="works-head wrap">
+          <div>
+            <p class="label"><img src="images/favicon-mark.png" alt="" class="lbl-mark">Works</p>
+            <h2 class="h2">支援実績</h2>
+          </div>
+          <div class="works-meta">
+            <span class="works-count"><b id="workNow">01</b> / <span id="workAll">06</span></span>
+            <a href="works.html" class="more">実績一覧ページへ</a>
+          </div>
+        </div>
+        <div class="works-track" id="worksTrack"></div>
+        <div class="works-progress"><span id="worksBar"></span></div>
+      </div>
+    </section>
+
+    <!-- Why -->
+    <section data-stop class="sec why" id="why">
+      <div class="wrap">
+        <p class="label"><img src="images/favicon-mark.png" alt="" class="lbl-mark">Why SYMMETRY Lab</p>
+        <ol class="why-list">
+          <li class="reveal"><span class="wn">01</span><div><h3>戦略ファーム出身者による直接対応</h3><p>ご相談から実際の作業まで、外資系戦略コンサルティングファームでM&amp;Aや新規事業のプロジェクトを担当してきたメンバーが行います。作業を外部に任せることはありません。</p></div></li>
+          <li class="reveal"><span class="wn">02</span><div><h3>論点整理から始める進め方</h3><p>どの事業でも、作業に入る前に「何を決める必要があるのか」をお客様と確認します。システムの要件定義やケース面接の指導でも、同じ手順で進めています。</p></div></li>
+          <li class="reveal"><span class="wn">03</span><div><h3>戦略策定からシステム開発まで一貫対応</h3><p>戦略を決めたあと、それを実行するための業務システムの開発まで同じチームで引き受けています。別々の会社に依頼する場合に比べて、方針と実装のずれが起きにくくなります。</p></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- コンサルティング事業のお問い合わせ。送信は js/contact-form.js がサーバー（/api/contact/inquiries）へ行い、
+         管理画面の「お問い合わせ」タブに表示・社内へメール通知される。
+         3Dロゴの形の切り替え地点（data-stop）は付けず、直前の「選ばれる理由」の形を引き継ぐ（PAGE_KEYS と数を合わせるため） -->
+    <section class="sec consult-contact" id="consulting-contact">
+      <div class="wrap consult-grid">
+        <div class="consult-intro">
+          <p class="label"><img src="images/favicon-mark.png" alt="" class="lbl-mark">Contact</p>
+          <h2 class="h2">コンサルティングの<br>ご相談</h2>
+          <p class="text">戦略コンサルティング・ITコンサルティングに関するご相談は、こちらのフォームからお送りください。内容を確認のうえ、担当者よりご連絡します。小規模なご依頼や、一部の検討だけのご依頼もお受けしています。</p>
+          <p class="consult-note">講座やその他のお問い合わせは<a href="contact.html">お問い合わせページ</a>からお送りください。</p>
+        </div>
+        <div class="consult-card">
+          <div class="consult-status" data-contact-status role="alert" hidden></div>
+          <form data-contact-form="consulting" class="consult-form">
+            <!-- ボット対策の隠し項目（人には見えず、入力されていたら受け付けない） -->
+            <input type="text" name="website" value="" autocomplete="off" tabindex="-1" aria-hidden="true" class="hp-field">
+            <div class="cf-row">
+              <label for="cf-company">会社名 <i>必須</i></label>
+              <input id="cf-company" name="company" type="text" autocomplete="organization" maxlength="200" required>
+            </div>
+            <div class="cf-row">
+              <label for="cf-name">氏名 <i>必須</i></label>
+              <input id="cf-name" name="name" type="text" autocomplete="name" maxlength="120" required>
+            </div>
+            <div class="cf-row">
+              <label for="cf-email">メールアドレス <i>必須</i></label>
+              <input id="cf-email" name="email" type="email" autocomplete="email" maxlength="254" required>
+            </div>
+            <div class="cf-row">
+              <label for="cf-phone">電話番号 <i>必須</i></label>
+              <input id="cf-phone" name="phone" type="tel" autocomplete="tel" maxlength="40" required>
+            </div>
+            <div class="cf-row">
+              <label for="cf-type">ご相談の領域 <i>必須</i></label>
+              <select id="cf-type" name="inquiry_type" required>
+                <option value="">選択してください</option>
+                <option value="戦略コンサルティング">戦略コンサルティング</option>
+                <option value="ITコンサルティング">ITコンサルティング</option>
+                <option value="その他">その他</option>
+              </select>
+            </div>
+            <div class="cf-row">
+              <label for="cf-message">ご相談内容 <i>必須</i></label>
+              <textarea id="cf-message" name="message" rows="6" maxlength="5000" required placeholder="例：中期経営計画の策定を検討しており、進め方を相談したい"></textarea>
+            </div>
+            <label class="cf-consent"><input type="checkbox" name="privacy_consent" required><span><a href="privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a>に同意します <i>必須</i></span></label>
+            <button type="submit" class="btn cf-submit"><span>送信する</span> <svg class="ph" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg></button>
+          </form>
+          <!-- 送信完了の表示（送信が成功したらフォームと入れ替える） -->
+          <div class="consult-complete" data-contact-complete tabindex="-1" hidden>
+            <h3>ご相談を受け付けました</h3>
+            <p>ご入力いただいたメールアドレスに受付確認のメールをお送りしました。担当者が内容を確認のうえ、ご連絡します。</p>
+            <button type="button" class="bbox-link" data-contact-again>続けて送信する</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
   <footer class="footer">
-    <div class="container">
-      <div class="footer-grid">
-
-        <div>
-          <h4>サービス</h4>
-          <div class="footer-links">
-            <a href="services.html">ジョブ対策</a>
-            <a href="lp-case.html">ケース面接対策</a>
-            <a href="booking.html">お申し込み</a>
-          </div>
-        </div>
-        <div>
-          <h4>会社情報</h4>
-          <div class="footer-links">
-            <a href="company.html">会社概要</a>
-            <a href="blog/">コラム</a>
-          </div>
-        </div>
-        <div>
-          <h4>サポート</h4>
-          <div class="footer-links">
-            <a href="faq.html">よくある質問</a>
-            <a href="contact.html">お問い合わせ</a>
-            <a href="privacy.html">プライバシーポリシー</a>
-            <a href="tokushoho.html">特定商取引法に基づく表記</a>
-          </div>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</span>
-      </div>
+    <div class="wrap footer-grid">
+      <a href="./" class="footer-brand"><img src="images/favicon-mark.png" alt="" class="brand-mark"><span class="brand-text">SYMMETRY <b>Lab</b></span></a>
+      <div><h4>サービス</h4><a href="services.html#career">キャリア形成支援事業</a><a href="services.html#consulting">コンサルティング事業</a><a href="job.html">ジョブ対策講座</a><a href="lp-case.html">ケース面接対策講座</a><a href="booking.html">お申し込み</a></div>
+      <div><h4>会社情報</h4><a href="company.html">会社概要</a><a href="works.html">実績</a><a href="blog/">コラム</a></div>
+      <div><h4>サポート</h4><a href="faq.html">よくある質問</a><a href="contact.html">お問い合わせ</a><a href="privacy.html">プライバシーポリシー</a><a href="tokushoho.html">特定商取引法に基づく表記</a></div>
     </div>
+    <p class="wrap copy">&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</p>
   </footer>
 
-  <!-- 予約モーダル -->
-  <div class="modal-overlay" id="trainingModal" style="display:none;position:fixed;inset:0;background:rgba(17,24,39,0.6);backdrop-filter:blur(4px);z-index:9999;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;">
-    <div style="background:#fff;border-radius:16px;max-width:560px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.3);border-top:3px solid var(--color-tiffany);animation:modalIn 0.3s ease;">
-      <div style="padding:28px 32px 20px;border-bottom:1px solid var(--color-border);display:flex;justify-content:space-between;align-items:flex-start;">
-        <div>
-          <div style="font-size:10px;font-weight:600;letter-spacing:0.2em;color:var(--color-tiffany-dark);margin-bottom:6px;font-family:'Inter',sans-serif;">APPLY NOW</div>
-          <h3 style="font-size:20px;font-weight:700;color:var(--color-primary);margin:0;">ジョブ対策講座 お申し込み</h3>
-        </div>
-        <button onclick="closeTrainingModal()" style="background:none;border:none;font-size:28px;color:var(--color-text-light);cursor:pointer;padding:0 4px;line-height:1;">&times;</button>
-      </div>
-      <div style="padding:24px 32px 32px;">
-        <div id="tModalLoading" style="text-align:center;padding:48px 0;color:var(--color-text-light);font-size:13px;">
-          <div style="display:inline-block;width:36px;height:36px;border:3px solid var(--color-border);border-top-color:var(--color-tiffany);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:12px;"></div>
-          <p>読み込み中...</p>
-        </div>
-
-        <div id="tModalContent" style="display:none;">
-          <div style="background:var(--color-bg-alt);border-left:2px solid var(--color-tiffany);padding:14px 18px;margin-bottom:20px;border-radius:8px;">
-            <div style="font-size:11px;font-weight:600;color:var(--color-text-light);letter-spacing:0.08em;margin-bottom:10px;">受講するDayを選択 <span style="color:var(--color-tiffany-dark);">*必須・複数選択可</span></div>
-            <div style="display:flex;flex-direction:column;gap:8px;">
-              <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border:1px solid var(--color-border);border-radius:8px;cursor:pointer;font-size:13px;transition:all 0.2s;">
-                <input type="checkbox" class="t-day-check" value="Day1" data-name="Day1：M&A基礎知識編" onchange="tUpdateDaySelection()" style="cursor:pointer;width:16px;height:16px;accent-color:var(--color-tiffany);">
-                <span style="flex:1;"><strong>Day1</strong> <span style="color:var(--color-text-light);">／ M&A基礎知識編</span></span>
-                <span style="font-weight:600;color:var(--color-tiffany-dark);">¥9,000</span>
-              </label>
-              <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border:1px solid var(--color-border);border-radius:8px;cursor:pointer;font-size:13px;transition:all 0.2s;">
-                <input type="checkbox" class="t-day-check" value="Day2" data-name="Day2：M&A実務編" onchange="tUpdateDaySelection()" style="cursor:pointer;width:16px;height:16px;accent-color:var(--color-tiffany);">
-                <span style="flex:1;"><strong>Day2</strong> <span style="color:var(--color-text-light);">／ M&A実務編</span></span>
-                <span style="font-weight:600;color:var(--color-tiffany-dark);">¥9,000</span>
-              </label>
-              <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border:1px solid var(--color-border);border-radius:8px;cursor:pointer;font-size:13px;transition:all 0.2s;">
-                <input type="checkbox" class="t-day-check" value="Day3" data-name="Day3：実務スキル習得編" onchange="tUpdateDaySelection()" style="cursor:pointer;width:16px;height:16px;accent-color:var(--color-tiffany);">
-                <span style="flex:1;"><strong>Day3</strong> <span style="color:var(--color-text-light);">／ 実務スキル習得編</span></span>
-                <span style="font-weight:600;color:var(--color-tiffany-dark);">¥9,000</span>
-              </label>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:12px 0 4px;border-top:1px solid var(--color-border);margin-top:12px;">
-              <span style="color:var(--color-text-light);">合計金額</span>
-              <span id="tTotalPrice" style="font-size:22px;line-height:1;font-weight:300;color:var(--color-tiffany-dark);font-family:'Inter',sans-serif;">¥0</span>
-            </div>
-            <div id="tSelectedDays" style="font-size:11px;color:var(--color-text-light);text-align:right;margin-top:2px;">未選択</div>
-          </div>
-
-          <div style="margin-bottom:20px;">
-            <label style="display:block;font-size:11px;font-weight:600;color:var(--color-text-light);margin-bottom:10px;letter-spacing:0.08em;text-transform:uppercase;">ご希望の日程 <span style="color:var(--color-tiffany-dark);font-size:10px;margin-left:6px;">*必須</span></label>
-            <div style="border:1px solid var(--color-border);border-radius:8px;overflow:hidden;">
-              <div id="tCalendarHeader" style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:var(--color-primary);color:#fff;">
-                <button type="button" onclick="tChangeMonth(-1)" style="background:none;border:1px solid rgba(255,255,255,0.2);color:#fff;width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:16px;">‹</button>
-                <span id="tCalMonthLabel" style="font-weight:600;font-size:14px;"></span>
-                <button type="button" onclick="tChangeMonth(1)" style="background:none;border:1px solid rgba(255,255,255,0.2);color:#fff;width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:16px;">›</button>
-              </div>
-              <div id="tCalGrid" style="display:grid;grid-template-columns:repeat(7,1fr);"></div>
-            </div>
-          </div>
-
-          <div id="tCurrentPick" style="display:none;margin-bottom:12px;padding:8px 14px;background:var(--color-tiffany-bg);border-radius:4px;font-size:12px;color:var(--color-tiffany-dark);font-weight:600;"></div>
-
-          <div id="tTimeSlotsSection" style="display:none;margin-bottom:20px;">
-            <label style="display:block;font-size:11px;font-weight:600;color:var(--color-text-light);margin-bottom:10px;letter-spacing:0.08em;text-transform:uppercase;">ご希望の時間を選択</label>
-            <div id="tTimeSlotsContainer"></div>
-          </div>
-
-          <div id="tSelectedList" style="margin-bottom:20px;"></div>
-
-          <div style="margin-bottom:16px;">
-            <label style="display:block;font-size:11px;font-weight:600;color:var(--color-text-light);margin-bottom:6px;letter-spacing:0.08em;">お名前 <span style="color:var(--color-tiffany-dark);font-size:10px;">*必須</span></label>
-            <input type="text" id="tName" required placeholder="山田 太郎" style="width:100%;padding:10px 14px;border:1px solid var(--color-border);border-radius:2px;font-size:14px;font-family:inherit;">
-          </div>
-          <div style="margin-bottom:16px;">
-            <label style="display:block;font-size:11px;font-weight:600;color:var(--color-text-light);margin-bottom:6px;letter-spacing:0.08em;">メールアドレス <span style="color:var(--color-tiffany-dark);font-size:10px;">*必須</span></label>
-            <input type="email" id="tEmail" required placeholder="example@email.com" style="width:100%;padding:10px 14px;border:1px solid var(--color-border);border-radius:2px;font-size:14px;font-family:inherit;">
-          </div>
-          <div style="margin-bottom:16px;">
-            <label style="display:block;font-size:11px;font-weight:600;color:var(--color-text-light);margin-bottom:6px;letter-spacing:0.08em;">電話番号 <span style="color:var(--color-tiffany-dark);font-size:10px;">*必須</span></label>
-            <input type="tel" id="tPhone" required placeholder="090-1234-5678" style="width:100%;padding:10px 14px;border:1px solid var(--color-border);border-radius:2px;font-size:14px;font-family:inherit;">
-          </div>
-          <div style="margin-bottom:16px;">
-            <label style="display:block;font-size:11px;font-weight:600;color:var(--color-text-light);margin-bottom:6px;letter-spacing:0.08em;">ご職業・ご身分 <span style="color:var(--color-tiffany-dark);font-size:10px;">*必須</span></label>
-            <select id="tStatus" required style="width:100%;padding:10px 14px;border:1px solid var(--color-border);border-radius:2px;font-size:14px;font-family:inherit;background:#fff;">
-              <option value="">選択してください</option>
-              <option value="法人">法人</option>
-              <option value="主婦">主婦</option>
-              <option value="社会人">社会人</option>
-              <option value="大学院生">大学院生</option>
-              <option value="大学生">大学生</option>
-              <option value="高校生">高校生</option>
-              <option value="その他">その他</option>
-            </select>
-          </div>
-          <div style="margin-bottom:16px;">
-            <label style="display:block;font-size:11px;font-weight:600;color:var(--color-text-light);margin-bottom:6px;letter-spacing:0.08em;">クーポンコード <span style="font-weight:400;">（お持ちの場合）</span></label>
-            <input type="text" id="tCoupon" placeholder="例：FRIEND-XXXX" style="width:100%;padding:10px 14px;border:1px solid var(--color-border);border-radius:2px;font-size:14px;font-family:inherit;">
-          </div>
-
-          <button type="button" id="tSubmitBtn" disabled onclick="submitTrainingBooking()" style="width:100%;background:var(--color-border);color:var(--color-text-light);border:none;padding:18px;border-radius:4px;font-size:14px;font-weight:600;letter-spacing:0.08em;cursor:not-allowed;transition:all 0.3s;">
-            日程を選択してください
-          </button>
-          <p style="text-align:center;font-size:11px;color:var(--color-text-light);margin-top:12px;">Stripeの安全な決済画面に移動します</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <style>
-    @keyframes modalIn { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
-    @keyframes spin { to{transform:rotate(360deg)} }
-    .t-day-label{text-align:center;font-size:11px;font-weight:600;padding:10px 0;background:var(--color-bg-alt);color:var(--color-text-light);letter-spacing:0.05em;}
-    .t-day-label:first-child{color:#DC2626} .t-day-label:last-child{color:#2563EB}
-    .t-cell{text-align:center;padding:12px 0;font-size:13px;cursor:default;color:var(--color-border);border-top:1px solid var(--color-bg-alt);}
-    .t-cell.active{color:var(--color-primary);cursor:pointer;font-weight:500;}
-    .t-cell.active:hover{background:var(--color-tiffany-bg);color:var(--color-tiffany-dark);}
-    .t-cell.selected{background:var(--color-tiffany);color:#fff;font-weight:700;}
-    .t-cell.sunday.active{color:#DC2626} .t-cell.saturday.active{color:#2563EB}
-    .t-cell.sunday.selected,.t-cell.saturday.selected{color:#fff}
-    .t-slot{padding:12px 8px;border:1px solid var(--color-border);border-radius:6px;background:#fff;cursor:pointer;text-align:center;transition:all 0.2s;font-family:inherit;position:relative;}
-    .t-slot:hover{border-color:var(--color-tiffany);background:var(--color-tiffany-bg);}
-    .t-slot.pick1{border-color:var(--color-tiffany);background:var(--color-tiffany);color:#fff;}
-    .t-slot.pick2{border-color:var(--color-tiffany);background:#1FA8C4;color:#fff;}
-    .t-slot.pick3{border-color:var(--color-tiffany);background:#B2C4CD;color:#1F2937;}
-    .t-slot .t-time{display:block;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;}
-    .t-slot.pick1 .t-time,.t-slot.pick2 .t-time{color:#fff}
-    .t-slot .t-remaining{display:block;font-size:10px;color:var(--color-text-light);margin-top:2px;}
-    .t-slot.pick1 .t-remaining,.t-slot.pick2 .t-remaining{color:rgba(255,255,255,0.85)}
-    .t-slot.pick3 .t-remaining{color:#374151}
-    .t-pick-label{position:absolute;top:-8px;right:-4px;font-size:9px;font-weight:700;background:#fff;color:var(--color-tiffany-dark);border:1px solid var(--color-tiffany);border-radius:8px;padding:1px 6px;font-family:'Inter',sans-serif;}
-  </style>
-
-  <script src="js/main.js"></script>
-  <script>
-    const T_API = window.location.origin;
-    const T_TYPE = 'practical_skills';
-    let tSelectedDate = null;
-    let tPicks = []; // [{date, time, dateLabel}] max 3
-    let tYear, tMonth, tAvailable = [];
-    const T_DAYS = ['日','月','火','水','木','金','土'];
-    const T_LABELS = ['第1希望','第2希望','第3希望'];
-
-    function openTrainingModal() {
-      const m = document.getElementById('trainingModal');
-      document.getElementById('tModalLoading').style.display = 'block';
-      document.getElementById('tModalContent').style.display = 'none';
-      tSelectedDate = null; tPicks = [];
-      // Day選択のチェックボックスを初期化
-      document.querySelectorAll('.t-day-check').forEach(c => c.checked = false);
-      tUpdateDaySelection();
-      m.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
-
-      fetch(`${T_API}/api/available-dates?training_type=${T_TYPE}`)
-        .then(r => r.json())
-        .then(data => {
-          tAvailable = data.available_dates || [];
-          const now = new Date();
-          tYear = now.getFullYear(); tMonth = now.getMonth();
-          tRenderCal();
-          tRenderPicksList();
-          document.getElementById('tModalLoading').style.display = 'none';
-          document.getElementById('tModalContent').style.display = 'block';
-        })
-        .catch(() => { alert('情報の取得に失敗しました'); closeTrainingModal(); });
-    }
-
-    function closeTrainingModal() {
-      document.getElementById('trainingModal').style.display = 'none';
-      document.body.style.overflow = '';
-    }
-
-    document.getElementById('trainingModal').addEventListener('click', e => { if(e.target===e.currentTarget) closeTrainingModal(); });
-
-    function tRenderCal() {
-      const g = document.getElementById('tCalGrid'); g.innerHTML = '';
-      document.getElementById('tCalMonthLabel').textContent = `${tYear}年${tMonth+1}月`;
-      T_DAYS.forEach(d => { const e=document.createElement('div'); e.className='t-day-label'; e.textContent=d; g.appendChild(e); });
-      const first = new Date(tYear,tMonth,1).getDay();
-      const days = new Date(tYear,tMonth+1,0).getDate();
-      const today = new Date(); today.setHours(0,0,0,0);
-      for(let i=0;i<first;i++){const e=document.createElement('div');e.className='t-cell';g.appendChild(e);}
-      for(let d=1;d<=days;d++){
-        const e=document.createElement('div');e.className='t-cell';e.textContent=d;
-        const date=new Date(tYear,tMonth,d);
-        const ds=`${tYear}-${String(tMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-        const dow=date.getDay();
-        if(dow===0)e.classList.add('sunday');if(dow===6)e.classList.add('saturday');
-        const isAvail = tAvailable.length===0 || tAvailable.includes(ds);
-        if(date>=today&&isAvail){e.classList.add('active');e.addEventListener('click',()=>tSelectDate(e,ds));}
-        if(tSelectedDate===ds)e.classList.add('selected');
-        g.appendChild(e);
-      }
-    }
-
-    function tChangeMonth(d){tMonth+=d;if(tMonth<0){tMonth=11;tYear--;}if(tMonth>11){tMonth=0;tYear++;}tRenderCal();}
-
-    function tDateLabel(ds){const d=new Date(ds);const dn=T_DAYS[d.getDay()];const p=ds.split('-');return `${parseInt(p[1])}/${parseInt(p[2])}（${dn}）`;}
-
-    async function tSelectDate(el,ds){
-      if(tPicks.length>=3){alert('第3希望まで選択済みです。変更する場合は×で削除してください。');return;}
-      document.querySelectorAll('.t-cell').forEach(c=>c.classList.remove('selected'));
-      el.classList.add('selected'); tSelectedDate=ds;
-      document.getElementById('tCurrentPick').textContent=`${T_LABELS[tPicks.length]}の日程: ${tDateLabel(ds)} — 時間を選択してください`;
-      document.getElementById('tCurrentPick').style.display='block';
-      const sec=document.getElementById('tTimeSlotsSection');
-      const con=document.getElementById('tTimeSlotsContainer');
-      sec.style.display='block'; con.innerHTML='<p style="text-align:center;padding:16px;font-size:12px;color:var(--color-text-light);">時間枠を取得中...</p>';
-      try{
-        const r=await fetch(`${T_API}/api/available-dates?training_type=${T_TYPE}&date=${ds}`);
-        const data=await r.json(); con.innerHTML='';
-        if(!data.time_slots||data.time_slots.length===0){con.innerHTML='<p style="text-align:center;padding:16px;font-size:12px;color:var(--color-text-light);">この日は予約可能な時間がありません</p>';return;}
-        const grid=document.createElement('div');grid.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);gap:8px;';
-        data.time_slots.forEach(s=>{
-          const b=document.createElement('button');b.type='button';b.className='t-slot';
-          b.innerHTML=`<span class="t-time">${s.time}</span><span class="t-remaining">残り${s.slots_remaining}席</span>`;
-          b.addEventListener('click',()=>tAddPick(ds,s.time));grid.appendChild(b);
-        });
-        con.appendChild(grid);
-      }catch(err){con.innerHTML='<p style="text-align:center;color:#DC2626;">取得失敗</p>';}
-    }
-
-    function tAddPick(date,time){
-      if(tPicks.length>=3)return;
-      if(tPicks.some(p=>p.date===date&&p.time===time)){alert('同じ日時が既に選択されています。');return;}
-      tPicks.push({date,time});
-      tRenderPicksList();
-      document.getElementById('tTimeSlotsSection').style.display='none';
-      document.getElementById('tCurrentPick').style.display='none';
-      document.querySelectorAll('.t-cell').forEach(c=>c.classList.remove('selected'));
-      tSelectedDate=null;
-    }
-
-    function tRemovePick(idx){
-      tPicks.splice(idx,1);
-      tRenderPicksList();
-    }
-
-    function tRenderPicksList(){
-      const list=document.getElementById('tSelectedList');
-      if(tPicks.length===0){
-        list.innerHTML='<p style="font-size:12px;color:var(--color-text-light);text-align:center;padding:12px;border:1px dashed var(--color-border);border-radius:4px;">カレンダーから日程と時間を選択してください（第1〜第3希望）</p>';
-      } else {
-        const colors=['var(--color-tiffany)','#1FA8C4','#B2C4CD'];
-        const textColors=['#fff','#fff','#1F2937'];
-        list.innerHTML=tPicks.map((p,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:6px;background:${colors[i]};color:${textColors[i]};border-radius:6px;font-size:13px;">
-          <span style="font-weight:700;min-width:60px;">${T_LABELS[i]}</span>
-          <span style="flex:1;">${tDateLabel(p.date)} ${p.time}〜</span>
-          <button onclick="tRemovePick(${i})" style="background:none;border:none;color:${textColors[i]};cursor:pointer;font-size:18px;padding:0 4px;opacity:0.8;">×</button>
-        </div>`).join('');
-        if(tPicks.length<3){
-          list.innerHTML+=`<p style="font-size:11px;color:var(--color-text-light);margin-top:8px;text-align:center;">カレンダーから${T_LABELS[tPicks.length]}を追加できます</p>`;
-        }
-      }
-      tUpdateBtn();
-    }
-
-    function tGetSelectedDays(){
-      return Array.from(document.querySelectorAll('.t-day-check:checked'));
-    }
-
-    function tUpdateDaySelection(){
-      const checked = tGetSelectedDays();
-      const count = checked.length;
-      const total = count * 9000;
-      document.getElementById('tTotalPrice').textContent = '¥' + total.toLocaleString();
-      const sel = document.getElementById('tSelectedDays');
-      if(count === 0){
-        sel.textContent = '未選択';
-        sel.style.color = 'var(--color-text-light)';
-      } else {
-        const labels = checked.map(c => c.value).join(' + ');
-        sel.textContent = `${labels}（${count}日）`;
-        sel.style.color = 'var(--color-tiffany-dark)';
-      }
-      tUpdateBtn();
-    }
-
-    function tUpdateBtn(){
-      const b=document.getElementById('tSubmitBtn');
-      const dayCount = tGetSelectedDays().length;
-      if(tPicks.length>0 && dayCount>0){b.disabled=false;b.textContent='お支払いに進む →';b.style.background='var(--color-tiffany)';b.style.color='#fff';b.style.cursor='pointer';b.style.boxShadow='0 8px 24px rgba(10,186,181,0.25)';}
-      else if(dayCount===0){b.disabled=true;b.textContent='受講するDayを選択してください';b.style.background='var(--color-border)';b.style.color='var(--color-text-light)';b.style.cursor='not-allowed';b.style.boxShadow='none';}
-      else{b.disabled=true;b.textContent='日程・時間を選択してください';b.style.background='var(--color-border)';b.style.color='var(--color-text-light)';b.style.cursor='not-allowed';b.style.boxShadow='none';}
-    }
-
-    async function submitTrainingBooking(){
-      if(tPicks.length===0)return;
-      const checkedDays = tGetSelectedDays();
-      if(checkedDays.length===0){alert('受講するDayを選択してください。');return;}
-      const name=document.getElementById('tName').value;
-      const email=document.getElementById('tEmail').value;
-      if(!name||!email){alert('お名前とメールアドレスは必須です。');return;}
-      const dayValues = checkedDays.map(c=>c.value);
-      const dayNames = checkedDays.map(c=>c.dataset.name).join(' / ');
-      const dateStr=tPicks.map((p,i)=>`${T_LABELS[i]}:${tDateLabel(p.date)}${p.time}`).join(' / ');
-      const bookingNotes = `受講Day: ${dayValues.join(', ')} (${dayNames}) | 希望日程: ${dateStr}`;
-      const b=document.getElementById('tSubmitBtn');b.disabled=true;b.innerHTML='<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px;"></span>処理中...';
-      try{
-        const r=await fetch(`${T_API}/api/create-checkout-session`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-          training_type:T_TYPE,training_date:`${tPicks[0].date} ${tPicks[0].time} (${dateStr})`,
-          customer_name:name,customer_email:email,customer_phone:document.getElementById('tPhone').value,
-          sessions:checkedDays.length,
-          booking_notes:bookingNotes,
-          referral_code:document.getElementById('tCoupon').value.trim()
-        })});
-        if(!r.ok){const e=await r.json();throw new Error(e.detail||'失敗');}
-        const data=await r.json(); window.location.href=data.checkout_url;
-      }catch(err){alert(err.message);b.disabled=false;b.textContent='お支払いに進む →';b.style.background='var(--color-tiffany)';b.style.color='#fff';b.style.cursor='pointer';}
-    }
-  </script>
+  <script type="module" src="main.js?v=20261124-04"></script>
+  <script src="js/contact-form.js" defer></script>
 </body>
 </html>

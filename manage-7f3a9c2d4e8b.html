@@ -264,6 +264,7 @@
     <button class="tab" onclick="switchTab('referrals')">紹介コード管理</button>
     <button class="tab" onclick="switchTab('articles')">コラム</button>
     <button class="tab" onclick="switchTab('marketing-leads')">キャリア相談・広告リード</button>
+    <button class="tab" onclick="switchTab('contact-inquiries')">お問い合わせ</button>
   </div>
 
   <!-- ダッシュボード -->
@@ -334,6 +335,43 @@
         <table class="lead-table">
           <thead><tr><th>受付日時</th><th>流入元・キャンペーン</th><th>申込者</th><th>申込概要</th><th>対応状況</th><th>管理メモ</th><th>更新</th></tr></thead>
           <tbody id="marketing-leads-list"><tr><td class="lead-empty" colspan="7">申込データはまだ読み込まれていません。</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- HPのお問い合わせ（お問い合わせページ・サービスページのコンサル相談フォーム）。処理は js/contact-inquiries-admin.js -->
+  <div class="tab-content" id="tab-contact-inquiries">
+    <h2 style="margin-bottom:.5rem;">お問い合わせ</h2>
+    <p class="lead-intro">HPのお問い合わせページと、サービスページの「コンサルティングのご相談」フォームから届いた内容を、受付日時の新しい順に表示しています。対応状況とメモを更新できます。</p>
+    <div class="stats-grid lead-stats">
+      <div class="stat-card"><div class="label">読み込み件数</div><div class="value accent" id="inquiry-count-total">-</div></div>
+      <div class="stat-card"><div class="label">未対応（新規）</div><div class="value" id="inquiry-count-new">-</div></div>
+      <div class="stat-card"><div class="label">コンサルのご相談</div><div class="value" id="inquiry-count-consulting">-</div></div>
+    </div>
+    <div class="table-container">
+      <div class="table-toolbar lead-toolbar">
+        <select id="inquiry-form-filter" aria-label="フォームで絞り込み">
+          <option value="">すべてのフォーム</option>
+          <option value="general">お問い合わせページ</option>
+          <option value="consulting">コンサルのご相談</option>
+        </select>
+        <select id="inquiry-status-filter" aria-label="対応状況で絞り込み">
+          <option value="">すべての対応状況</option>
+          <option value="new">新規</option>
+          <option value="in_progress">対応中</option>
+          <option value="completed">対応済み</option>
+          <option value="excluded">対象外</option>
+        </select>
+        <input type="search" id="inquiry-search" placeholder="氏名・会社名・メール・内容で検索" aria-label="お問い合わせを検索">
+        <button type="button" onclick="window.loadContactInquiries && window.loadContactInquiries()">再読込</button>
+        <button type="button" onclick="window.exportContactInquiries && window.exportContactInquiries()">CSV出力</button>
+      </div>
+      <p class="lead-status" id="inquiry-status-message" role="status" aria-live="polite">管理画面にログインしてから読み込んでください。</p>
+      <div class="lead-table-wrap">
+        <table class="lead-table">
+          <thead><tr><th>受付日時</th><th>フォーム・種別</th><th>お問い合わせした方</th><th>内容</th><th>対応状況</th><th>管理メモ</th><th>更新</th></tr></thead>
+          <tbody id="contact-inquiries-list"><tr><td class="lead-empty" colspan="7">お問い合わせはまだ読み込まれていません。</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -475,6 +513,7 @@
         sessionStorage.setItem('adminKey', adminKey);
         loadDashboard();
         if (window.location.hash === '#marketing-leads') switchTab('marketing-leads');
+        if (window.location.hash === '#contact-inquiries') switchTab('contact-inquiries');
       })
       .catch(() => {
         document.getElementById('login-error').style.display = 'block';
@@ -500,6 +539,7 @@
           document.getElementById('login-overlay').classList.add('hidden');
           loadDashboard();
           if (window.location.hash === '#marketing-leads') switchTab('marketing-leads');
+          if (window.location.hash === '#contact-inquiries') switchTab('contact-inquiries');
         })
         .catch(() => { sessionStorage.removeItem('adminKey'); });
     }
@@ -523,6 +563,7 @@
     if (name === 'referrals') loadReferralCodes();
     if (name === 'articles') loadArticles();
     if (name === 'marketing-leads' && window.loadMarketingLeads) window.loadMarketingLeads();
+    if (name === 'contact-inquiries' && window.loadContactInquiries) window.loadContactInquiries();
   }
 
   // --- ダッシュボード ---
@@ -1077,5 +1118,6 @@
   }
 </script>
 <script src="js/marketing-leads-admin.js"></script>
+<script src="js/contact-inquiries-admin.js"></script>
 </body>
 </html>

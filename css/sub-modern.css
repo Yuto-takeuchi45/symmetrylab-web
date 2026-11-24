@@ -1,0 +1,34 @@
+/* =========================================================
+   下層ページ（会社概要など）を、トップ・サービスページと同じ組み方で作るための部品
+   - theme.css の後に読み込む。旧デザインの「中央揃えの見出し＋大きな白い箱」の代わりに、
+     背景の上に直接「ロゴマーク付きの英字ラベル＋左寄せの大きな見出し＋細い罫線」で組む
+   ========================================================= */
+:root {
+  --sm-ink: #1F2937;
+  --sm-ink-2: #374151;
+  --sm-mute: #5B6B78;
+  --sm-tif: #36C9E6;
+  --sm-tif-dark: #1FA8C4;
+  --sm-line: rgba(31, 41, 55, .12);
+}
+
+/* セクションの外枠：HPと同じ最大幅と左右の余白 */
+.sm-sec { padding-block: clamp(72px, 10vw, 140px) 0; }
+.sm-sec:last-of-type { padding-bottom: clamp(72px, 10vw, 140px); }
+.sm-wrap { max-width: 1320px; margin: 0 auto; padding-inline: clamp(16px, 4vw, 56px); }
+
+/* 英字ラベル（ロゴマーク付き）と見出し */
+.sm-label { display: flex; align-items: center; gap: 10px; margin: 0 0 24px; font-size: .92rem; font-weight: 500; color: var(--sm-ink); letter-spacing: .01em; }
+.sm-label::before { content: ""; width: 14px; height: 16px; flex: none; background: url("../images/favicon-mark.png") center / contain no-repeat; }
+.sm-h1 { margin: 0 0 32px; font-size: clamp(2.4rem, 5.6vw, 4.8rem); font-weight: 500; line-height: 1.18; letter-spacing: -.01em; color: var(--sm-ink); text-wrap: balance; }
+.sm-h1 em { font-style: normal; color: var(--sm-tif); }
+.sm-h2 { margin: 0 0 40px; font-size: clamp(1.9rem, 3.8vw, 3.2rem); font-weight: 500; line-height: 1.32; color: var(--sm-ink); text-wrap: balance; }
+.sm-lead { max-width: 720px; margin: 0; color: var(--sm-ink-2); font-size: 1rem; line-height: 2; }
+
+/* 項目名と内容の一覧（会社概要の表など）：上に濃い罫線、各行を細い罫線で区切る */
+.sm-dl { margin: 0; border-top: 1px solid var(--sm-ink); }
+.sm-dl > div { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 24px; padding: 26px 0; border-bottom: 1px solid var(--sm-line); }
+.sm-dl dt { margin: 0; font-size: .9rem; font-weight: 600; color: var(--sm-tif-dark); letter-spacing: .04em; }
+.sm-dl dd { margin: 0; color: var(--sm-ink); line-height: 1.9; }
+.sm-dl ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+@media (max-width: 700px) { .sm-dl > div { grid-template-columns: 1fr; gap: 6px; padding: 20px 0; } }

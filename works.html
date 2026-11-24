@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="SYMMETRY Lab株式会社のコンサルティングプロジェクト事例。中期経営計画策定、組織再編、M&A支援からシステム構築・生成AI活用まで、これまでの支援事例をご紹介します。">
-  <meta property="og:title" content="プロジェクト事例 | SYMMETRY Lab株式会社">
+  <meta name="description" content="SYMMETRY Lab株式会社のコンサルティング実績。中期経営計画策定、組織再編、M&A支援からシステム構築・生成AI活用まで、これまでの支援事例をご紹介します。">
+  <meta property="og:title" content="実績 | SYMMETRY Lab株式会社">
   <meta property="og:description" content="SYMMETRY Lab株式会社のコンサルティング支援事例をご紹介します。">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://symmetrylab.jp/works.html">
@@ -13,7 +13,7 @@
   <meta property="og:image" content="https://symmetrylab.jp/images/logo_full.png">
   <meta property="og:image:alt" content="SYMMETRY Lab株式会社">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="プロジェクト事例 | SYMMETRY Lab株式会社">
+  <meta name="twitter:title" content="実績 | SYMMETRY Lab株式会社">
   <meta name="twitter:description" content="SYMMETRY Lab株式会社のコンサルティング支援事例をご紹介します。">
   <meta name="twitter:image" content="https://symmetrylab.jp/images/logo_full.png">
   <meta name="robots" content="index, follow, max-image-preview:large">
@@ -23,7 +23,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css?v=20260624-0209">
   <link rel="stylesheet" href="css/works.css?v=20261020">
-  <title>プロジェクト事例 | SYMMETRY Lab株式会社</title>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="css/sub-page.css?v=20261124-01">
+  <title>実績 | SYMMETRY Lab株式会社</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-mark.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/favicon-192x192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="images/favicon-192x192.png">
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KR9VEKC8JZ"></script>
   <script>
@@ -32,41 +38,30 @@
     gtag('js', new Date());
     gtag('config', 'G-KR9VEKC8JZ');
   </script>
-    <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-mark.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="images/favicon-192x192.png">
-  <link rel="apple-touch-icon" sizes="192x192" href="images/favicon-192x192.png">
 </head>
 <body>
+<canvas id="gl" aria-hidden="true"></canvas>
 
   <!-- Navigation -->
-  <nav class="navbar">
-    <div class="container">
-      <a href="index.html" class="nav-logo"><img src="images/logo_full.png" alt="SYMMETRY Lab" class="nav-logo-img"></a>
-      <button class="nav-toggle" aria-label="メニュー" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-      <div class="nav-links">
-        <a href="company.html">会社概要</a>
-        <div class="nav-dropdown">
-          <a href="services.html" class="nav-dropdown-trigger">サービス</a>
-          <div class="nav-dropdown-menu">
-            <a href="services.html">ジョブ対策</a>
-            <a href="lp-case.html">ケース面接対策</a>
-            <a href="works.html">コンサルティングサービス</a>
-            <a href="faq.html">よくある質問</a>
-          </div>
-        </div>
-        <a href="blog/">コラム</a>
-        <a href="contact.html">お問い合わせ</a>
-      </div>
+  <header class="header">
+    <a href="index.html" class="brand"><img src="images/logo_full.png" alt="SYMMETRY Lab"></a>
+    <a href="contact.html" class="header-cta">無料相談 <svg class="ph" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
+    <button class="menu-btn" id="menuBtn" aria-label="メニュー" aria-expanded="false" aria-controls="nav"><svg viewBox="0 0 100 100" aria-hidden="true"><path class="line line1" d="M 20,29.000046 H 80.000231 C 80.000231,29.000046 94.498839,28.817352 94.532987,66.711331 94.543142,77.980673 90.966081,81.670246 85.259173,81.668997 79.552261,81.667751 75.000211,74.999942 75.000211,74.999942 L 25.000021,25.000058"/><path class="line line2" d="M 20,50 H 80"/><path class="line line3" d="M 20,70.999954 H 80.000231 C 80.000231,70.999954 94.498839,71.182648 94.532987,33.288669 94.543142,22.019327 90.966081,18.329754 85.259173,18.331003 79.552261,18.332249 75.000211,25.000058 75.000211,25.000058 L 25.000021,74.999942"/></svg></button>
+  </header>
+  <nav class="nav" id="nav" aria-label="メニュー">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-item">トップ<span class="nav-en">Home</span></a>
+      <a href="services.html" class="nav-item">サービス<span class="nav-en">Services</span></a>
+      <a href="company.html" class="nav-item">会社概要<span class="nav-en">Company</span></a>
+      <a href="blog/" class="nav-item">コラム<span class="nav-en">Column</span></a>
+      <a href="contact.html" class="nav-item">お問い合わせ<span class="nav-en">Contact</span></a>
     </div>
   </nav>
 
   <!-- Breadcrumb -->
   <div class="breadcrumb">
     <div class="container">
-      <a href="index.html">ホーム</a> &gt; <span>プロジェクト事例</span>
+      <a href="index.html">ホーム</a> &gt; <span>実績</span>
     </div>
   </div>
 
@@ -75,13 +70,13 @@
     <div class="container">
       <div class="section-header">
         <p class="section-eyebrow">━ Our Works ━</p>
-        <h2>プロジェクト事例</h2>
+        <h2>実績</h2>
         <p>戦略策定から業務・システム改革まで、これまでのコンサルティング支援事例をご紹介します。</p>
       </div>
 
-      <!-- プロジェクト事例カード：1件 = 1つの <article>。追加・差し替えはこのブロックをコピーして編集 -->
+      <!-- 実績カード：1件 = 1つの <article>。追加・差し替えはこのブロックをコピーして編集 -->
       <div class="works-grid fade-in">
-        <article class="works-card">
+        <article class="works-card" data-category="strategy">
           <div class="works-card-header">
             <ul class="works-tags"><li>中期経営計画策定</li><li>事業計画策定</li></ul>
             <h3>大手SIer向けの中期経営計画策定支援</h3>
@@ -95,7 +90,7 @@
             <dd>投資家からの追加出資を獲得し、AI活用領域への先行投資と子会社横断の体制整備を加速</dd>
           </dl>
         </article>
-        <article class="works-card">
+        <article class="works-card" data-category="strategy">
           <div class="works-card-header">
             <ul class="works-tags"><li>組織再編</li><li>PMI</li></ul>
             <h3>大手通信会社向けのグループ子会社再編支援</h3>
@@ -109,7 +104,7 @@
             <dd>統合効果の大きい子会社に絞って再編を実行し、あわせてグループブランドの刷新を実現</dd>
           </dl>
         </article>
-        <article class="works-card">
+        <article class="works-card" data-category="strategy">
           <div class="works-card-header">
             <ul class="works-tags"><li>M&amp;A戦略</li><li>FA</li><li>ビジネスDD</li></ul>
             <h3>国内大手健康飲料メーカー向けのM&amp;A支援</h3>
@@ -123,7 +118,7 @@
             <dd>買収を完了し、既存事業とのシナジーにより売上拡大を実現</dd>
           </dl>
         </article>
-        <article class="works-card">
+        <article class="works-card" data-category="dx">
           <div class="works-card-header">
             <ul class="works-tags"><li>業務プロセス改善</li><li>システム開発</li><li>文書管理</li><li>電子帳簿保存法対応</li></ul>
             <h3>大手電力会社向けの会計・調達文書管理システム構築支援</h3>
@@ -137,7 +132,7 @@
             <dd>会計・調達関連文書を電子的に管理するためのシステム基盤を構築し、法令対応を踏まえた文書管理業務の整備と安定運用を支援</dd>
           </dl>
         </article>
-        <article class="works-card">
+        <article class="works-card" data-category="dx">
           <div class="works-card-header">
             <ul class="works-tags"><li>システム開発</li><li>業務プロセス改善</li><li>ワークフロー構築</li><li>文書管理</li></ul>
             <h3>大手電力会社向けの設備文書管理システム構築支援</h3>
@@ -151,7 +146,7 @@
             <dd>業務内容や利用者の権限に応じた文書の閲覧・管理・承認を可能にする仕組みを構築し、設備管理業務の標準化・効率化を支えるシステム基盤を整備</dd>
           </dl>
         </article>
-        <article class="works-card">
+        <article class="works-card" data-category="dx">
           <div class="works-card-header">
             <ul class="works-tags"><li>生成AI活用</li><li>RAG構築</li><li>機密情報マスキング</li><li>ナレッジマネジメント</li></ul>
             <h3>大手コンサルティングファーム向けのAI活用による社内ナレッジ共有基盤構築支援</h3>
@@ -170,41 +165,21 @@
   </section>
 
   <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-grid">
-
-        <div>
-          <h4>サービス</h4>
-          <div class="footer-links">
-            <a href="services.html#practical-skills">実践スキル研修</a>
-            <a href="services.html#case-interview">ケース面接対策</a>
-            <a href="booking.html">お申し込み</a>
-          </div>
-        </div>
-        <div>
-          <h4>会社情報</h4>
-          <div class="footer-links">
-            <a href="company.html">会社概要</a>
-                <a href="blog/">コラム</a>
-          </div>
-        </div>
-        <div>
-          <h4>サポート</h4>
-          <div class="footer-links">
-            <a href="faq.html">よくある質問</a>
-            <a href="contact.html">お問い合わせ</a>
-            <a href="privacy.html">プライバシーポリシー</a>
-            <a href="tokushoho.html">特定商取引法に基づく表記</a>
-          </div>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</span>
-      </div>
+  <footer class="footer site-footer">
+    <div class="wrap footer-grid">
+      <a href="index.html" class="footer-brand"><img src="images/favicon-mark.png" alt="" class="brand-mark"><span class="brand-text">SYMMETRY <b>Lab</b></span></a>
+      <div><h4>サービス</h4><a href="services.html#career">キャリア形成支援事業</a><a href="services.html#consulting">コンサルティング事業</a><a href="job.html">ジョブ対策講座</a><a href="lp-case.html">ケース面接対策講座</a><a href="booking.html">お申し込み</a></div>
+      <div><h4>会社情報</h4><a href="company.html">会社概要</a><a href="works.html">実績</a><a href="blog/">コラム</a></div>
+      <div><h4>サポート</h4><a href="faq.html">よくある質問</a><a href="contact.html">お問い合わせ</a><a href="privacy.html">プライバシーポリシー</a><a href="tokushoho.html">特定商取引法に基づく表記</a></div>
     </div>
+    <p class="wrap copy">&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</p>
   </footer>
 
   <script src="js/main.js"></script>
+  <script src="js/works.js"></script>
+<script type="importmap">
+  { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }
+</script>
+<script type="module" src="sub.js?v=20261124-04"></script>
 </body>
 </html>

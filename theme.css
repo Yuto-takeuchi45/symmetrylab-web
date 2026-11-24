@@ -1,0 +1,158 @@
+/* =========================================================
+   粒子版の案B テーマ（下層ページ用）
+   既存ページ（css/style.css・lp.css・works.css）の上に重ねて、
+   トップページと同じ「白 × 水色・すりガラス調、背景に粒子と光の模様」にそろえる
+   ========================================================= */
+:root {
+  --ink: #1F2937;
+  --ink-dim: #5B6B78;
+  --tif: #36C9E6;
+  --tif-dark: #1FA8C4;
+  /* トップページの講座・実績カードと同じ透け感 */
+  --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, .34), rgba(255, 255, 255, .08));
+  --card-bg: linear-gradient(135deg, rgba(255, 255, 255, .42), rgba(255, 255, 255, .12));
+  --glass-border: 1px solid rgba(255, 255, 255, .75);
+  --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 20px 50px -30px rgba(31, 41, 55, .25);
+  --ease: cubic-bezier(.16, 1, .3, 1);
+  --color-bg-alt: rgba(54, 201, 230, .07);
+  --radius: 16px;
+}
+
+/* 背景：ページの地は淡いグレー、その上に固定キャンバス（粒子・光の模様） */
+html { background: #F6F8F9; }
+body { background: transparent !important; color: var(--ink); }
+#gl { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; display: block; }
+
+/* 見出し */
+h1, h2, h3, h4 { color: var(--ink); font-weight: 600; letter-spacing: -.01em; }
+.section-eyebrow, .section-header p.section-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--tif-dark); letter-spacing: .08em; font-weight: 500;
+}
+.section-eyebrow::before {
+  content: ""; width: 14px; height: 16px; flex: none;
+  background: url("images/favicon-mark.png") center / contain no-repeat;
+}
+
+/* ヘッダー：トップページと共通（ロゴ・無料相談・ハンバーガー、押すと全画面メニュー） */
+body { padding-top: 72px; }
+.header { position: fixed; z-index: 1000; top: 0; left: 0; right: 0; display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 18px;
+  padding: 16px clamp(16px, 3.5vw, 48px); background: rgba(246, 248, 249, .72); backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 1px 0 rgba(31, 41, 55, .06); }
+.brand { display: flex; align-items: center; justify-self: start; }
+.brand img { height: 26px; width: auto; max-width: none; aspect-ratio: 4545 / 789; object-fit: contain; flex: none; }
+.header-cta { grid-column: 3; padding: 10px 20px; border-radius: 999px; background: var(--ink); color: #fff !important; font-size: .82rem; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; transition: background .3s; }
+.header-cta:hover { background: var(--tif-dark); }
+.header-cta .ph { width: 14px; height: 14px; }
+/* メニュー：ボタンの下に小さく開くすりガラスのパネル。アイコンは線がつながって × に変わるSVG */
+.menu-btn { grid-column: 4; display: block; width: 44px; height: 44px; padding: 0; position: relative; z-index: 2; background: none; border: 0; cursor: pointer; }
+.menu-btn svg { width: 100%; height: 100%; display: block; }
+.menu-btn .line { fill: none; stroke: var(--ink); stroke-width: 5; stroke-linecap: round; transition: stroke-dasharray .6s cubic-bezier(.4, 0, .2, 1), stroke-dashoffset .6s cubic-bezier(.4, 0, .2, 1); }
+.menu-btn .line1, .menu-btn .line3 { stroke-dasharray: 60 207; }
+.menu-btn .line2 { stroke-dasharray: 60 60; }
+.menu-btn[aria-expanded="true"] .line1, .menu-btn[aria-expanded="true"] .line3 { stroke-dasharray: 90 207; stroke-dashoffset: -134; }
+.menu-btn[aria-expanded="true"] .line2 { stroke-dasharray: 1 60; stroke-dashoffset: -30; }
+.nav { position: fixed; z-index: 999; top: 76px; right: clamp(16px, 3.5vw, 48px); width: min(260px, calc(100vw - 32px)); padding: 8px; border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, .78), rgba(255, 255, 255, .5)); border: 1px solid rgba(255, 255, 255, .85);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 24px 50px -24px rgba(31, 41, 55, .3);
+  backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  clip-path: inset(0 0 100% 70% round 20px); opacity: 0; pointer-events: none;
+  transition: clip-path .7s cubic-bezier(.16, 1, .3, 1), opacity .3s; }
+.nav.is-open { clip-path: inset(0 0 0 0 round 20px); opacity: 1; pointer-events: auto; }
+.nav-inner { display: grid; gap: 2px; }
+.nav-item { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 14px; border-radius: 12px; font-size: .95rem; font-weight: 500; color: var(--ink) !important;
+  opacity: 0; transform: translateY(-6px); transition: background .25s, color .25s, opacity .4s, transform .5s cubic-bezier(.16, 1, .3, 1); }
+.nav-item:hover { background: rgba(54, 201, 230, .12); color: var(--tif-dark, #1FA8C4) !important; }
+.nav-en { font-size: .64rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: #1FA8C4; }
+.nav.is-open .nav-item { opacity: 1; transform: none; }
+.nav.is-open .nav-item:nth-child(1) { transition-delay: .12s; }
+.nav.is-open .nav-item:nth-child(2) { transition-delay: .17s; }
+.nav.is-open .nav-item:nth-child(3) { transition-delay: .22s; }
+.nav.is-open .nav-item:nth-child(4) { transition-delay: .27s; }
+@media (max-width: 600px) { .header { gap: 10px; } .header-cta { padding: 8px 14px; } }
+
+/* ボタン：トップページと同じ、濃い色の丸いボタン */
+.btn-primary, .nav-links .btn-primary, .lp-btn, .lp-cta-btn, .lp-header-cta, .lp-form-submit, button[type="submit"] {
+  background: var(--ink) !important; color: #fff !important; border: 0 !important;
+  border-radius: 999px !important; box-shadow: 0 10px 30px rgba(31, 41, 55, .16) !important;
+  transition: background .3s, color .3s, transform .3s !important;
+}
+.btn-primary:hover, .nav-links .btn-primary:hover, .lp-btn:hover, .lp-cta-btn:hover, .lp-header-cta:hover, .lp-form-submit:hover, button[type="submit"]:hover {
+  background: var(--tif) !important; color: var(--ink) !important; transform: translateY(-2px);
+}
+.btn-outline { border-radius: 999px !important; border-color: rgba(31, 41, 55, .25) !important; color: var(--ink) !important; background: rgba(255, 255, 255, .4) !important; }
+.btn-outline:hover { border-color: var(--tif) !important; color: var(--tif-dark) !important; }
+.btn-white, .btn-outline-white { border-radius: 999px !important; }
+
+/* ページ見出し：濃い帯 → 透明にして、大きな文字で */
+.page-header { background: transparent !important; color: var(--ink) !important; padding: 56px 0 36px !important; text-align: left !important; }
+.page-header .container { max-width: var(--max-width); }
+.page-header h1 { color: var(--ink) !important; font-size: clamp(2.2rem, 5vw, 3.8rem) !important; letter-spacing: -.02em; line-height: 1.2; }
+.page-header p { color: var(--ink-dim) !important; }
+
+/* 大きな白いパネル → すりガラス */
+.section > .container, .section-alt > .container, .hero > .container,
+.lp-hero-inner, .lp-section > .lp-container, .lp-section.bg-alt > .lp-container, .lp-problems .lp-container {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: var(--glass-border) !important; box-shadow: var(--glass-shadow) !important; border-radius: 28px !important;
+}
+.section, .section-alt, .hero, .lp-hero, .lp-section, .lp-problems, .lp-section.bg-alt { background: transparent !important; }
+
+/* カード → 少し濃いめのすりガラス */
+.card, .service-card, .service-reason-card, .strength-item, .case-cta-card, .testimonial-card, .price-card,
+.booking-card, .blog-card, .works-card, .lp-solution-card, .lp-instructor, .lp-price-card, .lp-testimonial,
+.lp-leadmagnet, .lp-form-card, .lp-hero-form-card, .day-card {
+  background: var(--card-bg) !important;
+  backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  border: var(--glass-border) !important; box-shadow: var(--glass-shadow) !important;
+  border-radius: 20px !important;
+}
+.card-icon, .testimonial-avatar, .blog-card-img, .instructor-avatar, .case-cta-action { background: rgba(54, 201, 230, .08) !important; }
+.works-tags li { background: rgba(54, 201, 230, .1) !important; }
+
+/* 濃い帯（CTA・ダークセクション） → 水色のすりガラス */
+.cta-banner { background: transparent !important; }
+.cta-banner > .container, .section-dark {
+  background: linear-gradient(135deg, rgba(54, 201, 230, .82), rgba(31, 168, 196, .7)) !important;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, .6) !important; border-radius: 28px !important;
+  box-shadow: 0 24px 60px rgba(31, 168, 196, .22), inset 0 1px 0 rgba(255, 255, 255, .5) !important;
+}
+.cta-banner h2, .cta-banner p, .section-dark h2, .section-dark p { color: #fff !important; }
+
+/* 表・入力欄 */
+.info-table th { background: rgba(54, 201, 230, .08) !important; }
+.info-table, .info-table td { background: transparent !important; }
+.info-table th, .info-table td { border-color: rgba(31, 41, 55, .08) !important; }
+input, select, textarea { background: rgba(255, 255, 255, .55) !important; border: 1px solid rgba(31, 41, 55, .14) !important; border-radius: 12px !important; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+input:focus, select:focus, textarea:focus { border-color: var(--tif) !important; box-shadow: 0 0 0 4px rgba(54, 201, 230, .15) !important; }
+.lp-time-slot { border-radius: 12px !important; }
+
+/* フッター：トップページと共通（案Aの構成：ロゴ＋3列、背景は紺） */
+.site-footer { position: relative; z-index: 2; background: var(--ink) !important; color: #fff !important; padding: 70px 0 30px !important; border: 0 !important; backdrop-filter: none !important; }
+.site-footer .wrap { max-width: 1320px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 56px); }
+.site-footer .footer-grid { display: grid !important; grid-template-columns: 1.4fr 1fr 1fr 1fr !important; gap: 30px !important; }
+.site-footer .footer-brand { display: flex; gap: 10px; align-items: center; align-self: start; padding: 0 !important; }
+.site-footer .brand-mark { width: 22px; height: auto; }
+.site-footer .brand-text { font-size: 1rem; font-weight: 600; letter-spacing: .18em; color: #fff; }
+.site-footer .brand-text b { font-weight: 400; letter-spacing: .04em; }
+.site-footer h4 { font-size: .78rem !important; letter-spacing: .2em; color: #B2C4CD !important; margin-bottom: 14px; font-weight: 500; }
+.site-footer a { display: block; font-size: .85rem; padding: 4px 0; color: #fff !important; opacity: .85; }
+.site-footer a:hover { color: var(--tif) !important; opacity: 1; }
+.site-footer .copy { font-size: .74rem; color: #B2C4CD !important; margin-top: 50px; }
+@media (max-width: 860px) { .site-footer .footer-grid { grid-template-columns: 1fr 1fr !important; } .site-footer .footer-brand { grid-column: 1 / -1; } }
+
+/* ページ内に直接書かれた白い箱（フォーム・FAQ・コラム・表など）もすりガラスに */
+form[style*="background:#fff"], div[style*="background:#fff"], article[style*="background:#fff"], details[style*="background:#fff"],
+section[style*="background:#fff"], table[style*="background:#fff"], label[style*="background:#fff"], a[style*="background:#fff"] {
+  background: var(--card-bg) !important;
+  backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  border: var(--glass-border) !important; box-shadow: var(--glass-shadow) !important; border-radius: 20px !important;
+}
+th[style*="background:#f8f9fa"], td[style*="background:#f8f9fa"] { background: rgba(54, 201, 230, .08) !important; }
+
+/* 日本語の見出し・本文の改行：文節の切れ目で折り返し、句読点だけが行頭に残るような不自然な改行を防ぐ
+   （auto-phrase は Chrome・Edge が対応。未対応のブラウザでは通常の折り返しになる） */
+h1, h2, h3, h4, p, li, dd, dt, summary, figcaption { word-break: auto-phrase; line-break: strict; overflow-wrap: anywhere; }
+h1, h2, h3 { text-wrap: balance; }

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -22,7 +22,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css?v=20260624-0209">
+<link rel="stylesheet" href="../theme.css">
   <title>コラム | SYMMETRY Lab株式会社</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192x192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="../images/favicon-192x192.png">
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KR9VEKC8JZ"></script>
   <script>
@@ -31,34 +36,23 @@
     gtag('js', new Date());
     gtag('config', 'G-KR9VEKC8JZ');
   </script>
-    <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon-192x192.png">
-  <link rel="apple-touch-icon" sizes="192x192" href="../images/favicon-192x192.png">
 </head>
 <body>
+<canvas id="gl" aria-hidden="true"></canvas>
 
   <!-- Navigation -->
-  <nav class="navbar">
-    <div class="container">
-      <a href="../index.html" class="nav-logo"><img src="../images/logo_full.png" alt="SYMMETRY Lab" class="nav-logo-img"></a>
-      <button class="nav-toggle" aria-label="メニュー" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-      <div class="nav-links">
-        <a href="../company.html">会社概要</a>
-        <div class="nav-dropdown">
-          <a href="../services.html" class="nav-dropdown-trigger">サービス</a>
-          <div class="nav-dropdown-menu">
-            <a href="../services.html">ジョブ対策</a>
-            <a href="../lp-case.html">ケース面接対策</a>
-            <a href="../works.html">コンサルティングサービス</a>
-            <a href="../faq.html">よくある質問</a>
-          </div>
-        </div>
-        <a href="index.html">コラム</a>
-        <a href="../contact.html">お問い合わせ</a>
-      </div>
+  <header class="header">
+    <a href="../index.html" class="brand"><img src="../images/logo_full.png" alt="SYMMETRY Lab"></a>
+    <a href="../contact.html" class="header-cta">無料相談 <svg class="ph" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
+    <button class="menu-btn" id="menuBtn" aria-label="メニュー" aria-expanded="false" aria-controls="nav"><svg viewBox="0 0 100 100" aria-hidden="true"><path class="line line1" d="M 20,29.000046 H 80.000231 C 80.000231,29.000046 94.498839,28.817352 94.532987,66.711331 94.543142,77.980673 90.966081,81.670246 85.259173,81.668997 79.552261,81.667751 75.000211,74.999942 75.000211,74.999942 L 25.000021,25.000058"/><path class="line line2" d="M 20,50 H 80"/><path class="line line3" d="M 20,70.999954 H 80.000231 C 80.000231,70.999954 94.498839,71.182648 94.532987,33.288669 94.543142,22.019327 90.966081,18.329754 85.259173,18.331003 79.552261,18.332249 75.000211,25.000058 75.000211,25.000058 L 25.000021,74.999942"/></svg></button>
+  </header>
+  <nav class="nav" id="nav" aria-label="メニュー">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-item">トップ<span class="nav-en">Home</span></a>
+      <a href="../services.html" class="nav-item">サービス<span class="nav-en">Services</span></a>
+      <a href="../company.html" class="nav-item">会社概要<span class="nav-en">Company</span></a>
+      <a href="./" class="nav-item">コラム<span class="nav-en">Column</span></a>
+      <a href="../contact.html" class="nav-item">お問い合わせ<span class="nav-en">Contact</span></a>
     </div>
   </nav>
 
@@ -81,135 +75,135 @@
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.28 / 転職・選考対策</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./consulting-transfer-business-summary-250-350-20260828/" style="color:inherit;">事業会社からコンサル転職する職務要約｜経営企画・営業・ITの250〜350字例文</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/consulting-transfer-business-summary-250-350-20260828/" style="color:inherit;">事業会社からコンサル転職する職務要約｜経営企画・営業・ITの250〜350字例文</a></h2>
           <p>事業会社の経営企画、営業・マーケティング、IT・データ企画からコンサルへ転職する人向けに、250〜350字の職務要約を全文Before／Afterで紹介。実在する公式求人から応募1求人・見送り1求人を決めます。</p>
-          <p style="margin-top:1rem;"><a href="./consulting-transfer-business-summary-250-350-20260828/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/consulting-transfer-business-summary-250-350-20260828/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.28 / 転職・選考対策</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./big4-strategy-application-scorecard-20260828/" style="color:inherit;">Big4戦略部門の応募先を成果物で採点する｜8点満点の応募先採点シート</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/big4-strategy-application-scorecard-20260828/" style="color:inherit;">Big4戦略部門の応募先を成果物で採点する｜8点満点の応募先採点シート</a></h2>
           <p>Big4戦略部門への応募先を、公式テーマ、担当局面、成果物と数値、公開必須要件の4項目・8点満点で採点。職務経歴書の先頭3行と60秒の応募理由まで作ります。</p>
-          <p style="margin-top:1rem;"><a href="./big4-strategy-application-scorecard-20260828/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/big4-strategy-application-scorecard-20260828/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.27 / 転職・選考対策</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./consulting-application-route-48-hours-20260827/" style="color:inherit;">コンサル転職は直接応募・リファラル・エージェントのどれ？応募前48時間で決める選考ルート</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/consulting-application-route-48-hours-20260827/" style="color:inherit;">コンサル転職は直接応募・リファラル・エージェントのどれ？応募前48時間で決める選考ルート</a></h2>
           <p>コンサル転職の応募経路を、直接応募・リファラル・エージェントの合格率ではなく、求人特定、社員から得られる事実、日程管理、条件交渉の支援範囲で比較。重複応募を防ぎ、48時間で一つに決める手順と依頼文面を紹介します。</p>
-          <p style="margin-top:1rem;"><a href="./consulting-application-route-48-hours-20260827/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/consulting-application-route-48-hours-20260827/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.27 / 転職・選考対策</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./consulting-transfer-age-experience-position-20260827/" style="color:inherit;">コンサル転職は何歳まで？30代・40代が公式求人の経験年数から応募職位を決める方法</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/consulting-transfer-age-experience-position-20260827/" style="color:inherit;">コンサル転職は何歳まで？30代・40代が公式求人の経験年数から応募職位を決める方法</a></h2>
           <p>コンサル転職に業界共通の年齢上限はあるのか。30代後半・40代が、年齢ではなく公式求人の関連経験を月単位で照合し、応募、一段下の職位、専門領域求人、見送りを決める方法を解説します。</p>
-          <p style="margin-top:1rem;"><a href="./consulting-transfer-age-experience-position-20260827/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/consulting-transfer-age-experience-position-20260827/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.26 / 転職・面接対策</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./consulting-career-english-requirements-20260825/" style="color:inherit;">コンサル転職に英語は必要か？今応募するか、4週間だけ延期するかの判断基準</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/consulting-career-english-requirements-20260825/" style="color:inherit;">コンサル転職に英語は必要か？今応募するか、4週間だけ延期するかの判断基準</a></h2>
           <p>公式求人の英語要件を必須・歓迎・選考・入社後学習へ分け、英語実務を4作業で診断。今応募する条件と、4週間だけ延期する条件を具体化します。</p>
-          <p style="margin-top:1rem;"><a href="./consulting-career-english-requirements-20260825/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/consulting-career-english-requirements-20260825/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.26 / 転職・選考対策</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./accenture-midcareer-interview-answer-sheet-20260825/" style="color:inherit;">アクセンチュア中途面接｜公式7領域から作る12問の回答シートと深掘りへの対応</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/accenture-midcareer-interview-answer-sheet-20260825/" style="color:inherit;">アクセンチュア中途面接｜公式7領域から作る12問の回答シートと深掘りへの対応</a></h2>
           <p>公式の質問領域を編集部が12問へ整理。他社選考、希望条件、強み・弱み、逆質問、指摘を受けた後の回答修正まで具体的に解説します。</p>
-          <p style="margin-top:1rem;"><a href="./accenture-midcareer-interview-answer-sheet-20260825/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/accenture-midcareer-interview-answer-sheet-20260825/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.24 / 転職・面接対策</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./consulting-interview-motivation-90-seconds-20260824/" style="color:inherit;">コンサル転職の志望動機｜「なぜコンサル・なぜこのファーム・なぜ今」を90秒で答える</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/consulting-interview-motivation-90-seconds-20260824/" style="color:inherit;">コンサル転職の志望動機｜「なぜコンサル・なぜこのファーム・なぜ今」を90秒で答える</a></h2>
           <p>未経験から戦略・総合コンサルを受ける人向けに、志望動機を90秒へ収める方法を解説。SIer、メーカー、経営企画の回答全文と、4つの深掘り質問への返し方まで紹介します。</p>
-          <p style="margin-top:1rem;"><a href="./consulting-interview-motivation-90-seconds-20260824/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/consulting-interview-motivation-90-seconds-20260824/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.24 / 転職・選考対策</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./consulting-mbb-midcareer-selection-timeline-20260824/" style="color:inherit;">MBB中途選考は何回？マッキンゼー・BCG・ベインの公式フローと6週間準備計画</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/consulting-mbb-midcareer-selection-timeline-20260824/" style="color:inherit;">MBB中途選考は何回？マッキンゼー・BCG・ベインの公式フローと6週間準備計画</a></h2>
           <p>MBB3社の公式選考情報を確認し、応募前に仕上げる書類・回答と、週6〜10時間で進める6週間の準備計画を整理します。</p>
-          <p style="margin-top:1rem;"><a href="./consulting-mbb-midcareer-selection-timeline-20260824/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/consulting-mbb-midcareer-selection-timeline-20260824/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.23 / 転職・キャリア</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./consulting-job-offer-total-compensation-20260823/" style="color:inherit;">コンサル転職で年収はいくら上がる？戦略・Big4・未経験の相場と交渉方法</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/consulting-job-offer-total-compensation-20260823/" style="color:inherit;">コンサル転職で年収はいくら上がる？戦略・Big4・未経験の相場と交渉方法</a></h2>
           <p>異業種、戦略、Big4・アクセンチュア、コンサル経験者の公開事例を分けて検証し、現年収別の単純計算例と承諾前の交渉方法を具体的に解説します。</p>
-          <p style="margin-top:1rem;"><a href="./consulting-job-offer-total-compensation-20260823/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/consulting-job-offer-total-compensation-20260823/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.23 / 転職・キャリア</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./consulting-strategy-workstyle-project-fit-20260823/" style="color:inherit;">戦略コンサルの1日と案件期間｜19時に終わる日、23時まで働く日、8週間の進み方</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/consulting-strategy-workstyle-project-fit-20260823/" style="color:inherit;">戦略コンサルの1日と案件期間｜19時に終わる日、23時まで働く日、8週間の進み方</a></h2>
           <p>公開された2つの一日を時系列で比較し、2〜3か月案件、年間4〜6案件の計算、8週間案件の進み方、忙しくなる条件まで整理します。</p>
-          <p style="margin-top:1rem;"><a href="./consulting-strategy-workstyle-project-fit-20260823/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/consulting-strategy-workstyle-project-fit-20260823/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.22 / 転職・キャリア</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./consulting-resume-project-achievement-20260822/" style="color:inherit;">コンサル転職の職務経歴書｜プロジェクト実績を「課題・判断・成果」に書き換える</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/consulting-resume-project-achievement-20260822/" style="color:inherit;">コンサル転職の職務経歴書｜プロジェクト実績を「課題・判断・成果」に書き換える</a></h2>
           <p>担当業務の羅列を、背景・制約・判断・成果が伝わる実績へ書き換える方法を、IT・PMO、事業開発、FASの例で解説します。</p>
-          <p style="margin-top:1rem;"><a href="./consulting-resume-project-achievement-20260822/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/consulting-resume-project-achievement-20260822/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.22 / 転職・キャリア</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./consulting-manager-transfer-role-scope-20260822/" style="color:inherit;">コンサル転職でマネージャー採用を狙うなら｜職位ではなく任される範囲で応募を決める</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/consulting-manager-transfer-role-scope-20260822/" style="color:inherit;">コンサル転職でマネージャー採用を狙うなら｜職位ではなく任される範囲で応募を決める</a></h2>
           <p>Manager相当で応募するか、一段下の職位で入社するかを、案件の責任範囲と説明できる証拠から判断する方法を解説します。</p>
-          <p style="margin-top:1rem;"><a href="./consulting-manager-transfer-role-scope-20260822/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/consulting-manager-transfer-role-scope-20260822/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.21 / 転職・キャリア</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./bcg-working-style-career-20260821/" style="color:inherit;">BCGの働き方を転職前にどう見るか｜柔軟な働き方を案件の進み方まで確認</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/bcg-working-style-career-20260821/" style="color:inherit;">BCGの働き方を転職前にどう見るか｜柔軟な働き方を案件の進み方まで確認</a></h2>
           <p>BCGの柔軟な働き方や学習支援を、顧客会議・チーム構成・案件の繁閑まで含めて転職前に確認する方法を解説します。</p>
-          <p style="margin-top:1rem;"><a href="./bcg-working-style-career-20260821/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/bcg-working-style-career-20260821/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.21 / 転職・キャリア</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./big4-strategy-consulting-comparison-20260821/" style="color:inherit;">Big4の戦略部門を比較｜Deloitte・PwC・EY・KPMGの違いと転職先の選び方</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/big4-strategy-consulting-comparison-20260821/" style="color:inherit;">Big4の戦略部門を比較｜Deloitte・PwC・EY・KPMGの違いと転職先の選び方</a></h2>
           <p>Deloitte、PwC Strategy&amp;、EY-Parthenon Strategy、KPMG FAS Strategyを、法人・ユニット・案件テーマで比較。応募前の確認事項を整理します。</p>
-          <p style="margin-top:1rem;"><a href="./big4-strategy-consulting-comparison-20260821/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/big4-strategy-consulting-comparison-20260821/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.18 / 業界トレンド</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./deloitte-fde-management-office-consulting-career-2026/" style="color:inherit;">デロイト トーマツがFDEマネジメントオフィスを設置──コンサル転職で「戦略だけ」が通用しにくくなる理由</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/deloitte-fde-management-office-consulting-career-2026/" style="color:inherit;">デロイト トーマツがFDEマネジメントオフィスを設置──コンサル転職で「戦略だけ」が通用しにくくなる理由</a></h2>
           <p>FDE人材の採用・育成・アサインを全社横断で担う新組織。発表の中身を、ケース面接でのAI活用の考え方と、転職者が職務経歴書で示すべき経験に落とし込みます。</p>
-          <p style="margin-top:1rem;"><a href="./deloitte-fde-management-office-consulting-career-2026/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/deloitte-fde-management-office-consulting-career-2026/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.18 / ケース面接</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./pwc-future-ready-workflow-design-case-interview-2026/" style="color:inherit;">PwCがAIエージェントで業務診断を開始──ケース面接で「AI導入」を答えるときの考え方</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/pwc-future-ready-workflow-design-case-interview-2026/" style="color:inherit;">PwCがAIエージェントで業務診断を開始──ケース面接で「AI導入」を答えるときの考え方</a></h2>
           <p>現状業務の可視化からPoC・定着までをつなぐPwCの新サービスを題材に、AI導入ケースで面接官が見ている論点と、答えを組み立てる順番を解説します。</p>
-          <p style="margin-top:1rem;"><a href="./pwc-future-ready-workflow-design-case-interview-2026/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/pwc-future-ready-workflow-design-case-interview-2026/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.19 / ケース面接</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./bcg-case-interview-preparation-20260819/" style="color:inherit;">BCGのケース面接対策｜「平日のホテル稼働率を10ポイント上げる」例題の解き方</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/bcg-case-interview-preparation-20260819/" style="color:inherit;">BCGのケース面接対策｜「平日のホテル稼働率を10ポイント上げる」例題の解き方</a></h2>
           <p>BCGの公式採用情報を踏まえ、ホテル稼働率のオリジナル例題で、前提確認・構造化・優先順位づけ・解答の伝え方を解説します。</p>
-          <p style="margin-top:1rem;"><a href="./bcg-case-interview-preparation-20260819/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/bcg-case-interview-preparation-20260819/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.20 / 転職・採用動向</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./pwc-salary-comparison-career-20260820/" style="color:inherit;">PwCコンサル中途採用｜AI実装へ広げるか、複数ベンダーのIT基盤を担うか</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/pwc-salary-comparison-career-20260820/" style="color:inherit;">PwCコンサル中途採用｜AI実装へ広げるか、複数ベンダーのIT基盤を担うか</a></h2>
           <p>PwCの公式採用ページをもとに、デジタル&amp;AIとテクノロジーアライアンスの違い、職務経歴書の書き分け、応募前の確認事項を整理します。</p>
-          <p style="margin-top:1rem;"><a href="./pwc-salary-comparison-career-20260820/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/pwc-salary-comparison-career-20260820/">続きを読む →</a></p>
         </article>
 
         <article class="blog-card" style="background:#fff;border-radius:8px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
           <p class="text-small text-light" style="margin-bottom:0.5rem;">2026.08.20 / 転職・採用動向</p>
-          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="./deloitte-salary-benchmark-career-20260820/" style="color:inherit;">SAP・ServiceNow・クラウド経験者はFDEかDSか──デロイトの新体制から考える応募先の選び方</a></h2>
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;"><a href="https://symmetrylab.jp/blog/deloitte-salary-benchmark-career-20260820/" style="color:inherit;">SAP・ServiceNow・クラウド経験者はFDEかDSか──デロイトの新体制から考える応募先の選び方</a></h2>
           <p>デロイトのFDEマネジメントオフィス発表と公式職種一覧をもとに、FDEへ応募する条件、DSを検討する条件、応募前に確認すべきポイントを整理します。</p>
-          <p style="margin-top:1rem;"><a href="./deloitte-salary-benchmark-career-20260820/">続きを読む →</a></p>
+          <p style="margin-top:1rem;"><a href="https://symmetrylab.jp/blog/deloitte-salary-benchmark-career-20260820/">続きを読む →</a></p>
         </article>
 
         <div style="margin-top:2rem;padding:2rem;background:#1f2937;color:#fff;border-radius:8px;">
@@ -223,41 +217,20 @@
 
   <!-- CTA Banner -->
   <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-grid">
-
-        <div>
-          <h4>サービス</h4>
-          <div class="footer-links">
-            <a href="../services.html#practical-skills">実践スキル研修</a>
-            <a href="../services.html#case-interview">ケース面接対策</a>
-            <a href="../booking.html">お申し込み</a>
-          </div>
-        </div>
-        <div>
-          <h4>会社情報</h4>
-          <div class="footer-links">
-            <a href="../company.html">会社概要</a>
-                <a href="index.html">コラム</a>
-          </div>
-        </div>
-        <div>
-          <h4>サポート</h4>
-          <div class="footer-links">
-            <a href="../faq.html">よくある質問</a>
-            <a href="../contact.html">お問い合わせ</a>
-            <a href="../privacy.html">プライバシーポリシー</a>
-            <a href="../tokushoho.html">特定商取引法に基づく表記</a>
-          </div>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</span>
-      </div>
+  <footer class="footer site-footer">
+    <div class="wrap footer-grid">
+      <a href="../index.html" class="footer-brand"><img src="../images/favicon-mark.png" alt="" class="brand-mark"><span class="brand-text">SYMMETRY <b>Lab</b></span></a>
+      <div><h4>サービス</h4><a href="../services.html#career">キャリア形成支援事業</a><a href="../services.html#consulting">コンサルティング事業</a><a href="../job.html">ジョブ対策講座</a><a href="../lp-case.html">ケース面接対策講座</a><a href="../booking.html">お申し込み</a></div>
+      <div><h4>会社情報</h4><a href="../company.html">会社概要</a><a href="../works.html">実績</a><a href="./">コラム</a></div>
+      <div><h4>サポート</h4><a href="../faq.html">よくある質問</a><a href="../contact.html">お問い合わせ</a><a href="../privacy.html">プライバシーポリシー</a><a href="../tokushoho.html">特定商取引法に基づく表記</a></div>
     </div>
+    <p class="wrap copy">&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</p>
   </footer>
 
   <script src="../js/main.js"></script>
+<script type="importmap">
+  { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }
+</script>
+<script type="module" src="../sub.js?v=20261124-04"></script>
 </body>
 </html>

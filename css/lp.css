@@ -73,6 +73,8 @@
   margin: 0 auto;
   padding: 0 20px;
   display: flex;
+  /* スマホ幅でロゴとボタンがくっつかないよう、最低限の間隔をあける */
+  gap: 12px;
   justify-content: space-between;
   align-items: center;
 }
@@ -87,6 +89,10 @@
   height: 36px;
   width: auto;
   display: block;
+  /* スマホ幅で右のボタンに押されて幅だけ縮むと、ロゴが横に潰れる。
+     縮んでも縦横比を保って枠内に収まるようにする */
+  object-fit: contain;
+  object-position: left center;
 }
 
 @media (max-width: 768px) {

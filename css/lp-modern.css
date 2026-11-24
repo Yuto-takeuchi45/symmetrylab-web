@@ -1,0 +1,96 @@
+/* =========================================================
+   講座LP（lp-case.html・lp-training.html）を、トップ・サービスページと同じ組み方にそろえる上書き
+   - css/lp.css（旧デザインのLP共通）と theme.css の後に読み込む
+   - 旧デザインの名残（大きな白い箱で各セクションを囲む・中央揃えの小さな見出し・丸囲みの番号・
+     水色の矢羽根の帯）をやめ、HPと同じ「左寄せの大きな見出し＋すりガラスのカード＋細い罫線」に組み直す
+   - 文言・フォームの項目・送信処理は変えない
+   ========================================================= */
+:root {
+  --lpm-ink: #1F2937;
+  --lpm-ink-2: #374151;
+  --lpm-mute: #5B6B78;
+  --lpm-tif: #36C9E6;
+  --lpm-tif-dark: #1FA8C4;
+  --lpm-line: rgba(31, 41, 55, .12);
+  --lpm-card: linear-gradient(135deg, rgba(255, 255, 255, .42), rgba(255, 255, 255, .12));
+  --lpm-border: 1px solid rgba(255, 255, 255, .75);
+  --lpm-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 20px 50px -30px rgba(31, 41, 55, .25);
+}
+
+/* --- セクションの外枠：白い大箱をやめ、HPと同じ幅・余白で背景の上に直接置く --- */
+.lp-hero, .lp-section, .lp-problems { padding: 0 !important; }
+.lp-hero .lp-hero-inner, .lp-section > .lp-container, .lp-section.bg-alt > .lp-container, .lp-problems .lp-container {
+  max-width: 1320px !important; margin: 0 auto;
+  padding: clamp(72px, 10vw, 140px) clamp(16px, 4vw, 56px) !important;
+  background: none !important; border: 0 !important; box-shadow: none !important; border-radius: 0 !important;
+  backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+}
+
+/* --- 見出し：英字の小見出し（ロゴマーク付き）＋左寄せの大きな見出し --- */
+.section-eyebrow, .lp-hero-badge-text {
+  display: flex !important; justify-content: flex-start; align-items: center; gap: 10px;
+  color: var(--lpm-ink) !important; font-size: .92rem !important; font-weight: 500 !important; letter-spacing: .01em !important;
+  margin: 0 0 24px !important; text-align: left !important;
+}
+.lp-hero-badge-text::before { content: ""; width: 14px; height: 16px; flex: none; background: url("../images/favicon-mark.png") center / contain no-repeat; }
+.lp-section-title { text-align: left !important; max-width: 820px; margin-bottom: 48px !important; }
+.lp-section-title h2, .lp-problems-list h2 {
+  font-size: clamp(1.9rem, 3.8vw, 3.2rem) !important; font-weight: 500 !important; line-height: 1.35 !important;
+  letter-spacing: -.005em !important; color: var(--lpm-ink) !important;
+  text-align: left !important; white-space: normal !important; text-wrap: balance; margin-bottom: 24px !important;
+}
+.lp-section-title h2 .accent, .lp-section-title h2 .lp-mark { color: var(--lpm-tif-dark) !important; background: none !important; }
+.lp-section-title .lp-section-sub { color: var(--lpm-mute) !important; letter-spacing: .02em; }
+
+/* --- ファーストビュー：大きな見出しと、すりガラスの申込カード --- */
+.lp-hero-badge-wrap { text-align: left !important; }
+.lp-hero h1 { font-size: clamp(2.1rem, 4.2vw, 3.6rem) !important; font-weight: 600 !important; line-height: 1.25 !important; letter-spacing: -.02em !important; color: var(--lpm-ink) !important; }
+.lp-hero-sub { color: var(--lpm-mute) !important; max-width: 620px; }
+.lp-hero-features { border: 0 !important; padding: 0 !important; background: none !important; gap: 8px 20px !important; justify-content: start; }
+.lp-hero-feature { justify-content: flex-start !important; font-size: .86rem !important; color: var(--lpm-ink-2) !important; text-align: left !important; }
+.lp-hero-proofs { gap: 12px !important; }
+.lp-hero-proof {
+  background: var(--lpm-card) !important; border: var(--lpm-border) !important; box-shadow: var(--lpm-shadow) !important;
+  border-radius: 16px !important; backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
+}
+.lp-hero-proof-num { font-family: "Inter Tight", "Inter", sans-serif !important; font-weight: 300 !important; color: var(--lpm-ink) !important; letter-spacing: -.02em; }
+.lp-hero-proof-num span { color: var(--lpm-tif-dark) !important; }
+.lp-hero-form-card { border-radius: 24px !important; background: linear-gradient(135deg, rgba(255, 255, 255, .8), rgba(255, 255, 255, .58)) !important; }
+
+/* --- お悩み：チェックの箇条書きを、細い罫線で区切った読みやすい行に --- */
+.lp-problems-list { max-width: 980px; margin: 0 !important; }
+.lp-problem-item { border-top: 1px solid var(--lpm-line) !important; border-bottom: 0 !important; padding: 22px 0 !important; font-size: 1rem !important; color: var(--lpm-ink-2) !important; background: none !important; }
+.lp-problem-item:last-child { border-bottom: 1px solid var(--lpm-line) !important; }
+
+/* --- 選ばれる理由：丸囲みの番号カードを、HPの「選ばれる理由」と同じ大きな番号＋罫線の並びに --- */
+.lp-solution-cards { display: block !important; max-width: none !important; border-top: 1px solid var(--lpm-ink); }
+.lp-solution-card, .lp-why-container .lp-solution-card {
+  display: grid !important; grid-template-columns: 150px minmax(0, 1fr); gap: 30px !important; align-items: start !important;
+  padding: 44px 0 !important; margin: 0 !important; border: 0 !important; border-bottom: 1px solid var(--lpm-line) !important;
+  border-radius: 0 !important; background: none !important; box-shadow: none !important; transform: none !important;
+  backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+}
+.lp-solution-card::before { content: none !important; }
+.lp-solution-num { width: auto !important; height: auto !important; border: 0 !important; border-radius: 0 !important; justify-content: flex-start !important; color: var(--lpm-ink) !important; }
+.lp-solution-num > span > span:first-child { font-size: .7rem !important; color: var(--lpm-tif-dark); margin-right: 6px; }
+.lp-solution-num > span > span:last-child { font-family: "Inter Tight", "Inter", sans-serif; font-size: clamp(2.6rem, 4.4vw, 3.6rem) !important; font-weight: 300; letter-spacing: -.03em; }
+.lp-solution-content h3 { color: var(--lpm-ink) !important; font-size: clamp(1.15rem, 1.8vw, 1.4rem) !important; font-weight: 600 !important; }
+.lp-solution-content p { color: var(--lpm-ink-2) !important; }
+@media (max-width: 700px) { .lp-solution-card, .lp-why-container .lp-solution-card { grid-template-columns: 1fr; gap: 10px !important; padding: 32px 0 !important; } }
+
+/* --- 受講までの流れ：水色の矢羽根の帯をやめ、番号＋見出し＋説明を罫線で区切る --- */
+.lp-flow { gap: 0 24px !important; border-top: 1px solid var(--lpm-ink); }
+.lp-flow-item { padding: 28px 0 !important; border-bottom: 1px solid var(--lpm-line) !important; background: none !important; }
+.lp-flow-header { background: none !important; clip-path: none !important; padding: 0 !important; margin-bottom: 10px !important; }
+.lp-flow-num { color: var(--lpm-tif-dark) !important; font-family: "Inter Tight", "Inter", sans-serif !important; font-size: .82rem !important; letter-spacing: .08em !important; }
+.lp-flow-item h4 { color: var(--lpm-ink) !important; font-size: 1.08rem !important; }
+.lp-flow-item p { padding: 0 !important; color: var(--lpm-ink-2) !important; }
+.lp-flow-item p br { display: none; }
+
+/* --- 数字で見る：薄い水色で読みにくかった数字を、HPの数字表現（細めの濃い文字）にそろえる --- */
+.lp-stat-num { color: var(--lpm-ink) !important; font-family: "Inter Tight", "Inter", sans-serif !important; font-weight: 300 !important; }
+.lp-stat-num .small { color: var(--lpm-tif-dark) !important; }
+
+/* 日本語の改行：旧デザインの keep-all（単語を分けない指定）が見出しの句読点だけを次の行へ送ってしまうため、
+   文節の切れ目で折り返す指定に置き換える */
+.lp-page h1, .lp-page h2, .lp-page h3, .lp-page h4, .lp-page p, .lp-page li { word-break: auto-phrase !important; line-break: strict; overflow-wrap: anywhere !important; }

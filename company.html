@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -22,7 +22,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css?v=20260624-0209">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="css/sub-modern.css?v=20261124-01">
   <title>会社概要 | SYMMETRY Lab株式会社</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-mark.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/favicon-192x192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="images/favicon-192x192.png">
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KR9VEKC8JZ"></script>
   <script>
@@ -31,137 +37,73 @@
     gtag('js', new Date());
     gtag('config', 'G-KR9VEKC8JZ');
   </script>
-    <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-mark.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="images/favicon-192x192.png">
-  <link rel="apple-touch-icon" sizes="192x192" href="images/favicon-192x192.png">
 </head>
 <body>
+<canvas id="gl" aria-hidden="true"></canvas>
 
   <!-- Navigation -->
-  <nav class="navbar">
-    <div class="container">
-      <a href="index.html" class="nav-logo"><img src="images/logo_full.png" alt="SYMMETRY Lab" class="nav-logo-img"></a>
-      <button class="nav-toggle" aria-label="メニュー" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-      <div class="nav-links">
-        <a href="company.html">会社概要</a>
-        <div class="nav-dropdown">
-          <a href="services.html" class="nav-dropdown-trigger">サービス</a>
-          <div class="nav-dropdown-menu">
-            <a href="services.html">ジョブ対策</a>
-            <a href="lp-case.html">ケース面接対策</a>
-            <a href="works.html">コンサルティングサービス</a>
-            <a href="faq.html">よくある質問</a>
-          </div>
-        </div>
-        <a href="blog/">コラム</a>
-        <a href="contact.html">お問い合わせ</a>
-      </div>
+  <header class="header">
+    <a href="index.html" class="brand"><img src="images/logo_full.png" alt="SYMMETRY Lab"></a>
+    <a href="contact.html" class="header-cta">無料相談 <svg class="ph" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
+    <button class="menu-btn" id="menuBtn" aria-label="メニュー" aria-expanded="false" aria-controls="nav"><svg viewBox="0 0 100 100" aria-hidden="true"><path class="line line1" d="M 20,29.000046 H 80.000231 C 80.000231,29.000046 94.498839,28.817352 94.532987,66.711331 94.543142,77.980673 90.966081,81.670246 85.259173,81.668997 79.552261,81.667751 75.000211,74.999942 75.000211,74.999942 L 25.000021,25.000058"/><path class="line line2" d="M 20,50 H 80"/><path class="line line3" d="M 20,70.999954 H 80.000231 C 80.000231,70.999954 94.498839,71.182648 94.532987,33.288669 94.543142,22.019327 90.966081,18.329754 85.259173,18.331003 79.552261,18.332249 75.000211,25.000058 75.000211,25.000058 L 25.000021,74.999942"/></svg></button>
+  </header>
+  <nav class="nav" id="nav" aria-label="メニュー">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-item">トップ<span class="nav-en">Home</span></a>
+      <a href="services.html" class="nav-item">サービス<span class="nav-en">Services</span></a>
+      <a href="company.html" class="nav-item">会社概要<span class="nav-en">Company</span></a>
+      <a href="blog/" class="nav-item">コラム<span class="nav-en">Column</span></a>
+      <a href="contact.html" class="nav-item">お問い合わせ<span class="nav-en">Contact</span></a>
     </div>
   </nav>
 
-  <!-- Breadcrumb -->
-  <div class="breadcrumb">
-    <div class="container">
-      <a href="index.html">ホーム</a> &gt; <span>会社概要</span>
-    </div>
-  </div>
-
-  <!-- Mission & Vision -->
-  <section class="section section-mission">
-    <div class="container">
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
-        <h2 style="margin-bottom:1rem;color:var(--color-accent);">Mission</h2>
-        <p class="company-mission-title" style="font-size:clamp(1.8rem,3vw,2.6rem);line-height:1.4;font-weight:700;color:var(--color-primary);margin-bottom:2rem;"><span>複雑で非対称な社会に、</span><span>意思決定の公平性をもたらす</span></p>
-        <p class="company-mission-copy" style="color:var(--color-text-light);max-width:1280px;line-height:2;margin-bottom:4rem;">情報化社会の発展は、私たちに膨大な情報をもたらす一方で、その正しさを見極める重要性をかつてなく高めています。<br>私たちは、誰もが確かな情報に基づいて意思決定できる社会の実現を目指します。公平に判断できる環境をつくること。それが、私たちの使命です。</p>
-
+  <main>
+    <!-- ミッション：トップ・サービスページと同じ、ラベル＋大きな見出しの組み方 -->
+    <section class="sm-sec">
+      <div class="sm-wrap">
+        <p class="sm-label">Mission</p>
+        <h1 class="sm-h1">複雑で非対称な社会に、<br><em>意思決定の公平性をもたらす</em></h1>
+        <p class="sm-lead">情報化社会の発展は、私たちに膨大な情報をもたらす一方で、その正しさを見極める重要性をかつてなく高めています。私たちは、誰もが確かな情報に基づいて意思決定できる社会の実現を目指します。公平に判断できる環境をつくること。それが、私たちの使命です。</p>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Company Info -->
-  <section class="section section-alt">
-    <div class="container">
-      <div class="section-header">
-        <h2 style="color:var(--color-accent);">会社概要</h2>
+    <!-- 会社概要：表の代わりに、項目名と内容を細い罫線で区切った一覧 -->
+    <section class="sm-sec">
+      <div class="sm-wrap">
+        <p class="sm-label">Company</p>
+        <h2 class="sm-h2">会社概要</h2>
+        <dl class="sm-dl">
+          <div><dt>会社名</dt><dd>SYMMETRY Lab株式会社</dd></div>
+          <div><dt>設立</dt><dd>2026年4月</dd></div>
+          <div><dt>代表者</dt><dd>竹内 悠人</dd></div>
+          <div><dt>所在地</dt><dd>〒107-0061<br>東京都港区北青山1-3-3 三橋ビル 3階</dd></div>
+          <div><dt>事業内容</dt><dd><ul>
+            <li>業務改善及び効率化に関するコンサルティングサービスの提供</li>
+            <li>コンサルティングファーム向け転職支援サービスの提供</li>
+            <li>M&amp;A研修プログラムの開発・販売</li>
+            <li>キャリア形成支援</li>
+          </ul></dd></div>
+          <div><dt>資本金</dt><dd>50万円</dd></div>
+        </dl>
       </div>
-
-      <div class="fade-in" style="max-width:800px;margin:0 auto;">
-        <table class="company-table" style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-          <tbody>
-            <tr style="border-bottom:1px solid #eee;">
-              <th style="padding:1rem 1.5rem;text-align:left;background:#f8f9fa;width:30%;vertical-align:top;">会社名</th>
-              <td style="padding:1rem 1.5rem;">SYMMETRY Lab株式会社</td>
-            </tr>
-            <tr style="border-bottom:1px solid #eee;">
-              <th style="padding:1rem 1.5rem;text-align:left;background:#f8f9fa;vertical-align:top;">設立</th>
-              <td style="padding:1rem 1.5rem;">2026年4月</td>
-            </tr>
-            <tr style="border-bottom:1px solid #eee;">
-              <th style="padding:1rem 1.5rem;text-align:left;background:#f8f9fa;vertical-align:top;">代表者</th>
-              <td style="padding:1rem 1.5rem;">竹内 悠人</td>
-            </tr>
-            <tr style="border-bottom:1px solid #eee;">
-              <th style="padding:1rem 1.5rem;text-align:left;background:#f8f9fa;vertical-align:top;">所在地</th>
-              <td style="padding:1rem 1.5rem;">〒107-0061<br>東京都港区北青山1-3-3 三橋ビル 3階</td>
-            </tr>
-            <tr style="border-bottom:1px solid #eee;">
-              <th style="padding:1rem 1.5rem;text-align:left;background:#f8f9fa;vertical-align:top;">事業内容</th>
-              <td style="padding:1rem 1.5rem;">
-                ・業務改善及び効率化に関するコンサルティングサービスの提供<br>
-                ・コンサルティングファーム向け転職支援サービスの提供<br>
-                ・M&A研修プログラムの開発・販売<br>
-                ・キャリア形成支援
-              </td>
-            </tr>
-            <tr>
-              <th style="padding:1rem 1.5rem;text-align:left;background:#f8f9fa;vertical-align:top;">資本金</th>
-              <td style="padding:1rem 1.5rem;">50万円</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
+    </section>
+  </main>
 
   <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-grid">
-
-        <div>
-          <h4>サービス</h4>
-          <div class="footer-links">
-            <a href="services.html#practical-skills">実践スキル研修</a>
-            <a href="services.html#case-interview">ケース面接対策</a>
-            <a href="booking.html">お申し込み</a>
-          </div>
-        </div>
-        <div>
-          <h4>会社情報</h4>
-          <div class="footer-links">
-            <a href="company.html">会社概要</a>
-                <a href="blog/">コラム</a>
-          </div>
-        </div>
-        <div>
-          <h4>サポート</h4>
-          <div class="footer-links">
-            <a href="faq.html">よくある質問</a>
-            <a href="contact.html">お問い合わせ</a>
-            <a href="privacy.html">プライバシーポリシー</a>
-            <a href="tokushoho.html">特定商取引法に基づく表記</a>
-          </div>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</span>
-      </div>
+  <footer class="footer site-footer">
+    <div class="wrap footer-grid">
+      <a href="index.html" class="footer-brand"><img src="images/favicon-mark.png" alt="" class="brand-mark"><span class="brand-text">SYMMETRY <b>Lab</b></span></a>
+      <div><h4>サービス</h4><a href="services.html#career">キャリア形成支援事業</a><a href="services.html#consulting">コンサルティング事業</a><a href="job.html">ジョブ対策講座</a><a href="lp-case.html">ケース面接対策講座</a><a href="booking.html">お申し込み</a></div>
+      <div><h4>会社情報</h4><a href="company.html">会社概要</a><a href="works.html">実績</a><a href="blog/">コラム</a></div>
+      <div><h4>サポート</h4><a href="faq.html">よくある質問</a><a href="contact.html">お問い合わせ</a><a href="privacy.html">プライバシーポリシー</a><a href="tokushoho.html">特定商取引法に基づく表記</a></div>
     </div>
+    <p class="wrap copy">&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</p>
   </footer>
 
   <script src="js/main.js"></script>
+<script type="importmap">
+  { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }
+</script>
+<script type="module" src="sub.js?v=20261124-04"></script>
 </body>
 </html>

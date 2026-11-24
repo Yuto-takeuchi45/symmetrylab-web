@@ -34,35 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
-  // Contact form validation
-  const contactForm = document.querySelector('#contact-form');
-  if (contactForm) {
-    contactForm.addEventListener('submit', (e) => {
-      const name = contactForm.querySelector('[name="name"]');
-      const email = contactForm.querySelector('[name="email"]');
-      let valid = true;
-
-      if (name && !name.value.trim()) {
-        valid = false;
-        name.style.borderColor = '#EF4444';
-      } else if (name) {
-        name.style.borderColor = '';
-      }
-
-      if (email && !email.value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-        valid = false;
-        email.style.borderColor = '#EF4444';
-      } else if (email) {
-        email.style.borderColor = '';
-      }
-
-      if (!valid) {
-        e.preventDefault();
-        alert('必須項目を正しく入力してください。');
-      }
-    });
-  }
-
   // Booking success/cancel handling
   const urlParams = new URLSearchParams(window.location.search);
   const bookingMsg = document.querySelector('#booking-message');

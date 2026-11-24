@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -22,7 +22,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css?v=20260624-0209">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="css/sub-page.css?v=20261124-01">
   <title>お問い合わせ | SYMMETRY Lab株式会社</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-mark.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/favicon-192x192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="images/favicon-192x192.png">
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KR9VEKC8JZ"></script>
   <script>
@@ -31,34 +37,23 @@
     gtag('js', new Date());
     gtag('config', 'G-KR9VEKC8JZ');
   </script>
-    <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-mark.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="images/favicon-192x192.png">
-  <link rel="apple-touch-icon" sizes="192x192" href="images/favicon-192x192.png">
 </head>
 <body>
+<canvas id="gl" aria-hidden="true"></canvas>
 
   <!-- Navigation -->
-  <nav class="navbar">
-    <div class="container">
-      <a href="index.html" class="nav-logo"><img src="images/logo_full.png" alt="SYMMETRY Lab" class="nav-logo-img"></a>
-      <button class="nav-toggle" aria-label="メニュー" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-      <div class="nav-links">
-        <a href="company.html">会社概要</a>
-        <div class="nav-dropdown">
-          <a href="services.html" class="nav-dropdown-trigger">サービス</a>
-          <div class="nav-dropdown-menu">
-            <a href="services.html">ジョブ対策</a>
-            <a href="lp-case.html">ケース面接対策</a>
-            <a href="works.html">コンサルティングサービス</a>
-            <a href="faq.html">よくある質問</a>
-          </div>
-        </div>
-        <a href="blog/">コラム</a>
-        <a href="contact.html">お問い合わせ</a>
-      </div>
+  <header class="header">
+    <a href="index.html" class="brand"><img src="images/logo_full.png" alt="SYMMETRY Lab"></a>
+    <a href="contact.html" class="header-cta">無料相談 <svg class="ph" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
+    <button class="menu-btn" id="menuBtn" aria-label="メニュー" aria-expanded="false" aria-controls="nav"><svg viewBox="0 0 100 100" aria-hidden="true"><path class="line line1" d="M 20,29.000046 H 80.000231 C 80.000231,29.000046 94.498839,28.817352 94.532987,66.711331 94.543142,77.980673 90.966081,81.670246 85.259173,81.668997 79.552261,81.667751 75.000211,74.999942 75.000211,74.999942 L 25.000021,25.000058"/><path class="line line2" d="M 20,50 H 80"/><path class="line line3" d="M 20,70.999954 H 80.000231 C 80.000231,70.999954 94.498839,71.182648 94.532987,33.288669 94.543142,22.019327 90.966081,18.329754 85.259173,18.331003 79.552261,18.332249 75.000211,25.000058 75.000211,25.000058 L 25.000021,74.999942"/></svg></button>
+  </header>
+  <nav class="nav" id="nav" aria-label="メニュー">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-item">トップ<span class="nav-en">Home</span></a>
+      <a href="services.html" class="nav-item">サービス<span class="nav-en">Services</span></a>
+      <a href="company.html" class="nav-item">会社概要<span class="nav-en">Company</span></a>
+      <a href="blog/" class="nav-item">コラム<span class="nav-en">Column</span></a>
+      <a href="contact.html" class="nav-item">お問い合わせ<span class="nav-en">Contact</span></a>
     </div>
   </nav>
 
@@ -78,26 +73,30 @@
       </div>
 
       <div class="fade-in" style="max-width:780px;margin:0 auto;">
-        <form id="contact-form" name="contact" method="POST" netlify style="background:#fff;border-radius:8px;padding:2rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        <!-- 送信は js/contact-form.js がサーバー（/api/contact/inquiries）へ行い、DB保存・管理画面への表示・メール通知につながる -->
+        <div class="contact-status" data-contact-status role="alert" hidden style="margin-bottom:1rem;padding:0.9rem 1.2rem;border-radius:8px;background:#FEF2F2;color:#B91C1C;font-size:0.92rem;"></div>
+        <form data-contact-form="general" style="background:#fff;border-radius:8px;padding:2rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+          <!-- ボット対策の隠し項目（人には見えず、入力されていたら受け付けない） -->
+          <input type="text" name="website" value="" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
 
           <div style="margin-bottom:1.5rem;">
             <label for="name" style="display:block;font-weight:700;margin-bottom:0.5rem;">氏名 <span style="color:var(--color-tiffany-dark);">*必須</span></label>
-            <input type="text" id="name" name="name" required style="width:100%;padding:0.75rem;border:1px solid #ddd;border-radius:8px;font-size:1rem;box-sizing:border-box;">
+            <input type="text" id="name" name="name" autocomplete="name" maxlength="120" required style="width:100%;padding:0.75rem;border:1px solid #ddd;border-radius:8px;font-size:1rem;box-sizing:border-box;">
           </div>
 
           <div style="margin-bottom:1.5rem;">
             <label for="email" style="display:block;font-weight:700;margin-bottom:0.5rem;">メールアドレス <span style="color:var(--color-tiffany-dark);">*必須</span></label>
-            <input type="email" id="email" name="email" required style="width:100%;padding:0.75rem;border:1px solid #ddd;border-radius:8px;font-size:1rem;box-sizing:border-box;">
+            <input type="email" id="email" name="email" autocomplete="email" maxlength="254" required style="width:100%;padding:0.75rem;border:1px solid #ddd;border-radius:8px;font-size:1rem;box-sizing:border-box;">
           </div>
 
           <div style="margin-bottom:1.5rem;">
             <label for="phone" style="display:block;font-weight:700;margin-bottom:0.5rem;">電話番号 <span style="color:var(--color-tiffany-dark);">*必須</span></label>
-            <input type="tel" id="phone" name="phone" required style="width:100%;padding:0.75rem;border:1px solid #ddd;border-radius:8px;font-size:1rem;box-sizing:border-box;">
+            <input type="tel" id="phone" name="phone" autocomplete="tel" maxlength="40" required style="width:100%;padding:0.75rem;border:1px solid #ddd;border-radius:8px;font-size:1rem;box-sizing:border-box;">
           </div>
 
           <div style="margin-bottom:1.5rem;">
-            <label for="status" style="display:block;font-weight:700;margin-bottom:0.5rem;">ご職業・ご身分 <span style="color:var(--color-tiffany-dark);">*必須</span></label>
-            <select id="status" name="status" required style="width:100%;padding:0.75rem;border:1px solid #ddd;border-radius:8px;font-size:1rem;box-sizing:border-box;background:#fff;">
+            <label for="occupation" style="display:block;font-weight:700;margin-bottom:0.5rem;">ご職業・ご身分 <span style="color:var(--color-tiffany-dark);">*必須</span></label>
+            <select id="occupation" name="occupation" required style="width:100%;padding:0.75rem;border:1px solid #ddd;border-radius:8px;font-size:1rem;box-sizing:border-box;background:#fff;">
               <option value="">選択してください</option>
               <option value="法人">法人</option>
               <option value="主婦">主婦</option>
@@ -111,23 +110,23 @@
 
           <div style="margin-bottom:1.5rem;">
             <label for="inquiry-type" style="display:block;font-weight:700;margin-bottom:0.5rem;">お問い合わせ種別 <span style="color:var(--color-tiffany-dark);">*必須</span></label>
-            <select id="inquiry-type" name="inquiry-type" required style="width:100%;padding:0.75rem;border:1px solid #ddd;border-radius:8px;font-size:1rem;box-sizing:border-box;background:#fff;">
+            <select id="inquiry-type" name="inquiry_type" required style="width:100%;padding:0.75rem;border:1px solid #ddd;border-radius:8px;font-size:1rem;box-sizing:border-box;background:#fff;">
               <option value="">選択してください</option>
-              <option value="course">講座内容について</option>
-              <option value="pricing">料金について</option>
-              <option value="consultation">無料相談のお申し込み</option>
-              <option value="corporate">法人でのお申し込み</option>
-              <option value="other">その他</option>
+              <option value="講座内容について">講座内容について</option>
+              <option value="料金について">料金について</option>
+              <option value="無料相談のお申し込み">無料相談のお申し込み</option>
+              <option value="法人でのお申し込み">法人でのお申し込み</option>
+              <option value="その他">その他</option>
             </select>
           </div>
 
           <div style="margin-bottom:1.5rem;">
             <label for="message" style="display:block;font-weight:700;margin-bottom:0.5rem;">メッセージ <span style="color:var(--color-tiffany-dark);">*必須</span></label>
-            <textarea id="message" name="message" rows="6" required style="width:100%;padding:0.75rem;border:1px solid #ddd;border-radius:8px;font-size:1rem;box-sizing:border-box;resize:vertical;"></textarea>
+            <textarea id="message" name="message" rows="6" maxlength="5000" required style="width:100%;padding:0.75rem;border:1px solid #ddd;border-radius:8px;font-size:1rem;box-sizing:border-box;resize:vertical;"></textarea>
           </div>
 
           <div style="margin-bottom:1.5rem;display:flex;align-items:flex-start;gap:0.5rem;">
-            <input type="checkbox" id="privacy-agree" name="privacy-agree" required style="margin-top:0.25rem;flex-shrink:0;">
+            <input type="checkbox" id="privacy-agree" name="privacy_consent" required style="margin-top:0.25rem;flex-shrink:0;">
             <label for="privacy-agree" style="font-size:0.9rem;line-height:1.6;cursor:pointer;">
               <a href="privacy.html" target="_blank">プライバシーポリシー</a>に同意します <span style="color:var(--color-tiffany-dark);">*必須</span>
             </label>
@@ -137,46 +136,69 @@
             <button type="submit" class="btn-primary" style="padding:0.75rem 2rem;font-size:1rem;cursor:pointer;">送信する</button>
           </div>
         </form>
+        <!-- 送信完了の表示（送信が成功したらフォームと入れ替える） -->
+        <div data-contact-complete tabindex="-1" hidden style="background:#fff;border-radius:8px;padding:2.5rem 2rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;">
+          <h2 style="font-size:1.3rem;margin-bottom:0.75rem;">お問い合わせを受け付けました</h2>
+          <p style="margin-bottom:1.5rem;">ご入力いただいたメールアドレスに受付確認のメールをお送りしました。担当者が内容を確認のうえ、ご連絡します。</p>
+          <button type="button" class="btn-outline" data-contact-again>続けてお問い合わせする</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- よくある質問：お問い合わせ前によく聞かれる内容を抜粋。回答文は faq.html と同じ内容にそろえる（食い違いを防ぐため） -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section-header">
+        <h2>よくある質問</h2>
+        <p>お問い合わせの前に、よくいただくご質問をご確認ください。</p>
+      </div>
+      <div class="fade-in" style="max-width:780px;margin:0 auto;">
+        <details class="faq-item">
+          <summary>申し込み前に相談することはできますか？</summary>
+          <p>はい。無料相談を承っております。研修内容やご自身のキャリアプランについて、お気軽に上のお問い合わせフォームよりご連絡ください。</p>
+        </details>
+        <details class="faq-item">
+          <summary>講座はオンラインですか？対面ですか？</summary>
+          <p>現在はオンライン（Microsoft Teams）での開催を基本としております。対面での開催をご希望の場合は、お問い合わせフォームよりご相談ください。</p>
+        </details>
+        <details class="faq-item">
+          <summary>申し込み後の流れを教えてください。</summary>
+          <p>お申し込み完了後、講師と日程調整を行い、実施日時を確定します。その後、受講料をお支払いしていただきます。</p>
+        </details>
+        <details class="faq-item">
+          <summary>お支払い方法は何がありますか？</summary>
+          <p>クレジットカード決済（Stripe）をご利用いただけます。VISA、Mastercard、American Express、JCBなど主要なカードブランドに対応しております。</p>
+        </details>
+        <details class="faq-item">
+          <summary>キャンセル・日程変更はできますか？</summary>
+          <p>講座開始日の7日前までのキャンセルは全額返金いたします。7日前〜前日のキャンセルは受講料の50%をキャンセル料として申し受けます。なお、当日のキャンセルは返金いたしかねます。また、日程変更は講座開始日の3日前まで無料で承ります。</p>
+        </details>
+        <details class="faq-item">
+          <summary>法人での申し込みは可能ですか？</summary>
+          <p>はい。法人でのお申し込みも承っております。請求書払いなどのご要望がございましたら、お問い合わせフォームよりご相談ください。</p>
+        </details>
+        <p style="text-align:center;margin-top:2rem;"><a href="faq.html" class="btn-outline">すべての質問を見る</a></p>
       </div>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-grid">
-
-        <div>
-          <h4>サービス</h4>
-          <div class="footer-links">
-            <a href="services.html#practical-skills">実践スキル研修</a>
-            <a href="services.html#case-interview">ケース面接対策</a>
-            <a href="booking.html">お申し込み</a>
-          </div>
-        </div>
-        <div>
-          <h4>会社情報</h4>
-          <div class="footer-links">
-            <a href="company.html">会社概要</a>
-                <a href="blog/">コラム</a>
-          </div>
-        </div>
-        <div>
-          <h4>サポート</h4>
-          <div class="footer-links">
-            <a href="faq.html">よくある質問</a>
-            <a href="contact.html">お問い合わせ</a>
-            <a href="privacy.html">プライバシーポリシー</a>
-            <a href="tokushoho.html">特定商取引法に基づく表記</a>
-          </div>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</span>
-      </div>
+  <footer class="footer site-footer">
+    <div class="wrap footer-grid">
+      <a href="index.html" class="footer-brand"><img src="images/favicon-mark.png" alt="" class="brand-mark"><span class="brand-text">SYMMETRY <b>Lab</b></span></a>
+      <div><h4>サービス</h4><a href="services.html#career">キャリア形成支援事業</a><a href="services.html#consulting">コンサルティング事業</a><a href="job.html">ジョブ対策講座</a><a href="lp-case.html">ケース面接対策講座</a><a href="booking.html">お申し込み</a></div>
+      <div><h4>会社情報</h4><a href="company.html">会社概要</a><a href="works.html">実績</a><a href="blog/">コラム</a></div>
+      <div><h4>サポート</h4><a href="faq.html">よくある質問</a><a href="contact.html">お問い合わせ</a><a href="privacy.html">プライバシーポリシー</a><a href="tokushoho.html">特定商取引法に基づく表記</a></div>
     </div>
+    <p class="wrap copy">&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</p>
   </footer>
 
   <script src="js/main.js"></script>
+  <script src="js/contact-form.js" defer></script>
+<script type="importmap">
+  { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }
+</script>
+<script type="module" src="sub.js?v=20261124-04"></script>
 </body>
 </html>
