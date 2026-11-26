@@ -4,7 +4,7 @@
 
 ## 現在実装済み
 
-- `symmetrylab-career-quiz-lp.html`：Q1から始まる10問フォーム
+- `symmetrylab-career-quiz-lp.html`：Q1から始まる5問フォーム
 - `jobs.json`：任意で求人情報を紐づける場合のデータファイル
 - `/api/ad-creative/jobs/<public_id>`：広告用求人表示API
 - `/api/ad-creative/applications`：回答・同意・流入情報の保存API

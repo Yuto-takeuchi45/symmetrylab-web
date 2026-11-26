@@ -141,7 +141,9 @@
     const priorities = Array.isArray(answers.q8_priority)
       ? answers.q8_priority.map((value, index) => `${index + 1}位：${value}`).join('、')
       : answers.q8_priority;
-    const contactLastOrder = ['contact_last_v1', 'contact_last_v2'].includes(answers.form_version);
+    const compactForm = ['contact_last_v3', 'contact_last_v4'].includes(answers.form_version);
+    const minimumIncomeRemoved = answers.form_version === 'contact_last_v4';
+    const contactLastOrder = ['contact_last_v1', 'contact_last_v2', 'contact_last_v3', 'contact_last_v4'].includes(answers.form_version);
     const details = [
       ['検討状況', intention],
       ['対象求人', job.title || application.job_public_id || '共通キャリアチェック'],
@@ -149,33 +151,45 @@
       ['求人情報の版', application.job_version]
     ];
     if (hasNewAnswers) {
-      const questionLabels = contactLastOrder
+      const questionLabels = compactForm
+        ? ['Q1', 'Q2', 'Q3', 'Q4', 'Q5']
+        : contactLastOrder
         ? ['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9']
         : ['Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10'];
       const question = (index, label) => `${questionLabels[index]} ${label}`;
       const managementSizeLabel = answers.form_version === 'contact_last_v2'
         ? 'マネジメントした組織の規模'
         : 'マネジメント人数';
-      details.push(
-        [question(0, '希望業界'), answerText(answers.q2_industry)],
-        [question(1, '希望職種・仕事内容'), answerText(answers.q3_role)],
-        [question(1, 'その他の内容'), answers.q3_other],
-        [question(2, '現在の年収'), answers.q4_current_income],
-        [question(2, '希望年収'), answers.q4_desired_income],
-        [question(2, '最低許容年収'), answers.q4_minimum_income],
-        [question(3, '希望勤務地'), answers.q5_location],
-        [question(4, '働き方や制約'), answers.q6_work_style],
-        [question(5, '転職希望時期'), answers.q7_timing === '未定' ? '時期未定' : String(answers.q7_timing || '').replace(/^(\d{4})-(\d{2})$/, '$1年$2月')],
-        [question(6, '重視する条件'), priorities],
-        [question(6, 'その他の内容'), answers.q8_other],
-        [question(7, 'マネジメント経験'), answers.q9_management_experience],
-        [question(7, managementSizeLabel), answers.q9_management_size],
-        [question(8, 'その他の希望'), answers.q10_other]
-      );
-      if (contactLastOrder) {
-        details.push(['Q10 基本情報', [application.name, application.email, application.phone].filter(Boolean).join(' / ')]);
+      if (compactForm) {
+        details.push(
+          [question(0, '希望業界'), answerText(answers.q2_industry)],
+          [question(1, '希望職種・仕事内容'), answerText(answers.q3_role)],
+          [question(1, 'その他の内容'), answers.q3_other],
+          [question(2, '現在の年収'), answers.q4_current_income],
+          [question(2, '希望年収'), answers.q4_desired_income],
+          ...(!minimumIncomeRemoved ? [[question(2, '最低許容年収'), answers.q4_minimum_income]] : []),
+          [question(3, '重視する条件'), priorities],
+          [question(3, 'その他の内容'), answers.q8_other],
+          [question(4, '基本情報'), [application.name, application.email, application.phone].filter(Boolean).join(' / ')]
+        );
       } else {
-        details.push(['Q1 基本情報', [application.name, application.email, application.phone].filter(Boolean).join(' / ')]);
+        details.push(
+          [question(0, '希望業界'), answerText(answers.q2_industry)],
+          [question(1, '希望職種・仕事内容'), answerText(answers.q3_role)],
+          [question(1, 'その他の内容'), answers.q3_other],
+          [question(2, '現在の年収'), answers.q4_current_income],
+          [question(2, '希望年収'), answers.q4_desired_income],
+          ...(!minimumIncomeRemoved ? [[question(2, '最低許容年収'), answers.q4_minimum_income]] : []),
+          [question(3, '希望勤務地'), answers.q5_location],
+          [question(4, '働き方や制約'), answers.q6_work_style],
+          [question(5, '転職希望時期'), answers.q7_timing === '未定' ? '時期未定' : String(answers.q7_timing || '').replace(/^(\d{4})-(\d{2})$/, '$1年$2月')],
+          [question(6, '重視する条件'), priorities],
+          [question(6, 'その他の内容'), answers.q8_other],
+          [question(7, 'マネジメント経験'), answers.q9_management_experience],
+          [question(7, managementSizeLabel), answers.q9_management_size],
+          [question(8, 'その他の希望'), answers.q10_other],
+          [contactLastOrder ? 'Q10 基本情報' : 'Q1 基本情報', [application.name, application.email, application.phone].filter(Boolean).join(' / ')]
+        );
       }
     } else {
       details.push(

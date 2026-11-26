@@ -1429,8 +1429,8 @@ AD_CREATIVE_APPLICATION_STATUSES = {
 }
 
 AD_CREATIVE_CONSENT_VERSION = os.getenv(
-    "AD_CREATIVE_CONSENT_VERSION", "career-check-privacy-2026-11-19-v7"
-).strip() or "career-check-privacy-2026-11-19-v7"
+    "AD_CREATIVE_CONSENT_VERSION", "career-check-privacy-2026-11-26-v8"
+).strip() or "career-check-privacy-2026-11-26-v8"
 AD_CREATIVE_LINE_CONSENT_VERSION = "career-check-line-2026-11-05-v1"
 
 AD_CREATIVE_CHOICES = {
@@ -1445,7 +1445,7 @@ AD_CREATIVE_INDUSTRY_CHOICES = {
     "コンサルティング・専門サービス", "IT・通信・インターネット", "メーカー・製造",
     "金融・保険", "商社・卸売", "不動産・建設", "小売・消費財", "医療・ヘルスケア",
     "広告・メディア", "人材・教育", "物流・運輸", "エネルギー・インフラ・公共",
-    "その他（具体的な希望はQ9へ）", "まだ決めていない",
+    "その他", "その他（具体的な希望はQ9へ）", "まだ決めていない",
 }
 AD_CREATIVE_ROLE_CHOICES = {
     "経営・事業企画", "戦略・経営コンサルタント", "業務・ITコンサルタント",
@@ -1912,10 +1912,20 @@ def _validate_ad_creative_answers(raw_answers: dict[str, Any]) -> dict[str, Any]
 
     answers: dict[str, Any] = {}
     form_version = raw_answers.get("form_version", "")
-    if not isinstance(form_version, str) or form_version not in {"", "contact_last_v1", "contact_last_v2"}:
+    if not isinstance(form_version, str) or form_version not in {"", "contact_last_v1", "contact_last_v2", "contact_last_v3", "contact_last_v4"}:
         raise HTTPException(status_code=422, detail="フォームの版が正しくありません")
     if form_version:
         answers["form_version"] = form_version
+    compact_form = form_version in {"contact_last_v3", "contact_last_v4"}
+    reduced_income_form = form_version == "contact_last_v4"
+    if compact_form:
+        removed_question_keys = {
+            "q5_location", "q6_work_style", "q7_timing",
+            "q9_management_experience", "q9_management_size", "q10_other",
+        }
+        if reduced_income_form:
+            removed_question_keys.add("q4_minimum_income")
+        raw_answers = {key: value for key, value in raw_answers.items() if key not in removed_question_keys}
     for key, label, choices, exclusive in (
         ("q2_industry", "希望業界", AD_CREATIVE_INDUSTRY_CHOICES, "まだ決めていない"),
         ("q3_role", "希望職種・仕事内容", AD_CREATIVE_ROLE_CHOICES, "まだ決めていない"),
@@ -1942,11 +1952,11 @@ def _validate_ad_creative_answers(raw_answers: dict[str, Any]) -> dict[str, Any]
         ("q3_other", "希望職種・仕事内容（その他）", 500, "その他" in answers["q3_role"]),
         ("q4_current_income", "現在の年収", 120, True),
         ("q4_desired_income", "希望年収", 120, True),
-        ("q4_minimum_income", "最低許容年収", 120, True),
-        ("q5_location", "希望勤務地", 500, True),
-        ("q6_work_style", "働き方や制約", 1000, True),
+        ("q4_minimum_income", "最低許容年収", 120, not reduced_income_form),
+        ("q5_location", "希望勤務地", 500, not compact_form),
+        ("q6_work_style", "働き方や制約", 1000, not compact_form),
         ("q8_other", "重視する条件（その他）", 500, "その他" in answers["q8_priority"]),
-        ("q9_management_size", "マネジメントした組織の規模", 120, raw_answers.get("q9_management_experience") == "経験あり"),
+        ("q9_management_size", "マネジメントした組織の規模", 120, not compact_form and raw_answers.get("q9_management_experience") == "経験あり"),
         ("q10_other", "その他の希望", 1500, False),
     )
     for key, label, max_length, required in text_fields:
@@ -1954,11 +1964,13 @@ def _validate_ad_creative_answers(raw_answers: dict[str, Any]) -> dict[str, Any]
         if not isinstance(value, str):
             raise HTTPException(status_code=422, detail=f"{label}の入力が正しくありません")
         answers[key] = _career_trim(value, label, max_length, required=required)
-    for key, label in (
+    income_fields = [
         ("q4_current_income", "現在の年収"),
         ("q4_desired_income", "希望年収"),
-        ("q4_minimum_income", "最低許容年収"),
-    ):
+    ]
+    if not reduced_income_form:
+        income_fields.append(("q4_minimum_income", "最低許容年収"))
+    for key, label in income_fields:
         match = re.fullmatch(r"(0|[1-9]\d{0,3})万円", answers[key])
         amount = int(match.group(1)) if match else -1
         if amount < 0 or amount > 3000 or amount % 10:
@@ -1969,17 +1981,22 @@ def _validate_ad_creative_answers(raw_answers: dict[str, Any]) -> dict[str, Any]
         raise HTTPException(status_code=422, detail="重視する条件（その他）はその他を選択した場合だけ入力できます")
 
     experience = raw_answers.get("q9_management_experience")
-    if not isinstance(experience, str) or experience not in {"経験あり", "経験なし"}:
+    if compact_form:
+        experience = ""
+    elif not isinstance(experience, str) or experience not in {"経験あり", "経験なし"}:
         raise HTTPException(status_code=422, detail="マネジメント経験を選択してください")
     answers["q9_management_experience"] = experience
-    if experience == "経験なし" and answers["q9_management_size"]:
+    if not compact_form and experience == "経験なし" and answers["q9_management_size"]:
         raise HTTPException(status_code=422, detail="マネジメントした組織の規模は経験ありの場合だけ入力してください")
 
     timing = raw_answers.get("q7_timing")
-    if not isinstance(timing, str):
+    if compact_form:
+        timing = ""
+    elif not isinstance(timing, str):
         raise HTTPException(status_code=422, detail="転職希望時期を選択してください")
-    timing = _career_trim(timing, "転職希望時期", 20, required=True)
-    if timing != "未定":
+    if not compact_form:
+        timing = _career_trim(timing, "転職希望時期", 20, required=True)
+    if not compact_form and timing != "未定":
         match = re.fullmatch(r"(\d{4})-(\d{2})", timing)
         if not match:
             raise HTTPException(status_code=422, detail="転職希望時期の年月が正しくありません")
@@ -1990,6 +2007,9 @@ def _validate_ad_creative_answers(raw_answers: dict[str, Any]) -> dict[str, Any]
         if not (now.year, now.month) <= (year, month) <= (now.year + 5, now.month):
             raise HTTPException(status_code=422, detail="転職希望時期は今月から5年先まで選択してください")
     answers["q7_timing"] = timing
+    if compact_form:
+        for key in removed_question_keys:
+            answers.pop(key, None)
     return answers
 
 

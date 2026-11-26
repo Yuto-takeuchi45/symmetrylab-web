@@ -353,21 +353,6 @@
     }
     .wheel-item.is-centered { color: var(--navy); background: var(--cyan-pale); font-size: 18px; font-weight: 900; }
     .wheel-value { min-height: 22px; margin: 12px 0 8px; color: var(--navy); font-size: 14px; font-weight: 800; text-align: center; }
-    .timing-undecided-btn {
-      display: block;
-      width: 100%;
-      min-height: 44px;
-      margin: 0 auto;
-      padding: 10px;
-      color: var(--text-sub);
-      background: #fbfcfc;
-      border: 1.5px solid var(--line);
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 700;
-    }
-    .timing-undecided-btn.selected { color: var(--cyan-deep); background: var(--cyan-pale); border-color: var(--cyan-deep); }
     .consent {
       margin: 9px 0 0;
       color: var(--muted);
@@ -501,7 +486,7 @@
     }
     /* =========================================================
        HPの新デザインにそろえる上書き（白×水色・すりガラス、背景に粒子と光の模様、濃い色の丸いボタン）
-       質問の流れ・入力項目・送信処理は変えず、見た目だけを変える
+       HPの新デザインにそろえる見た目の上書き
        ========================================================= */
     :root { --glass-border: 1px solid rgba(255, 255, 255, .8); --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 20px 50px -30px rgba(31, 41, 55, .25); }
     html { background: #F6F8F9; }
@@ -520,7 +505,7 @@
       border: var(--glass-border); box-shadow: var(--glass-shadow); border-radius: 28px;
       backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
     }
-    .choice-btn, .form-input, .form-select, .timing-undecided-btn { background: rgba(255, 255, 255, .7); }
+    .choice-btn, .form-input, .form-select { background: rgba(255, 255, 255, .7); }
     .wheel-column { background: linear-gradient(to bottom, rgba(244, 248, 249, .9) 0, rgba(255, 255, 255, .95) 33%, rgba(255, 255, 255, .95) 67%, rgba(244, 248, 249, .9) 100%); }
     /* ボタン：HPと同じ、濃い色の丸いボタン（押すと水色） */
     .btn-next, .btn-submit, .exit-stay {
@@ -546,20 +531,20 @@
 
     <section class="hero-copy">
       <h1 class="hero-headline">経験を整理して、<br>次のキャリアを選ぶ。</h1>
-      <p class="hero-sub">10の質問で、希望するキャリアや転職条件を整理できます。</p>
+      <p class="hero-sub">5つの質問で、希望するキャリアや転職条件を整理できます。</p>
     </section>
 
     <section class="form-outer" aria-label="キャリア相談フォーム">
       <div class="prog-bar" id="progBar" aria-hidden="true"></div>
       <div class="prog-label-row">
-        <span class="prog-step">STEP <strong id="stepNo">1</strong> / 10</span>
+        <span class="prog-step">STEP <strong id="stepNo">1</strong> / 5</span>
         <span class="prog-name" id="stepName">希望業界</span>
       </div>
-      <p class="required-note">Q9以外は必須です</p>
+      <p class="required-note">すべての質問は必須です</p>
 
       <div class="form-card">
         <section class="form-step active" id="step1">
-          <p class="step-q">Q1 / 10 <span class="multi-hint">複数選択</span></p><h2 class="step-title">希望する業界を教えてください</h2>
+          <p class="step-q">Q1 / 5 <span class="multi-hint">複数選択</span></p><h2 class="step-title">希望する業界を教えてください</h2>
           <div class="choice-grid cols-2 multi" data-answer-key="q2_industry" aria-required="true">
             <button class="choice-btn" type="button" data-value="コンサルティング・専門サービス"><span class="choice-label">コンサルティング・専門サービス</span></button>
             <button class="choice-btn" type="button" data-value="IT・通信・インターネット"><span class="choice-label">IT・通信・インターネット</span></button>
@@ -573,7 +558,7 @@
             <button class="choice-btn" type="button" data-value="人材・教育"><span class="choice-label">人材・教育</span></button>
             <button class="choice-btn" type="button" data-value="物流・運輸"><span class="choice-label">物流・運輸</span></button>
             <button class="choice-btn" type="button" data-value="エネルギー・インフラ・公共"><span class="choice-label">エネルギー・インフラ・公共</span></button>
-            <button class="choice-btn" type="button" data-value="その他（具体的な希望はQ9へ）"><span class="choice-label">その他（具体的な希望はQ9へ）</span></button>
+            <button class="choice-btn" type="button" data-value="その他"><span class="choice-label">その他</span></button>
             <button class="choice-btn" type="button" data-value="まだ決めていない" data-exclusive="undecided"><span class="choice-label">まだ決めていない</span></button>
           </div>
           <p class="multi-note">複数の業界を選択できます。「まだ決めていない」は他の選択肢と同時に選べません。</p>
@@ -581,7 +566,7 @@
           <div class="form-foot"><button class="btn-next" type="button" data-next>次へ →</button></div>
         </section>
         <section class="form-step" id="step2">
-          <p class="step-q">Q2 / 10 <span class="multi-hint">複数選択</span></p><h2 class="step-title">希望する職種・仕事内容を教えてください</h2>
+          <p class="step-q">Q2 / 5 <span class="multi-hint">複数選択</span></p><h2 class="step-title">希望する職種・仕事内容を教えてください</h2>
           <div class="choice-grid cols-2 multi" data-answer-key="q3_role" aria-required="true">
             <button class="choice-btn" type="button" data-value="経営・事業企画"><span class="choice-label">経営・事業企画</span></button>
             <button class="choice-btn" type="button" data-value="戦略・経営コンサルタント"><span class="choice-label">戦略・経営コンサルタント</span></button>
@@ -604,37 +589,14 @@
           <div class="form-foot"><button class="btn-next" type="button" data-next>次へ →</button></div>
         </section>
         <section class="form-step" id="step3">
-          <p class="step-q">Q3 / 10</p><h2 class="step-title">現在の年収・希望年収・最低許容年収を教えてください</h2>
+          <p class="step-q">Q3 / 5</p><h2 class="step-title">現在の年収・希望年収を教えてください</h2>
           <p class="wheel-help">それぞれのホイールを上下に動かして選択してください。0〜3,000万円を10万円刻みで選べます。</p>
           <label class="form-field"><span class="form-label">現在の年収（必須）</span><div class="wheel-column salary-wheel-column" id="currentIncomeWheel" role="listbox" aria-label="現在の年収、0〜3,000万円、10万円刻み" tabindex="0"></div><p class="wheel-value" id="currentIncomeValue" aria-live="polite">年収を選択してください</p><input id="currentIncomeInput" type="hidden" data-answer-key="q4_current_income" required><span class="field-error" id="currentIncomeError">現在の年収を選択してください</span></label>
           <label class="form-field"><span class="form-label">希望年収（必須）</span><div class="wheel-column salary-wheel-column" id="desiredIncomeWheel" role="listbox" aria-label="希望年収、0〜3,000万円、10万円刻み" tabindex="0"></div><p class="wheel-value" id="desiredIncomeValue" aria-live="polite">年収を選択してください</p><input id="desiredIncomeInput" type="hidden" data-answer-key="q4_desired_income" required><span class="field-error" id="desiredIncomeError">希望年収を選択してください</span></label>
-          <label class="form-field"><span class="form-label">最低許容年収（必須）</span><div class="wheel-column salary-wheel-column" id="minimumIncomeWheel" role="listbox" aria-label="最低許容年収、0〜3,000万円、10万円刻み" tabindex="0"></div><p class="wheel-value" id="minimumIncomeValue" aria-live="polite">年収を選択してください</p><input id="minimumIncomeInput" type="hidden" data-answer-key="q4_minimum_income" required><span class="field-error" id="minimumIncomeError">最低許容年収を選択してください</span></label>
           <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div>
         </section>
         <section class="form-step" id="step4">
-          <p class="step-q">Q4 / 10</p><h2 class="step-title">希望する勤務地を教えてください</h2>
-          <label class="form-field"><span class="form-label">希望する勤務地（必須・複数可）</span><textarea class="form-input form-textarea" id="locationInput" rows="4" maxlength="500" placeholder="例：東京都、神奈川県、リモートワーク可" required></textarea><span class="field-error" id="locationError">希望する勤務地を入力してください</span></label>
-          <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div>
-        </section>
-        <section class="form-step" id="step5">
-          <p class="step-q">Q5 / 10</p><h2 class="step-title">希望する働き方や制約について教えてください</h2>
-          <label class="form-field"><span class="form-label">働き方や制約（必須）</span><textarea class="form-input form-textarea" id="workStyleInput" rows="4" maxlength="1000" placeholder="例：在宅勤務を希望、育児と両立したい" required></textarea><span class="field-error" id="workStyleError">希望する働き方や制約を入力してください</span></label>
-          <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div>
-        </section>
-        <section class="form-step" id="step6">
-          <p class="step-q">Q6 / 10</p><h2 class="step-title">いつ頃の転職を希望していますか？</h2>
-          <p class="wheel-help">年と月を上下に動かして選択してください。</p>
-          <div class="wheel-picker" id="timingWheelPicker">
-            <div class="wheel-column-wrap"><span class="wheel-label">年</span><div class="wheel-column" id="yearWheel" role="listbox" aria-label="転職希望年" tabindex="0"></div></div>
-            <div class="wheel-column-wrap"><span class="wheel-label">月</span><div class="wheel-column" id="monthWheel" role="listbox" aria-label="転職希望月" tabindex="0"></div></div>
-          </div>
-          <p class="wheel-value" id="timingValue" aria-live="polite">年月を選択してください</p>
-          <button class="timing-undecided-btn" type="button" id="timingUndecided">時期未定</button>
-          <p class="field-error" id="timingError">希望年月を選ぶか、「時期未定」を選択してください</p>
-          <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div>
-        </section>
-        <section class="form-step" id="step7">
-          <p class="step-q">Q7 / 10 <span class="multi-hint">最大3つ・押した順で順位付け</span></p><h2 class="step-title">転職先を選ぶうえで、特に重視する条件を教えてください</h2>
+          <p class="step-q">Q4 / 5 <span class="multi-hint">最大3つ・押した順で順位付け</span></p><h2 class="step-title">転職先を選ぶうえで、特に重視する条件を教えてください</h2>
           <div class="choice-grid cols-2 multi ranked-multi" data-answer-key="q8_priority" data-max="3" aria-required="true">
             <button class="choice-btn" type="button" data-value="仕事内容・ポジション"><span class="choice-label">仕事内容・ポジション</span><span class="choice-order" aria-hidden="true"></span></button>
             <button class="choice-btn" type="button" data-value="年収・待遇"><span class="choice-label">年収・待遇</span><span class="choice-order" aria-hidden="true"></span></button>
@@ -649,22 +611,8 @@
           <p class="submit-status" id="priorityStatus" role="status"></p>
           <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div>
         </section>
-        <section class="form-step" id="step8" data-manual="true">
-          <p class="step-q">Q8 / 10</p><h2 class="step-title">マネジメント経験はありますか？ある場合は、マネジメントした組織の規模を教えてください。</h2>
-          <div class="choice-grid cols-2" data-answer-key="q9_management_experience" aria-required="true">
-            <button class="choice-btn" type="button" data-value="経験あり"><span class="choice-label">経験あり</span></button>
-            <button class="choice-btn" type="button" data-value="経験なし"><span class="choice-label">経験なし</span></button>
-          </div>
-          <label class="form-field conditional-field" id="managementSizeField" hidden><span class="form-label">マネジメントした組織の規模（必須）</span><span class="form-hint">チームや部門など、同時にマネジメントしていた組織の規模をご記入ください。</span><input class="form-input" id="managementSizeInput" type="text" maxlength="120" placeholder="例：5名のチーム、20名の部門" required><span class="field-error" id="managementSizeError">マネジメントした組織の規模を入力してください</span></label>
-          <p class="submit-status" id="managementStatus" role="status"></p>
-          <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div>
-        </section>
-        <section class="form-step" id="step9">
-          <p class="step-q">Q9 / 10</p><h2 class="step-title">その他、転職先に求める条件やご希望があれば教えてください</h2>
-          <label class="form-field"><span class="form-label">その他のご希望（任意）</span><textarea class="form-input form-textarea" id="otherPreferencesInput" rows="4" maxlength="1500" placeholder="自由に入力してください"></textarea></label>
-          <div class="form-foot"><button class="btn-back" type="button" data-back>← 戻る</button><button class="btn-next" type="button" data-next>次へ →</button></div></section>
-        <section class="form-step" id="step10">
-          <p class="step-q">Q10 / 10</p><h2 class="step-title">お客様の基本情報を教えてください</h2>
+        <section class="form-step" id="step5">
+          <p class="step-q">Q5 / 5</p><h2 class="step-title">お客様の基本情報を教えてください</h2>
           <label class="form-field"><span class="form-label">氏名（必須）</span><input class="form-input" id="nameInput" type="text" autocomplete="name" placeholder="例：山田 太郎" required><span class="field-error" id="nameError">氏名を入力してください</span></label>
           <label class="form-field"><span class="form-label">メールアドレス（必須）</span><input class="form-input" id="emailInput" type="email" autocomplete="email" placeholder="例：name@example.com" required><span class="field-error" id="emailError">有効なメールアドレスを入力してください</span></label>
           <label class="form-field"><span class="form-label">電話番号（必須）</span><input class="form-input" id="telInput" type="tel" autocomplete="tel" placeholder="例：09012345678" required><span class="field-error" id="telError">電話番号を入力してください</span></label>
@@ -711,22 +659,14 @@
   </div>
 
   <script>
-    var totalSteps = 10;
+    var totalSteps = 5;
     var step = 1;
     var started = false;
     var startRegistrationSent = false;
     var exitArmed = false;
-    var stepNames = ["希望業界", "希望職種", "年収", "勤務地", "働き方", "転職時期", "重視条件", "マネジメント", "その他", "基本情報"];
+    var stepNames = ["希望業界", "希望職種", "年収", "重視条件", "基本情報"];
     var answers = {};
     var priorityOrder = [];
-    var timingSelected = false;
-    var timingUndecided = false;
-    var timingStartYear = 0;
-    var timingStartMonth = 0;
-    var timingYear = 0;
-    var timingMonth = 0;
-    var timingWheelCommitArmed = true;
-    var wheelScrollTimers = {};
     var salaryWheelScrollTimers = {};
     var params = new URLSearchParams(window.location.search);
     var jobPublicId = params.get("job") || "";
@@ -753,7 +693,6 @@
       segment.dataset.step = String(i);
       progBar.appendChild(segment);
     }
-    initializeTimingPicker();
     initializeSalaryPickers();
 
     if (window.location.protocol !== "file:") {
@@ -960,16 +899,6 @@
         document.getElementById("priorityStatus").classList.remove("show", "error");
       }
       if (choiceGrid.dataset.answerKey === "q2_industry") document.getElementById("industryStatus").classList.remove("show", "error");
-      if (choiceGrid.dataset.answerKey === "q9_management_experience") {
-        var hasManagement = selectedValues(choiceGrid)[0] === "経験あり";
-        document.getElementById("managementSizeField").hidden = !hasManagement;
-        if (!hasManagement) {
-          document.getElementById("managementSizeInput").value = "";
-          answers.q9_management_size = "";
-        }
-        document.getElementById("managementSizeError").classList.remove("show");
-        document.getElementById("managementStatus").classList.remove("show", "error");
-      }
       group.querySelectorAll(".choice-btn").forEach(function(el) {
         el.setAttribute("aria-pressed", el.classList.contains("selected") ? "true" : "false");
       });
@@ -983,47 +912,6 @@
         });
       }
     }
-    function populateWheel(column, values, selectedValue) {
-      column.replaceChildren();
-      values.forEach(function(option, index) {
-        var item = document.createElement("button");
-        item.type = "button";
-        item.className = "wheel-item";
-        item.dataset.value = String(option.value);
-        item.textContent = option.label;
-        item.setAttribute("role", "option");
-        item.setAttribute("aria-selected", String(String(option.value) === String(selectedValue)));
-        item.addEventListener("click", function() {
-          if (column.id === "yearWheel") {
-            timingYear = Number(item.dataset.value);
-            populateTimingMonths();
-          } else {
-            timingMonth = Number(item.dataset.value);
-          }
-          column.scrollTo({ top: index * 44, behavior: "smooth" });
-          setTimingValue();
-        });
-        column.appendChild(item);
-      });
-      var selectedIndex = values.findIndex(function(option) { return String(option.value) === String(selectedValue); });
-      column.scrollTop = Math.max(0, selectedIndex) * 44;
-      highlightWheelCenter(column);
-    }
-    function populateTimingYears() {
-      var years = [];
-      for (var year = timingStartYear; year <= timingStartYear + 5; year++) {
-        years.push({ value: year, label: year + "年" });
-      }
-      populateWheel(document.getElementById("yearWheel"), years, timingYear);
-    }
-    function populateTimingMonths() {
-      var firstMonth = timingYear === timingStartYear ? timingStartMonth : 1;
-      var lastMonth = timingYear === timingStartYear + 5 ? timingStartMonth : 12;
-      if (timingMonth < firstMonth || timingMonth > lastMonth) timingMonth = firstMonth;
-      var months = [];
-      for (var month = firstMonth; month <= lastMonth; month++) months.push({ value: month, label: month + "月" });
-      populateWheel(document.getElementById("monthWheel"), months, timingMonth);
-    }
     function highlightWheelCenter(column) {
       var items = Array.prototype.slice.call(column.querySelectorAll(".wheel-item"));
       var index = Math.max(0, Math.min(items.length - 1, Math.round(column.scrollTop / 44)));
@@ -1032,75 +920,6 @@
         item.setAttribute("aria-selected", String(itemIndex === index));
       });
       return index;
-    }
-    function setTimingValue() {
-      timingSelected = true;
-      timingUndecided = false;
-      timingWheelCommitArmed = true;
-      answers.q7_timing = timingYear + "-" + String(timingMonth).padStart(2, "0");
-      document.getElementById("timingValue").textContent = timingYear + "年" + timingMonth + "月";
-      document.getElementById("timingUndecided").classList.remove("selected");
-      document.getElementById("timingError").classList.remove("show");
-    }
-    function chooseTimingUndecided() {
-      timingWheelCommitArmed = false;
-      Object.keys(wheelScrollTimers).forEach(function(columnId) {
-        window.clearTimeout(wheelScrollTimers[columnId]);
-        delete wheelScrollTimers[columnId];
-      });
-      timingSelected = false;
-      timingUndecided = true;
-      answers.q7_timing = "未定";
-      document.getElementById("timingValue").textContent = "時期未定";
-      document.getElementById("timingUndecided").classList.add("selected");
-      document.getElementById("timingError").classList.remove("show");
-    }
-    function finishWheelScroll(column) {
-      var items = column.querySelectorAll(".wheel-item");
-      if (!items.length) return;
-      var index = highlightWheelCenter(column);
-      var value = Number(items[index].dataset.value);
-      if (column.id === "yearWheel") {
-        if (timingYear !== value) {
-          timingYear = value;
-          populateTimingMonths();
-        }
-      } else {
-        timingMonth = value;
-      }
-      setTimingValue();
-    }
-    function initializeTimingPicker() {
-      var nowParts = {};
-      new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Tokyo", year: "numeric", month: "numeric" }).formatToParts(new Date()).forEach(function(part) {
-        if (part.type === "year" || part.type === "month") nowParts[part.type] = Number(part.value);
-      });
-      timingStartYear = nowParts.year || new Date().getFullYear();
-      timingStartMonth = nowParts.month || new Date().getMonth() + 1;
-      timingYear = timingStartYear;
-      timingMonth = timingStartMonth;
-      populateTimingYears();
-      populateTimingMonths();
-      [document.getElementById("yearWheel"), document.getElementById("monthWheel")].forEach(function(column) {
-        column.addEventListener("scroll", function() {
-          if (!timingWheelCommitArmed) return;
-          clearTimeout(wheelScrollTimers[column.id]);
-          wheelScrollTimers[column.id] = window.setTimeout(function() { finishWheelScroll(column); }, 120);
-        }, { passive: true });
-        ["wheel", "touchstart", "pointerdown"].forEach(function(eventName) {
-          column.addEventListener(eventName, function() { timingWheelCommitArmed = true; }, { passive: true });
-        });
-        column.addEventListener("keydown", function(event) {
-          timingWheelCommitArmed = true;
-          var amount = event.key === "ArrowDown" ? 44 : event.key === "ArrowUp" ? -44 : 0;
-          if (!amount && event.key !== "Home" && event.key !== "End") return;
-          event.preventDefault();
-          if (event.key === "Home") column.scrollTo({ top: 0, behavior: "smooth" });
-          else if (event.key === "End") column.scrollTo({ top: column.scrollHeight, behavior: "smooth" });
-          else column.scrollBy({ top: amount, behavior: "smooth" });
-        });
-      });
-      document.getElementById("timingUndecided").addEventListener("click", chooseTimingUndecided);
     }
     function setSalaryValue(column, amount) {
       var input = document.getElementById(column.dataset.inputId);
@@ -1128,8 +947,7 @@
     function initializeSalaryPickers() {
       [
         ["currentIncomeWheel", "currentIncomeInput", "currentIncomeValue", "currentIncomeError", "q4_current_income"],
-        ["desiredIncomeWheel", "desiredIncomeInput", "desiredIncomeValue", "desiredIncomeError", "q4_desired_income"],
-        ["minimumIncomeWheel", "minimumIncomeInput", "minimumIncomeValue", "minimumIncomeError", "q4_minimum_income"]
+        ["desiredIncomeWheel", "desiredIncomeInput", "desiredIncomeValue", "desiredIncomeError", "q4_desired_income"]
       ].forEach(function(config) {
         var column = document.getElementById(config[0]);
         column.dataset.inputId = config[1];
@@ -1225,33 +1043,16 @@
       if (step === 3) {
         var incomeValid = validateTextInput("currentIncomeInput", "currentIncomeError", "現在の年収を入力してください");
         incomeValid = validateTextInput("desiredIncomeInput", "desiredIncomeError", "希望年収を入力してください") && incomeValid;
-        incomeValid = validateTextInput("minimumIncomeInput", "minimumIncomeError", "最低許容年収を入力してください") && incomeValid;
         return incomeValid;
       }
-      if (step === 4) return validateTextInput("locationInput", "locationError", "希望する勤務地を入力してください");
-      if (step === 5) return validateTextInput("workStyleInput", "workStyleError", "希望する働き方や制約を入力してください");
-      if (step === 6) {
-        if (!timingSelected && !timingUndecided) {
-          document.getElementById("timingError").classList.add("show");
-          return false;
-        }
-      }
-      if (step === 7) {
-        selected = selectedValues(document.querySelector('#step7 [data-answer-key="q8_priority"]'));
+      if (step === 4) {
+        selected = selectedValues(document.querySelector('#step4 [data-answer-key="q8_priority"]'));
         if (!selected.length) {
           showStepStatus("priorityStatus", "重視する条件を1つ以上選択してください。");
           return false;
         }
         otherSelected = selected.indexOf("その他") !== -1;
         if (otherSelected && !validateTextInput("priorityOtherInput", "priorityOtherError", "重視する条件を入力してください")) return false;
-      }
-      if (step === 8) {
-        selected = selectedValues(document.querySelector('#step8 [data-answer-key="q9_management_experience"]'));
-        if (!selected.length) {
-          showStepStatus("managementStatus", "マネジメント経験の有無を選択してください。");
-          return false;
-        }
-        if (selected[0] === "経験あり" && !validateTextInput("managementSizeInput", "managementSizeError", "マネジメントした組織の規模を入力してください")) return false;
       }
       return true;
     }
@@ -1269,10 +1070,8 @@
     loadMetaPixel();
     [
       ["roleOtherInput", "q3_other", "roleOtherError"], ["currentIncomeInput", "q4_current_income", "currentIncomeError"],
-      ["desiredIncomeInput", "q4_desired_income", "desiredIncomeError"], ["minimumIncomeInput", "q4_minimum_income", "minimumIncomeError"],
-      ["locationInput", "q5_location", "locationError"], ["workStyleInput", "q6_work_style", "workStyleError"],
-      ["priorityOtherInput", "q8_other", "priorityOtherError"], ["managementSizeInput", "q9_management_size", "managementSizeError"],
-      ["otherPreferencesInput", "q10_other", ""]
+      ["desiredIncomeInput", "q4_desired_income", "desiredIncomeError"],
+      ["priorityOtherInput", "q8_other", "priorityOtherError"]
     ].forEach(function(binding) {
       var input = document.getElementById(binding[0]);
       input.addEventListener("input", function() {
@@ -1306,14 +1105,10 @@
         client_submission_id: getSubmissionId(), website: document.getElementById("websiteInput").value, job_public_id: jobPublicId,
         intention: "not_collected",
         answers: {
-          form_version: "contact_last_v2",
+          form_version: "contact_last_v4",
           q2_industry: answers.q2_industry || [], q3_role: answers.q3_role || [], q3_other: answers.q3_other || "",
           q4_current_income: answers.q4_current_income || "", q4_desired_income: answers.q4_desired_income || "",
-          q4_minimum_income: answers.q4_minimum_income || "", q5_location: answers.q5_location || "",
-          q6_work_style: answers.q6_work_style || "", q7_timing: answers.q7_timing || "",
-          q8_priority: answers.q8_priority || [], q8_other: answers.q8_other || "",
-          q9_management_experience: answers.q9_management_experience || "", q9_management_size: answers.q9_management_size || "",
-          q10_other: answers.q10_other || ""
+          q8_priority: answers.q8_priority || [], q8_other: answers.q8_other || ""
         },
         name: document.getElementById("nameInput").value.trim(), email: email, phone: phone,
         privacy_consent: document.getElementById("privacyConsent").checked,
@@ -1355,7 +1150,7 @@
         <h3>事業者</h3>
         <p>SYMMETRY Lab株式会社（代表者：竹内 悠人）<br>所在地：〒107-0061 東京都港区北青山1-3-3 三橋ビル 3階</p>
         <h3>取得する情報</h3>
-        <p>氏名、メールアドレス、電話番号、希望業界・職種、現在の年収・希望年収・最低許容年収、希望勤務地、希望する働き方や制約、転職希望時期、重視する条件、マネジメント経験・マネジメントした組織の規模、その他の希望を取得します。LINEで受付番号を含むメッセージを送信した場合、LINEユーザー識別子と表示名を登録情報に関連付けます。LINE上では送信されたメッセージも当社が確認できます。広告URLで求人識別子が指定されている場合はその識別子も取得します。フォーム送信時には、流入元、閲覧ページ、UTMパラメータ、Meta広告のクリックID（fbclid）・キャンペーン／広告セット／広告ID・掲載面、初回および最終アクセス日時を登録情報と関連付けて当社サーバーに保存します。ページの閲覧・送信に伴い、IPアドレス、ブラウザー情報、アクセス日時等が通信ログとして記録される場合があります。広告流入情報はブラウザーのlocalStorageに保存し、次回アクセス時に更新され、ブラウザーから削除されるまで保持します。重複送信防止用IDはsessionStorageに保存し、閲覧中のタブセッション終了時に削除されます。</p>
+        <p>氏名、メールアドレス、電話番号、希望業界・職種、現在の年収・希望年収、重視する条件を取得します。LINEで受付番号を含むメッセージを送信した場合、LINEユーザー識別子と表示名を登録情報に関連付けます。LINE上では送信されたメッセージも当社が確認できます。広告URLで求人識別子が指定されている場合はその識別子も取得します。フォーム送信時には、流入元、閲覧ページ、UTMパラメータ、Meta広告のクリックID（fbclid）・キャンペーン／広告セット／広告ID・掲載面、初回および最終アクセス日時を登録情報と関連付けて当社サーバーに保存します。ページの閲覧・送信に伴い、IPアドレス、ブラウザー情報、アクセス日時等が通信ログとして記録される場合があります。広告流入情報はブラウザーのlocalStorageに保存し、次回アクセス時に更新され、ブラウザーから削除されるまで保持します。重複送信防止用IDはsessionStorageに保存し、閲覧中のタブセッション終了時に削除されます。</p>
         <h3>利用目的</h3>
         <p>登録の受付・内容確認、初回面談についてのLINEでのご連絡、キャリア・求人情報のご案内、問い合わせへの回答、広告効果の社内測定・改善、重複送信や不正利用の防止に利用します。</p>
         <h3>第三者提供・取扱いの委託</h3>
@@ -1363,7 +1158,7 @@
         <h3>保管期間</h3>
         <p>登録情報は利用目的の達成に必要な期間保有します。利用目的の達成後または法定の保存期間経過後は、遅滞なく適切な方法で消去または匿名化します。法令に基づき保存が義務付けられている情報は、その期間保存します。</p>
         <h3>広告計測について</h3>
-        <p>当ページでは、広告効果の測定・広告配信の最適化のため、Meta Pixelを読み込み、ページ閲覧（PageView）、キャリア情報ページ閲覧（ViewContent）、登録開始（StartRegistration）、Q1回答完了（CareerCheckAnswered）、各質問への到達（CareerCheckStepReachedおよび設問番号別のCareerCheckStepReached_Q1〜Q10）、登録完了（Lead）のイベントをMeta Platforms, Inc.へ送信します。送信される情報には閲覧ページのURL・広告流入情報、IPアドレス、ブラウザー・端末情報およびMeta Pixelの識別子等が含まれる場合があります。また、登録完了（Lead）の測定では、広告の成果を正確に測るため、メールアドレスと電話番号を、そのままでは復元できないよう加工（ハッシュ化）したうえで送信します。氏名および質問への回答内容はMetaへ送信しません。広告配信に伴うMeta上での情報の取扱いは、Metaの<a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>をご確認ください。</p>
+        <p>当ページでは、広告効果の測定・広告配信の最適化のため、Meta Pixelを読み込み、ページ閲覧（PageView）、キャリア情報ページ閲覧（ViewContent）、登録開始（StartRegistration）、Q1回答完了（CareerCheckAnswered）、各質問への到達（CareerCheckStepReachedおよび設問番号別のCareerCheckStepReached_Q1〜Q5）、登録完了（Lead）のイベントをMeta Platforms, Inc.へ送信します。送信される情報には閲覧ページのURL・広告流入情報、IPアドレス、ブラウザー・端末情報およびMeta Pixelの識別子等が含まれる場合があります。また、登録完了（Lead）の測定では、広告の成果を正確に測るため、メールアドレスと電話番号を、そのままでは復元できないよう加工（ハッシュ化）したうえで送信します。氏名および質問への回答内容はMetaへ送信しません。広告配信に伴うMeta上での情報の取扱いは、Metaの<a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>をご確認ください。</p>
         <h3>お問い合わせ</h3>
         <p>個人情報の開示・訂正・利用停止等に関するお問い合わせは、SYMMETRY Lab株式会社（<a href="mailto:info@symmetrylab.jp">info@symmetrylab.jp</a>）までご連絡ください。</p>
         <p><a href="/privacy.html" target="_blank" rel="noopener noreferrer">当社プライバシーポリシー</a>もあわせてご確認ください。</p>`
