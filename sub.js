@@ -1,7 +1,8 @@
-// 下層ページの背景：トップページと同じ粒子のロゴと光の模様を、画面の右側に控えめに置く
-// スクロールに合わせて、ロゴ → 二重螺旋 → 球 → ロゴ と形が移り変わる
+// 下層ページの背景：トップページと同じガラスのロゴと光の模様を、画面の右側に控えめに置く（グリッド線なし）
+// スクロールに合わせて、ロゴ → 分解図 → 2つに分かれる → ロゴ と組み替わる
 import * as THREE from 'three';
-import { createParticleLogo } from './particles.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { createGlassLogo } from './glass-logo.js?v=20261126-01';
 import { initBg } from './bg.js?v=20261124-04';
 
 // 幕が開く演出（トップ・サービスページ）は、サイトを最初に開いたときだけにする。
@@ -30,24 +31,29 @@ if (renderer) { canvas.style.opacity = '0'; canvas.style.transition = 'opacity .
 const revealCanvas = () => { if (++shownFrames === 4) canvas.style.opacity = '1'; };
 
 if (renderer) {
-  // スマホは画面の画素密度が高い（3倍など）ので、上限を3にして粒子をくっきり描く
-  renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile() ? 3 : 2));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  // ガラスの質感を出すための映り込みと照明（トップページと同じ設定）
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
   const scene = new THREE.Scene();
+  scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), .04).texture;
   const camera = new THREE.PerspectiveCamera(30, 1, .1, 100);
   camera.position.set(0, 0, 12);
+  const key = new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(3, 5, 6); scene.add(key);
+  scene.add(new THREE.AmbientLight(0xffffff, .3));
 
-  const mark = new THREE.Group(); scene.add(mark);
-  const logo = createParticleLogo(THREE, { mobile: isMobile() });
-  mark.add(logo.points);
-  const bgUpdate = initBg({ THREE, renderer, scene, camera, mark, matT: new THREE.MeshPhysicalMaterial(), fixed: '2' });
+  const logo = createGlassLogo(THREE);
+  const mark = logo.group; scene.add(mark);
+  // 背景はグリッド線なし、光の模様だけ（fixed: '2'）
+  const bgUpdate = initBg({ THREE, renderer, scene, camera, mark, matT: logo.matT, fixed: '2' });
 
   const resize = () => { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); };
   addEventListener('resize', resize); resize();
   const mouse = { x: 0, y: 0 };
   addEventListener('pointermove', e => { mouse.x = e.clientX / innerWidth - .5; mouse.y = e.clientY / innerHeight - .5; });
 
-  // 事業ページは body の data-seq で形の順番を指定できる（例：strategy,split,sphere,mark）
-  const SEQ = (document.body.dataset.seq || 'mark,helix,sphere,mark').split(',');
+  // スクロールに合わせた組み替えの順番（glass-logo.js の pieceState の名前）
+  const SEQ = ['none', 'exploded', 'split', 'none'];
   let intro = reduceMotion ? 1 : 0, cur = 0, vel = 0, spin = 0, lastY = scrollY;
   const clock = new THREE.Clock();
   const frame = () => {
@@ -57,16 +63,16 @@ if (renderer) {
     const target = (max > 0 ? scrollY / max : 0) * (SEQ.length - 1);
     cur += (target - cur) * (reduceMotion ? 1 : .06);
     const a = Math.floor(cur), b = Math.min(a + 1, SEQ.length - 1), f = cur - a;
-    vel += ((scrollY - lastY) / innerHeight - vel) * .1; lastY = scrollY; spin += vel * 2;
+    vel += ((scrollY - lastY) / innerHeight - vel) * .1; lastY = scrollY; spin += vel * 1;
 
     // PCは右側、スマホは右上に小さく（本文の読みやすさを優先）
     const m = isMobile();
-    mark.position.set((m ? 1.5 : 3.4) + mouse.x * .3, (m ? 2.4 : .3) - mouse.y * .2 + Math.sin(t * .6) * .1, 0);
+    mark.position.set((m ? 1.15 : 3.9) + mouse.x * .3, (m ? 2.4 : .3) - mouse.y * .2 + Math.sin(t * .6) * .1, 0);
     mark.rotation.set(mouse.y * .3 + Math.sin(t * .4) * .1, -.25 + mouse.x * .6 + Math.sin(t * .3) * .25 + spin, 0);
-    mark.scale.setScalar((m ? .85 : 1.35) * (.7 + .3 * intro));
+    mark.scale.setScalar((m ? .6 : .9) * (.7 + .3 * intro));
 
-    if (intro < 1) logo.update('chaos', SEQ[0], intro, t, vel, renderer.getPixelRatio());
-    else logo.update(SEQ[a], SEQ[b], f, t, vel, renderer.getPixelRatio());
+    // 登場時は「ばらばらのピース → ロゴに組み上がる」、その後はスクロールに合わせて組み替える
+    logo.update(SEQ[a], SEQ[b], f, 1 - Math.pow(1 - intro, 4));
     bgUpdate(t, vel);
     renderer.render(scene, camera);
     revealCanvas();

@@ -253,6 +253,8 @@ body:not([data-page]) main > .sec:not(.hero) { padding: 100px 0; }
 
 /* サービスページ */
 .svc-head { min-height: 70vh; display: flex; align-items: flex-end; padding-top: 140px; }
+/* 見出しの箱が中身の幅に縮んで中央に寄らないよう、横幅いっぱいに広げる（他のセクションと左端をそろえる） */
+.svc-head > .wrap { width: 100%; }
 .svc-sec { padding-top: 120px; }
 .svc-items { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 @media (max-width: 900px) { .svc-items { grid-template-columns: 1fr; } }

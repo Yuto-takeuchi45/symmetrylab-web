@@ -3211,12 +3211,12 @@ PUBLIC_SITE_FOOTER = (
     '<a href="/privacy.html">プライバシーポリシー</a><a href="/tokushoho.html">特定商取引法に基づく表記</a></div>'
     '</div><p class="wrap copy">&copy; 2026 SYMMETRY Lab株式会社 All rights reserved.</p></footer>'
 )
-# 背景の粒子（sub.js）は three.js をCDNから読み込む。HPの他のページと同じ版にそろえる
+# 背景のガラスのロゴ（sub.js）は three.js をCDNから読み込む。HPの他のページと同じ版にそろえる
 PUBLIC_SITE_SCRIPTS = (
     '<script src="/js/main.js"></script>'
     '<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", '
     '"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>'
-    '<script type="module" src="/sub.js?v=20261124-04"></script>'
+    '<script type="module" src="/sub.js?v=20261126-01"></script>'
 )
 
 

@@ -25,7 +25,7 @@ class BlogLayoutTests(unittest.TestCase):
     def assert_new_layout(self, html: str):
         """新デザインの部品がそろい、旧デザインのナビゲーションが残っていないことを確認する。"""
         for part in ['href="/theme.css"', 'id="menuBtn"', 'class="nav" id="nav"', 'class="footer site-footer"',
-                     'src="/sub.js?v=20261124-04"', '<canvas id="gl"']:
+                     'src="/sub.js?v=20261126-01"', '<canvas id="gl"']:
             self.assertIn(part, html)
         self.assertNotIn('class="navbar"', html)
 

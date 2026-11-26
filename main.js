@@ -3,7 +3,7 @@
 // スクロールで「組み上がる → 180°回転（点対称） → 2つに分かれる（2プログラム） → 分解図 → 再結合」
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { createParticleLogo } from './particles.js';
+import { createGlassLogo } from './glass-logo.js?v=20261126-01';
 import { WORKS } from './works-data.js';
 import { initFx, splitReveal, magnetic, textRoll, highlightOnScroll } from './fx.js';
 import { initChapter } from './chapter.js';
@@ -90,8 +90,7 @@ const sections = [...document.querySelectorAll('main [data-stop]')];
 const degEl = document.getElementById('deg');
 
 if (renderer) {
-  // スマホは画面の画素密度が高い（3倍など）ので、上限を3にして粒子をくっきり描く
-  renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile() ? 3 : 2));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   const scene = new THREE.Scene();
@@ -102,38 +101,38 @@ if (renderer) {
   const key = new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(3, 5, 6); scene.add(key);
   scene.add(new THREE.AmbientLight(0xffffff, .3));
 
-  const mark = new THREE.Group(); scene.add(mark);
-  const logo = createParticleLogo(THREE, { mobile: isMobile() });
-  mark.add(logo.points);
+  // ガラスのロゴ（粒子版から戻した。場面ごとの組み替えは glass-logo.js の pieceState）
+  const logo = createGlassLogo(THREE);
+  const mark = logo.group; scene.add(mark);
 
   // セクションごとの全体キー（デスクトップ）
   const PI = Math.PI;
   // ページごとの形の流れ（各セクション＝data-stop の順）。トップ：ヒーロー → 事業 → よくある質問 → お問い合わせ
   const PAGE_KEYS = {
     top: [
-      { p: [.3, .05, 0], r: [0, -.2, 0], s: 2.1, st: 'mark' },
-      { p: [2.7, .7, 0], r: [.08, .3, 0], s: 1.6, st: 'split' },
-      { p: [3.3, .1, 0], r: [.2, -.4, 0], s: 1.5, st: 'helix' },
-      { p: [3.2, 0, 0], r: [.1, -.3, 0], s: 1.8, st: 'mark' }
+      { p: [0, .05, 0], r: [.12, -.42, 0], s: 1.55, st: 'none' },
+      { p: [2.75, .2, 0], r: [.08, .3, PI], s: 1.2, st: 'split' },
+      { p: [3.05, -.1, 0], r: [.5, -.95, PI + .35], s: 1.0, st: 'exploded' },
+      { p: [3.1, 0, 0], r: [.15, -.45, 2 * PI], s: 1.2, st: 'none' }
     ],
     // サービス：見出し → キャリア形成支援 → 講座 → コンサルティング → 実績 → 選ばれる理由
     services: [
-      { p: [2.6, -.1, 0], r: [.08, .3, 0], s: 2.0, st: 'mark' },
-      { p: [2.7, 0, 0], r: [.2, -.3, 0], s: 1.9, st: 'career' },
-      { p: [0, .9, 0], r: [0, 0, 0], s: 1.8, st: 'twin' },
-      { p: [2.6, 0, 0], r: [.1, -.35, 0], s: 2.0, st: 'strategy' },
-      { p: [3.0, 0, 0], r: [.25, -.4, 0], s: 2.2, st: 'helix' },
-      { p: [-2.6, 0, 0], r: [.1, .45, 0], s: 2.3, st: 'sphere' }
+      { p: [3.25, -.1, 0], r: [.08, .3, 0], s: 1.1, st: 'none' },
+      { p: [3.1, 0, 0], r: [.1, -.6, 0], s: 1.05, st: 'tree' },
+      { p: [0, 1.15, 0], r: [0, 0, PI], s: 1.05, st: 'split' },
+      { p: [3.1, 0, 0], r: [.55, -.75, PI], s: 1.1, st: 'modules' },
+      { p: [3.3, 0, 0], r: [.25, -2.4, PI], s: 1.1, st: 'steps' },
+      { p: [-2.9, 0, 0], r: [.1, .45, 2 * PI], s: 1.3, st: 'none' }
     ]
   };
-  const PAGE_MOBILE_Y = { top: [1.2, 1.3, 1.4, 1.5], services: [1.3, 1.35, 1.15, 1.35, 1.4, 1.5] };
+  const PAGE_MOBILE_Y = { top: [1.2, 2.1, 2.2, 2.3], services: [2.1, 2.0, 1.9, 2.0, 2.1, 2.3] };
   const page = PAGE_KEYS[document.body.dataset.page] ? document.body.dataset.page : 'top';
   const keys = PAGE_KEYS[page];
   const mobileY = PAGE_MOBILE_Y[page];
   const keyFor = i => {
     const k = keys[i];
     if (!isMobile()) return k;
-    return { ...k, p: [0, mobileY[i], 0], s: k.s * .4 };
+    return { ...k, p: [0, mobileY[i], 0], s: k.s * .5 };
   };
 
   const resize = () => {
@@ -158,7 +157,8 @@ if (renderer) {
     return i + sstep(.25, .95, (mid - tops[i]) / (tops[i + 1] - tops[i]));
   }
 
-  const bgUpdate = initBg({ THREE, renderer, scene, camera, mark, matT: new THREE.MeshPhysicalMaterial(), fixed: '2' });
+  // 背景はグリッド線なし、光の模様だけ（fixed: '2'）
+  const bgUpdate = initBg({ THREE, renderer, scene, camera, mark, matT: logo.matT, fixed: '2' });
   const tmpQ = new THREE.Quaternion(), tmpE = new THREE.Euler();
   function frame() {
     const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
@@ -169,15 +169,14 @@ if (renderer) {
     const a = Math.floor(cur), b = Math.min(a + 1, keys.length - 1), f = cur - a;
     const A = keyFor(a), B = keyFor(b);
 
-    vel += ((scrollY - lastY) / innerHeight - vel) * .1; lastY = scrollY; spin += vel * 2.0;
+    vel += ((scrollY - lastY) / innerHeight - vel) * .1; lastY = scrollY; spin += vel * 1.0;
     mark.position.set(lerp(A.p[0], B.p[0], f) + mouse.x * .45 + Math.sin(t * .45) * .12, lerp(A.p[1], B.p[1], f) - mouse.y * .3 + Math.sin(t * .8) * .16, 0);
     const rz = lerp(A.r[2], B.r[2], f);
     mark.rotation.set(lerp(A.r[0], B.r[0], f) + mouse.y * .45 + Math.sin(t * .4) * .14, lerp(A.r[1], B.r[1], f) + mouse.x * .9 + Math.sin(t * .5) * .3 + spin + (1 - ie) * 2, rz + Math.sin(t * .3) * .06);
     mark.scale.setScalar(lerp(A.s, B.s, f) * (.6 + .4 * ie));
 
-    // 登場時は「ばらばら → ロゴ」、その後は場面ごとの形へ
-    if (intro < 1) logo.update('chaos', 'mark', intro, t, vel, renderer.getPixelRatio());
-    else logo.update(A.st, B.st, f, t, vel, renderer.getPixelRatio());
+    // 登場時は「ばらばらのピース → ロゴに組み上がる」、その後は場面ごとの組み替えへ
+    logo.update(A.st, B.st, f, ie);
 
     if (degEl) degEl.textContent = Math.round(clamp(rz / PI, 0, 1) * 180) + '°';
     bgUpdate(t, vel);
